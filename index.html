@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VoiceSummary">
+<meta name="theme-color" content="#0f0f1a">
+<title>VoiceSummary – AI Transkribering</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f1a;--surface:#1a1a2e;--card:#1e1e3a;--border:#2a2a45;
+  --accent:#e94560;--accent-hover:#c23152;--accent-dim:rgba(233,69,96,.15);
+  --text:#e8e8f0;--muted:#8888aa;--success:#22c55e;
+  --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:16px;line-height:1.5;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;padding-top:var(--st)}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+header h1{font-size:1.05rem;font-weight:600;display:flex;align-items:center;gap:8px}
+header h1 svg{color:var(--accent)}
+.icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;-webkit-tap-highlight-color:transparent}
+.icon-btn:hover,.icon-btn:active{background:var(--card);color:var(--text)}
+
+/* MAIN */
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100%;padding:32px 20px;padding-bottom:calc(32px + var(--sb));text-align:center;gap:24px}
+.screen.active{display:flex}
+
+/* SETUP */
+.setup-icon{width:80px;height:80px;border-radius:20px;background:var(--accent-dim);
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(233,69,96,.3);flex-shrink:0}
+.setup-title{font-size:1.5rem;font-weight:700}
+.setup-desc{color:var(--muted);font-size:.9rem;max-width:300px}
+.input-group{width:100%;max-width:360px;text-align:left}
+.input-group label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.input-group input,.input-group select{width:100%;padding:12px 14px;
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-size:.95rem;outline:none;transition:border-color .2s;
+  -webkit-appearance:none}
+.input-group select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888aa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.input-group input:focus,.input-group select:focus{border-color:var(--accent)}
+.btn-primary{background:var(--accent);color:#fff;border:none;padding:14px 32px;
+  border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;
+  width:100%;max-width:360px;transition:background .2s,transform .1s;
+  -webkit-tap-highlight-color:transparent}
+.btn-primary:active{transform:scale(.97);background:var(--accent-hover)}
+.link-hint{font-size:.8rem;color:var(--muted)}
+.link-hint a{color:var(--accent);text-decoration:none}
+
+/* IDLE */
+.idle-hint{color:var(--muted);font-size:.9rem}
+.record-btn{width:96px;height:96px;border-radius:50%;background:var(--accent);
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  position:relative;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+.record-btn:active{transform:scale(.9)}
+.record-btn::before{content:'';position:absolute;width:116px;height:116px;
+  border-radius:50%;border:2px solid var(--accent);opacity:.3;
+  animation:pulse 2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.3}70%{transform:scale(1.15);opacity:0}100%{opacity:0}}
+
+/* RECORDING */
+.recording-badge{display:flex;align-items:center;gap:8px;color:var(--accent);
+  font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);
+  animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.timer{font-size:3.2rem;font-weight:300;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+#waveform{width:min(100%,300px);height:60px;border-radius:8px;flex-shrink:0}
+.stop-btn{width:96px;height:96px;border-radius:50%;background:var(--accent);border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:transform .15s}
+.stop-btn:active{transform:scale(.9)}
+
+/* WORKING */
+.working-title{font-size:1.1rem;font-weight:600}
+.working-sub{color:var(--muted);font-size:.85rem}
+.progress-wrap{width:min(100%,300px);background:var(--card);border-radius:100px;height:6px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:100px;
+  transition:width .4s ease;width:0%}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESULT */
+#screen-result{justify-content:flex-start;gap:16px}
+.result-header{display:flex;align-items:center;gap:8px;color:var(--success);
+  font-weight:600;font-size:.9rem}
+.result-box{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:20px;text-align:left;font-size:.9rem;line-height:1.7;
+  max-height:50vh;overflow-y:auto}
+.result-box article section{margin-bottom:20px}
+.result-box article section:last-child{margin-bottom:0}
+.result-box h2{font-size:.95rem;font-weight:700;margin-bottom:10px;padding-bottom:6px;
+  border-bottom:1px solid var(--border);color:var(--text)}
+.result-box p{color:var(--muted);margin-bottom:10px}
+.result-box p:last-child{margin-bottom:0}
+.result-box ul{padding-left:18px;color:var(--muted)}
+.result-box li{margin-bottom:6px}
+.result-box strong{color:var(--text)}
+.btn-group{display:flex;flex-wrap:wrap;gap:10px;width:100%;max-width:680px;justify-content:center}
+.btn-sec{background:var(--card);color:var(--text);border:1px solid var(--border);
+  padding:12px 18px;border-radius:10px;font-size:.9rem;font-weight:500;cursor:pointer;
+  display:flex;align-items:center;gap:7px;transition:background .15s;
+  -webkit-tap-highlight-color:transparent}
+.btn-sec:active{transform:scale(.97)}
+.btn-new{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
+  font-size:.95rem;font-weight:600;cursor:pointer;width:100%;max-width:680px;
+  -webkit-tap-highlight-color:transparent;transition:background .15s}
+.btn-new:active{background:var(--accent-hover);transform:scale(.97)}
+
+/* ERROR */
+.error-icon{font-size:2.5rem}
+.error-msg{color:var(--muted);font-size:.9rem;max-width:300px}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(16px + var(--sb));left:50%;
+  transform:translateX(-50%) translateY(120%);background:var(--success);color:#fff;
+  padding:10px 22px;border-radius:100px;font-size:.85rem;font-weight:600;
+  z-index:999;transition:transform .25s ease;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* SETTINGS PANEL */
+#s-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
+#s-overlay.open{display:block}
+#s-panel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
+  padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:80vh;overflow-y:auto}
+#s-panel.open{transform:translateY(0)}
+.s-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px}
+.s-title{font-size:1.05rem;font-weight:700;margin-bottom:20px}
+.s-form{display:flex;flex-direction:column;gap:14px}
+.s-save{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
+  font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="8" y1="22" x2="16" y2="22"/>
+      </svg>
+      VoiceSummary
+    </h1>
+    <button class="icon-btn" id="settingsBtn" aria-label="Inställningar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- SETUP -->
+    <section class="screen" id="screen-setup">
+      <div class="setup-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#e94560" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </div>
+      <h2 class="setup-title">VoiceSummary</h2>
+      <p class="setup-desc">Spela in ljud och få en AI-sammanfattning via Google Gemini</p>
+      <div class="input-group">
+        <label>Gemini API-nyckel</label>
+        <input type="password" id="setupKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <button class="btn-primary" id="setupSaveBtn">Kom igång</button>
+      <p class="link-hint">Gratis nyckel på <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a></p>
+    </section>
+
+    <!-- IDLE -->
+    <section class="screen" id="screen-idle">
+      <p class="idle-hint">Tryck för att börja spela in</p>
+      <button class="record-btn" id="recordBtn" aria-label="Spela in">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" fill="white" stroke="none"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- RECORDING -->
+    <section class="screen" id="screen-recording">
+      <div class="recording-badge"><div class="rec-dot"></div> Spelar in</div>
+      <div class="timer" id="timer">00:00</div>
+      <canvas id="waveform" width="300" height="60"></canvas>
+      <button class="stop-btn" id="stopBtn" aria-label="Stoppa">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+          <rect x="5" y="5" width="14" height="14" rx="2"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- WORKING -->
+    <section class="screen" id="screen-working">
+      <div class="spinner" id="workSpinner" style="display:none"></div>
+      <p class="working-title" id="workTitle">Laddar upp ljud</p>
+      <p class="working-sub" id="workSub">Förbereder…</p>
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section class="screen" id="screen-result">
+      <div class="result-header">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Sammanfattning klar
+      </div>
+      <div class="result-box" id="resultBox"></div>
+      <div class="btn-group">
+        <button class="btn-sec" id="copyHtmlBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Kopiera HTML
+        </button>
+        <button class="btn-sec" id="copyTxtBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Kopiera text
+        </button>
+        <button class="btn-sec" id="shareBtn" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Dela
+        </button>
+      </div>
+      <button class="btn-new" id="newBtn">Ny inspelning</button>
+    </section>
+
+    <!-- ERROR -->
+    <section class="screen" id="screen-error">
+      <div class="error-icon">⚠️</div>
+      <h2>Något gick fel</h2>
+      <p class="error-msg" id="errorMsg"></p>
+      <button class="btn-primary" id="retryBtn">Försök igen</button>
+      <button class="btn-sec" id="errSettingsBtn" style="margin-top:6px">Öppna inställningar</button>
+    </section>
+  </main>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="s-overlay"></div>
+<aside id="s-panel" role="dialog" aria-label="Inställningar">
+  <div class="s-handle"></div>
+  <h2 class="s-title">Inställningar</h2>
+  <div class="s-form">
+    <div class="input-group">
+      <label>Gemini API-nyckel</label>
+      <input type="password" id="sKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="input-group">
+      <label>Modell</label>
+      <select id="sModel">
+        <option value="gemini-2.5-pro">gemini-2.5-pro (bäst kvalitet)</option>
+        <option value="gemini-2.5-flash">gemini-2.5-flash (snabbare)</option>
+        <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+      </select>
+    </div>
+    <button class="s-save" id="sSaveBtn">Spara</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const API_BASE = 'https://generativelanguage.googleapis.com';
+const CHUNK = 8 * 1024 * 1024;
+const SK = 'vs_key', SM = 'vs_model';
+
+const PROMPT = `Analyze this audio recording carefully.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+
+Structure your response exactly like this:
+<article>
+  <section>
+    <h2>[Heading for Summary in detected language]</h2>
+    <p>[Comprehensive prose summary — 2-4 paragraphs, cover all main topics, context, conclusions]</p>
+  </section>
+  <section>
+    <h2>[Heading for Key Points in detected language]</h2>
+    <ul>
+      <li><strong>[Topic/person]:</strong> [specific detail]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Heading for Action Items in detected language]</h2>
+    <ul>
+      <li>[Concrete action — include responsible person and deadline if mentioned]</li>
+    </ul>
+  </section>
+</article>
+
+Rules:
+- Omit Action Items section entirely if none are present
+- Capture names, numbers, dates, decisions and commitments
+- Use only: article, section, h2, p, ul, li, strong, em
+- No CSS, class/id attributes, inline styles or scripts`;
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const s = {
+  key: localStorage.getItem(SK) || '',
+  model: localStorage.getItem(SM) || 'gemini-2.5-pro',
+  mediaRecorder: null, stream: null, chunks: [], blob: null,
+  mimeType: '', start: 0, timerRef: null,
+  audioCtx: null, analyser: null, raf: null,
+  resultHTML: ''
+};
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const screens = ['setup','idle','recording','working','result','error'];
+
+function show(name) {
+  screens.forEach(n => {
+    const el = $('screen-' + n);
+    el.classList.toggle('active', n === name);
+  });
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function fmt(ms) {
+  const t = Math.floor(ms / 1000);
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), sec = t % 60;
+  if (h) return h + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
+function setProgress(pct) { $('progressFill').style.width = pct + '%'; }
+
+function getMime() {
+  for (const t of ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'])
+    if (MediaRecorder.isTypeSupported(t)) return t;
+  return '';
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+function openSettings() {
+  $('sKey').value = s.key;
+  $('sModel').value = s.model;
+  $('s-panel').classList.add('open');
+  $('s-overlay').classList.add('open');
+}
+function closeSettings() {
+  $('s-panel').classList.remove('open');
+  $('s-overlay').classList.remove('open');
+}
+function saveSettings() {
+  const k = $('sKey').value.trim();
+  if (!k) { $('sKey').focus(); return; }
+  s.key = k; s.model = $('sModel').value;
+  localStorage.setItem(SK, k);
+  localStorage.setItem(SM, s.model);
+  closeSettings();
+  toast('Inställningar sparade ✓');
+  if (!document.querySelector('.screen.active') || $('screen-setup').classList.contains('active'))
+    show('idle');
+}
+
+// ── RECORDING ─────────────────────────────────────────────────────────────
+async function startRecording() {
+  try {
+    s.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true }
+    });
+  } catch {
+    showError('Mikrofonåtkomst nekades. Tillåt mikrofon i webbläsarinställningarna.', false);
+    return;
+  }
+  s.mimeType = getMime();
+  s.chunks = [];
+  const opts = { audioBitsPerSecond: 16000 };
+  if (s.mimeType) opts.mimeType = s.mimeType;
+  s.mediaRecorder = new MediaRecorder(s.stream, opts);
+  s.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) s.chunks.push(e.data); };
+  s.mediaRecorder.onstop = onStop;
+  s.mediaRecorder.start(1000);
+  s.start = Date.now();
+  show('recording');
+  s.timerRef = setInterval(() => { $('timer').textContent = fmt(Date.now() - s.start); }, 500);
+  startWaveform();
+}
+
+function startWaveform() {
+  try {
+    s.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = s.audioCtx.createMediaStreamSource(s.stream);
+    s.analyser = s.audioCtx.createAnalyser();
+    s.analyser.fftSize = 128;
+    src.connect(s.analyser);
+    drawWave();
+  } catch { /* optional */ }
+}
+
+function drawWave() {
+  const cv = $('waveform'), ctx = cv.getContext('2d'), an = s.analyser;
+  if (!an) return;
+  const buf = new Uint8Array(an.frequencyBinCount);
+  (function loop() {
+    s.raf = requestAnimationFrame(loop);
+    an.getByteFrequencyData(buf);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const bw = Math.floor(cv.width / buf.length);
+    for (let i = 0; i < buf.length; i++) {
+      const h = Math.max(3, (buf[i] / 255) * cv.height);
+      ctx.fillStyle = 'rgba(233,69,96,' + (.4 + (buf[i] / 255) * .6) + ')';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(i * bw, (cv.height - h) / 2, Math.max(1, bw - 1), h, 2);
+      else ctx.rect(i * bw, (cv.height - h) / 2, Math.max(1, bw - 1), h);
+      ctx.fill();
+    }
+  })();
+}
+
+function stopRecording() {
+  if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') s.mediaRecorder.stop();
+  clearInterval(s.timerRef);
+  cancelAnimationFrame(s.raf);
+  if (s.stream) s.stream.getTracks().forEach(t => t.stop());
+  if (s.audioCtx) s.audioCtx.close().catch(() => {});
+}
+
+function onStop() {
+  const base = (s.mimeType || 'audio/webm').split(';')[0];
+  s.blob = new Blob(s.chunks, { type: base });
+  autoDownload(s.blob, base);
+  process(s.blob, base);
+}
+
+// ── AUTO-DOWNLOAD ─────────────────────────────────────────────────────────
+function autoDownload(blob, mime) {
+  const ext = mime.includes('mp4') ? 'm4a' : mime.includes('ogg') ? 'ogg' : 'webm';
+  const ts = new Date().toISOString().slice(0,19).replace(/:/g,'-');
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), { href: url, download: 'inspelning-' + ts + '.' + ext });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// ── GEMINI FILE API ────────────────────────────────────────────────────────
+async function uploadFile(blob, mime) {
+  const total = blob.size;
+  const init = await fetch(
+    API_BASE + '/upload/v1beta/files?uploadType=resumable&key=' + s.key,
+    {
+      method: 'POST',
+      headers: {
+        'X-Goog-Upload-Protocol': 'resumable',
+        'X-Goog-Upload-Command': 'start',
+        'X-Goog-Upload-Header-Content-Length': String(total),
+        'X-Goog-Upload-Header-Content-Type': mime,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ file: { display_name: 'rec-' + Date.now() } })
+    }
+  );
+  if (!init.ok) {
+    const e = await init.json().catch(() => ({}));
+    throw new Error(e.error?.message || 'Upload-initiering misslyckades (' + init.status + ')');
+  }
+  const uploadUrl = init.headers.get('X-Goog-Upload-URL');
+  if (!uploadUrl) throw new Error('Fick ingen upload-URL från Gemini');
+
+  let offset = 0, fileUri = null;
+  while (offset < total) {
+    const end = Math.min(offset + CHUNK, total);
+    const last = end >= total;
+    const r = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Length': String(end - offset),
+        'X-Goog-Upload-Offset': String(offset),
+        'X-Goog-Upload-Command': last ? 'upload, finalize' : 'upload'
+      },
+      body: blob.slice(offset, end)
+    });
+    if (last) {
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}));
+        throw new Error(e.error?.message || 'Uppladdning misslyckades (' + r.status + ')');
+      }
+      const d = await r.json();
+      fileUri = d.file?.uri;
+      if (!fileUri) throw new Error('Inget fil-URI från Gemini');
+    } else if (!r.ok && r.status !== 308) {
+      throw new Error('Chunk-uppladdning misslyckades (' + r.status + ')');
+    }
+    offset = end;
+    setProgress(Math.round((offset / total) * 85));
+  }
+  return fileUri;
+}
+
+async function waitActive(fileUri) {
+  const m = fileUri.match(/files\/([^/?]+)/);
+  if (!m) return;
+  for (let i = 0; i < 30; i++) {
+    const r = await fetch(API_BASE + '/v1beta/files/' + m[1] + '?key=' + s.key);
+    const d = await r.json();
+    const st = d.state || d.file?.state;
+    if (st === 'ACTIVE' || !st) return;
+    if (st === 'FAILED') throw new Error('Filbearbetning misslyckades på Gemini');
+    await new Promise(r => setTimeout(r, 2000));
+  }
+}
+
+async function generate(fileUri, mime) {
+  const r = await fetch(
+    API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { file_data: { mime_type: mime, file_uri: fileUri } },
+          { text: PROMPT }
+        ]}],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
+      })
+    }
+  );
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    throw new Error(e.error?.message || 'Gemini API-fel (' + r.status + ')');
+  }
+  const d = await r.json();
+  let txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+}
+
+// ── MAIN FLOW ──────────────────────────────────────────────────────────────
+async function process(blob, mime) {
+  show('working');
+  $('workTitle').textContent = 'Laddar upp ljud';
+  $('workSub').textContent = (blob.size / 1048576).toFixed(1) + ' MB';
+  $('progressWrap').style.display = '';
+  $('workSpinner').style.display = 'none';
+  setProgress(0);
+
+  try {
+    const uri = await uploadFile(blob, mime);
+    setProgress(90);
+
+    $('workTitle').textContent = 'Gemini analyserar';
+    $('workSub').textContent = 'Transkriberar och sammanfattar…';
+    $('progressWrap').style.display = 'none';
+    $('workSpinner').style.display = '';
+
+    await waitActive(uri);
+    const html = await generate(uri, mime);
+    s.resultHTML = html;
+    showResult(html);
+  } catch(e) {
+    showError(e.message || 'Okänt fel', true);
+  }
+}
+
+// ── RESULT ─────────────────────────────────────────────────────────────────
+function showResult(html) {
+  $('resultBox').innerHTML = html;
+  $('shareBtn').style.display = navigator.share ? '' : 'none';
+  show('result');
+}
+
+async function copyHtml() {
+  await navigator.clipboard.writeText(s.resultHTML);
+  toast('HTML kopierad ✓');
+}
+async function copyText() {
+  const d = document.createElement('div');
+  d.innerHTML = s.resultHTML;
+  await navigator.clipboard.writeText(d.innerText || d.textContent);
+  toast('Text kopierad ✓');
+}
+async function share() {
+  const d = document.createElement('div');
+  d.innerHTML = s.resultHTML;
+  try { await navigator.share({ title: 'Röstsammanfattning', text: d.innerText || d.textContent }); }
+  catch { /* cancelled */ }
+}
+
+// ── ERROR ──────────────────────────────────────────────────────────────────
+function showError(msg, showSettings) {
+  $('errorMsg').textContent = msg;
+  $('errSettingsBtn').style.display = showSettings ? '' : 'none';
+  show('error');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+function init() {
+  show(s.key ? 'idle' : 'setup');
+
+  $('setupSaveBtn').onclick = () => {
+    const k = $('setupKey').value.trim();
+    if (!k) { $('setupKey').focus(); return; }
+    s.key = k; localStorage.setItem(SK, k);
+    show('idle');
+  };
+  $('setupKey').onkeydown = e => { if (e.key === 'Enter') $('setupSaveBtn').click(); };
+
+  $('recordBtn').onclick = startRecording;
+  $('stopBtn').onclick = stopRecording;
+  $('copyHtmlBtn').onclick = copyHtml;
+  $('copyTxtBtn').onclick = copyText;
+  $('shareBtn').onclick = share;
+  $('newBtn').onclick = () => show('idle');
+  $('retryBtn').onclick = () => { if (s.blob) process(s.blob, (s.mimeType||'audio/webm').split(';')[0]); else show('idle'); };
+  $('errSettingsBtn').onclick = openSettings;
+  $('settingsBtn').onclick = openSettings;
+  $('s-overlay').onclick = closeSettings;
+  $('sSaveBtn').onclick = saveSettings;
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+init();
+</script>
+</body>
+</html>
