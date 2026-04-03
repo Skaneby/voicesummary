@@ -149,6 +149,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
 .s-form{display:flex;flex-direction:column;gap:14px}
 .s-save{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
   font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px}
+.keep-open-hint{font-size:.78rem;color:var(--muted);margin-top:4px}
 </style>
 </head>
 <body>
@@ -225,6 +226,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-fill" id="progressFill"></div>
       </div>
+      <p class="keep-open-hint">⚠️ Håll appen öppen tills klart</p>
     </section>
 
     <!-- RESULT -->
@@ -368,9 +370,12 @@ function fmt(ms) {
 function setProgress(pct) { $('progressFill').style.width = pct + '%'; }
 
 function getMime() {
-  for (const t of ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'])
-    if (MediaRecorder.isTypeSupported(t)) return t;
-  return '';
+  // Detect iOS/Safari — prefer mp4 since webm is unsupported
+  const isIOS = /iP(ad|hone|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const order = isIOS
+    ? ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']
+    : ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+  return order.find(t => MediaRecorder.isTypeSupported(t)) || '';
 }
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
@@ -590,7 +595,11 @@ async function process(blob, mime) {
     s.resultHTML = html;
     showResult(html);
   } catch(e) {
-    showError(e.message || 'Okänt fel', true);
+    const aborted = e.name === 'AbortError' || e.name === 'TypeError' && e.message.includes('fetch');
+    const msg = aborted
+      ? 'Uppladdningen avbröts (appen stängdes). Tryck "Försök igen" — inspelningen är sparad.'
+      : (e.message || 'Okänt fel');
+    showError(msg, !aborted);
   }
 }
 
