@@ -297,7 +297,6 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
 <script>
 'use strict';
 const API_BASE = 'https://generativelanguage.googleapis.com';
-const CHUNK = 8 * 1024 * 1024;
 const SK = 'vs_key', SM = 'vs_model';
 
 const PROMPT = `Analyze this audio recording carefully.
@@ -481,74 +480,18 @@ function autoDownload(blob, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-// ── GEMINI FILE API ────────────────────────────────────────────────────────
-async function uploadFile(blob, mime) {
-  const total = blob.size;
-  const init = await fetch(
-    API_BASE + '/upload/v1beta/files?uploadType=resumable&key=' + s.key,
-    {
-      method: 'POST',
-      headers: {
-        'X-Goog-Upload-Protocol': 'resumable',
-        'X-Goog-Upload-Command': 'start',
-        'X-Goog-Upload-Header-Content-Length': String(total),
-        'X-Goog-Upload-Header-Content-Type': mime,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ file: { display_name: 'rec-' + Date.now() } })
-    }
-  );
-  if (!init.ok) {
-    const e = await init.json().catch(() => ({}));
-    throw new Error(e.error?.message || 'Upload-initiering misslyckades (' + init.status + ')');
-  }
-  const uploadUrl = init.headers.get('X-Goog-Upload-URL');
-  if (!uploadUrl) throw new Error('Fick ingen upload-URL från Gemini');
-
-  let offset = 0, fileUri = null;
-  while (offset < total) {
-    const end = Math.min(offset + CHUNK, total);
-    const last = end >= total;
-    const r = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Length': String(end - offset),
-        'X-Goog-Upload-Offset': String(offset),
-        'X-Goog-Upload-Command': last ? 'upload, finalize' : 'upload'
-      },
-      body: blob.slice(offset, end)
-    });
-    if (last) {
-      if (!r.ok) {
-        const e = await r.json().catch(() => ({}));
-        throw new Error(e.error?.message || 'Uppladdning misslyckades (' + r.status + ')');
-      }
-      const d = await r.json();
-      fileUri = d.file?.uri;
-      if (!fileUri) throw new Error('Inget fil-URI från Gemini');
-    } else if (!r.ok && r.status !== 308) {
-      throw new Error('Chunk-uppladdning misslyckades (' + r.status + ')');
-    }
-    offset = end;
-    setProgress(Math.round((offset / total) * 85));
-  }
-  return fileUri;
+// ── BASE64 HELPER ─────────────────────────────────────────────────────────
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('Kunde inte läsa ljudfilen'));
+    reader.readAsDataURL(blob);
+  });
 }
 
-async function waitActive(fileUri) {
-  const m = fileUri.match(/files\/([^/?]+)/);
-  if (!m) return;
-  for (let i = 0; i < 30; i++) {
-    const r = await fetch(API_BASE + '/v1beta/files/' + m[1] + '?key=' + s.key);
-    const d = await r.json();
-    const st = d.state || d.file?.state;
-    if (st === 'ACTIVE' || !st) return;
-    if (st === 'FAILED') throw new Error('Filbearbetning misslyckades på Gemini');
-    await new Promise(r => setTimeout(r, 2000));
-  }
-}
-
-async function generate(fileUri, mime) {
+// ── GEMINI GENERATE (inline base64 — no CORS issues) ─────────────────────
+async function generate(base64, mime) {
   const r = await fetch(
     API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
     {
@@ -556,7 +499,7 @@ async function generate(fileUri, mime) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [
-          { file_data: { mime_type: mime, file_uri: fileUri } },
+          { inline_data: { mime_type: mime, data: base64 } },
           { text: PROMPT }
         ]}],
         generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
@@ -575,29 +518,28 @@ async function generate(fileUri, mime) {
 // ── MAIN FLOW ──────────────────────────────────────────────────────────────
 async function process(blob, mime) {
   show('working');
-  $('workTitle').textContent = 'Laddar upp ljud';
+  $('workTitle').textContent = 'Förbereder ljud';
   $('workSub').textContent = (blob.size / 1048576).toFixed(1) + ' MB';
   $('progressWrap').style.display = '';
   $('workSpinner').style.display = 'none';
-  setProgress(0);
+  setProgress(10);
 
   try {
-    const uri = await uploadFile(blob, mime);
-    setProgress(90);
+    const base64 = await blobToBase64(blob);
+    setProgress(40);
 
     $('workTitle').textContent = 'Gemini analyserar';
     $('workSub').textContent = 'Transkriberar och sammanfattar…';
     $('progressWrap').style.display = 'none';
     $('workSpinner').style.display = '';
 
-    await waitActive(uri);
-    const html = await generate(uri, mime);
+    const html = await generate(base64, mime);
     s.resultHTML = html;
     showResult(html);
   } catch(e) {
-    const aborted = e.name === 'AbortError' || e.name === 'TypeError' && e.message.includes('fetch');
+    const aborted = e.name === 'AbortError' || (e.name === 'TypeError' && e.message.includes('fetch'));
     const msg = aborted
-      ? 'Uppladdningen avbröts (appen stängdes). Tryck "Försök igen" — inspelningen är sparad.'
+      ? 'Anslutningen avbröts. Tryck "Försök igen" — inspelningen är sparad.'
       : (e.message || 'Okänt fel');
     showError(msg, !aborted);
   }
