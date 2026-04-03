@@ -404,7 +404,7 @@ function saveSettings() {
 async function startRecording() {
   try {
     s.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true }
+      audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 }
     });
   } catch {
     showError('Mikrofonåtkomst nekades. Tillåt mikrofon i webbläsarinställningarna.', false);
@@ -412,7 +412,7 @@ async function startRecording() {
   }
   s.mimeType = getMime();
   s.chunks = [];
-  const opts = { audioBitsPerSecond: 16000 };
+  const opts = { audioBitsPerSecond: 128000, channelCount: 1 };
   if (s.mimeType) opts.mimeType = s.mimeType;
   s.mediaRecorder = new MediaRecorder(s.stream, opts);
   s.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) s.chunks.push(e.data); };
@@ -537,11 +537,17 @@ async function process(blob, mime) {
     s.resultHTML = html;
     showResult(html);
   } catch(e) {
-    const aborted = e.name === 'AbortError' || (e.name === 'TypeError' && e.message.includes('fetch'));
-    const msg = aborted
-      ? 'Anslutningen avbröts. Tryck "Försök igen" — inspelningen är sparad.'
-      : (e.message || 'Okänt fel');
-    showError(msg, !aborted);
+    const isFetch = e.name === 'TypeError' && e.message.toLowerCase().includes('fetch');
+    const isAbort = e.name === 'AbortError';
+    let msg;
+    if (isAbort) {
+      msg = 'Avbröts — inspelningen är sparad, tryck Försök igen.';
+    } else if (isFetch) {
+      msg = 'Nätverksfel (Failed to fetch).\n\nMöjliga orsaker:\n• Kontrollera att API-nyckeln är giltig\n• Kontrollera internetanslutning\n• API-nyckeln kanske har domänrestriktioner — skapa en ny utan restriktioner på aistudio.google.com';
+    } else {
+      msg = e.message || 'Okänt fel';
+    }
+    showError(msg, true);
   }
 }
 
