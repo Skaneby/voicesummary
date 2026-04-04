@@ -397,7 +397,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
     <h2 class="s-title" style="margin:0">Historik</h2>
     <button class="btn-sec" id="clearHistoryBtn" style="font-size:.8rem;padding:8px 12px">Rensa allt</button>
   </div>
-  <div id="historyList"></div>
+  <div id="historyList" class="h-list"></div>
   <p id="historyEmpty" class="h-empty" style="display:none">Inga sparade sammanfattningar ännu</p>
 </aside>
 
@@ -516,9 +516,7 @@ function fmt(ms) {
 function setProgress(pct) { $('progressFill').style.width = pct + '%'; }
 
 function getMime() {
-  // Detect iOS/Safari — prefer mp4 since webm is unsupported
-  const isIOS = /iP(ad|hone|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const order = isIOS
+  const order = isIOS()
     ? ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']
     : ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
   return order.find(t => MediaRecorder.isTypeSupported(t)) || '';
@@ -752,15 +750,19 @@ function toggleEdit() {
 
 async function copyHtml() {
   s.resultHTML = $('resultBox').innerHTML;
-  await navigator.clipboard.writeText(toEmailHtml(s.resultHTML));
-  toast('HTML kopierad ✓');
+  try {
+    await navigator.clipboard.writeText(toEmailHtml(s.resultHTML));
+    toast('HTML kopierad ✓');
+  } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
 }
 async function copyText() {
   s.resultHTML = $('resultBox').innerHTML;
   const d = document.createElement('div');
   d.innerHTML = s.resultHTML;
-  await navigator.clipboard.writeText(d.innerText || d.textContent);
-  toast('Text kopierad ✓');
+  try {
+    await navigator.clipboard.writeText(d.innerText || d.textContent);
+    toast('Text kopierad ✓');
+  } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
 }
 async function share() {
   s.resultHTML = $('resultBox').innerHTML;
@@ -859,8 +861,8 @@ function renderHistoryList() {
     el.querySelector('.h-item-del').onclick = e => { e.stopPropagation(); deleteFromHistory(id); };
   });
 }
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function loadFromHistory(id) {
   const item = getHistory().find(x => x.id === id);
@@ -915,6 +917,8 @@ function init() {
     const k = $('setupKey').value.trim();
     if (!k) { $('setupKey').focus(); return; }
     s.key = k; localStorage.setItem(SK, k);
+    // model already defaulted to gemini-2.5-pro; persist it
+    localStorage.setItem(SM, s.model);
     show('idle');
   };
   $('setupKey').onkeydown = e => { if (e.key === 'Enter') $('setupSaveBtn').click(); };
