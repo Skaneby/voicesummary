@@ -151,6 +151,33 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .result-box[contenteditable="true"]{outline:none;border-color:var(--accent);cursor:text;caret-color:var(--accent)}
 .btn-sec.is-editing{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
 
+/* HISTORY PANEL */
+#h-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
+#h-overlay.open{display:block}
+#h-panel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
+  padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:82vh;overflow-y:auto}
+#h-panel.open{transform:translateY(0)}
+.h-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.h-list{display:flex;flex-direction:column;gap:10px}
+.h-item{display:flex;align-items:center;gap:10px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;padding:14px 12px;cursor:pointer;
+  transition:border-color .15s;-webkit-tap-highlight-color:transparent}
+.h-item:active{border-color:var(--accent)}
+.h-item-info{flex:1;min-width:0;text-align:left}
+.h-item-title{font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-item-date{font-size:.75rem;color:var(--muted);margin-top:2px}
+.h-item-del{background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:6px;border-radius:6px;font-size:1.1rem;line-height:1;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent}
+.h-item-del:active{color:var(--accent)}
+.h-empty{color:var(--muted);font-size:.9rem;text-align:center;padding:32px 0}
+.h-badge{position:absolute;top:1px;right:1px;background:var(--accent);color:#fff;
+  font-size:.55rem;font-weight:700;border-radius:100px;min-width:14px;height:14px;
+  display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none}
+
 /* ERROR */
 .error-icon{font-size:2.5rem}
 .error-msg{color:var(--muted);font-size:.9rem;max-width:300px}
@@ -192,6 +219,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
       VoiceSummary
     </h1>
     <div style="display:flex;gap:4px">
+    <button class="icon-btn" id="historyBtn" aria-label="Historik" style="position:relative">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span class="h-badge" id="historyBadge" style="display:none"></span>
+    </button>
     <button class="icon-btn" id="installBtn" aria-label="Installera app" style="display:none">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -322,6 +355,18 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
     </section>
   </main>
 </div>
+
+<!-- HISTORY PANEL -->
+<div id="h-overlay"></div>
+<aside id="h-panel" role="dialog" aria-label="Historik">
+  <div class="s-handle"></div>
+  <div class="h-header">
+    <h2 class="s-title" style="margin:0">Historik</h2>
+    <button class="btn-sec" id="clearHistoryBtn" style="font-size:.8rem;padding:8px 12px">Rensa allt</button>
+  </div>
+  <div id="historyList"></div>
+  <p id="historyEmpty" class="h-empty" style="display:none">Inga sparade sammanfattningar ännu</p>
+</aside>
 
 <!-- SETTINGS PANEL -->
 <div id="s-overlay"></div>
@@ -595,6 +640,7 @@ async function process(blob, mime) {
 
     const html = await generate(base64, mime);
     s.resultHTML = html;
+    saveToHistory(html, s.title);
     showResult(html);
   } catch(e) {
     const isFetch = e.name === 'TypeError' && e.message.toLowerCase().includes('fetch');
@@ -684,6 +730,85 @@ function showError(msg, showSettings) {
   show('error');
 }
 
+// ── HISTORY ────────────────────────────────────────────────────────────────
+const SH = 'vs_history';
+const MAX_HISTORY = 40;
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(SH) || '[]'); } catch { return []; }
+}
+function saveToHistory(html, title) {
+  const history = getHistory();
+  history.unshift({ id: Date.now(), title: title || '', date: new Date().toISOString(), html });
+  if (history.length > MAX_HISTORY) history.splice(MAX_HISTORY);
+  localStorage.setItem(SH, JSON.stringify(history));
+  updateHistoryBadge();
+}
+function deleteFromHistory(id) {
+  const history = getHistory().filter(x => x.id !== id);
+  localStorage.setItem(SH, JSON.stringify(history));
+  renderHistoryList();
+  updateHistoryBadge();
+}
+function clearHistory() {
+  if (!getHistory().length) return;
+  localStorage.removeItem(SH);
+  renderHistoryList();
+  updateHistoryBadge();
+  toast('Historik rensad');
+}
+function updateHistoryBadge() {
+  const count = getHistory().length;
+  const badge = $('historyBadge');
+  if (count > 0) { badge.textContent = count > 9 ? '9+' : count; badge.style.display = 'flex'; }
+  else { badge.style.display = 'none'; }
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('sv-SE', { day:'numeric', month:'short', year:'numeric' }) +
+    ' · ' + d.toLocaleTimeString('sv-SE', { hour:'2-digit', minute:'2-digit' });
+}
+function renderHistoryList() {
+  const history = getHistory();
+  const list = $('historyList');
+  const empty = $('historyEmpty');
+  if (!history.length) { list.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  list.innerHTML = history.map(item => `
+    <div class="h-item" data-id="${item.id}">
+      <div class="h-item-info">
+        <div class="h-item-title">${item.title ? escHtml(item.title) : '<em style="color:var(--muted);font-weight:400">Utan titel</em>'}</div>
+        <div class="h-item-date">${fmtDate(item.date)}</div>
+      </div>
+      <button class="h-item-del" aria-label="Ta bort">✕</button>
+    </div>`).join('');
+  list.querySelectorAll('.h-item').forEach(el => {
+    const id = Number(el.dataset.id);
+    el.querySelector('.h-item-info').onclick = () => loadFromHistory(id);
+    el.querySelector('.h-item-del').onclick = e => { e.stopPropagation(); deleteFromHistory(id); };
+  });
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function loadFromHistory(id) {
+  const item = getHistory().find(x => x.id === id);
+  if (!item) return;
+  s.resultHTML = item.html;
+  s.title = item.title;
+  closeHistory();
+  showResult(item.html);
+}
+function openHistory() {
+  renderHistoryList();
+  $('h-panel').classList.add('open');
+  $('h-overlay').classList.add('open');
+}
+function closeHistory() {
+  $('h-panel').classList.remove('open');
+  $('h-overlay').classList.remove('open');
+}
+
 // ── INSTALL ────────────────────────────────────────────────────────────────
 const isIOS = () => /iP(ad|hone|od)/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -737,7 +862,11 @@ function init() {
   $('sSaveBtn').onclick = saveSettings;
   $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
   $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
+  $('historyBtn').onclick = openHistory;
+  $('h-overlay').onclick = closeHistory;
+  $('clearHistoryBtn').onclick = clearHistory;
   $('installBtn').onclick = installApp;
+  updateHistoryBadge();
 
   // Show install button on iOS if not already installed as app
   if (isIOS() && !isStandalone()) $('installBtn').style.display = '';
