@@ -923,32 +923,45 @@ function toRichText(raw) {
   const d = document.createElement('div');
   d.innerHTML = raw;
   const lines = [];
+
   d.querySelectorAll('article > section, article').forEach(node => {
-    if (node.tagName === 'ARTICLE') return; // handled via sections
+    if (node.tagName === 'ARTICLE') return;
     const h2 = node.querySelector(':scope > h2');
     if (h2) {
       const heading = h2.textContent.trim().toUpperCase();
-      lines.push('');
-      lines.push(heading);
-      lines.push('─'.repeat(Math.min(heading.length, 42)));
+      const bar = '─'.repeat(Math.min(Math.max(heading.length, 20), 44));
+      lines.push('', '', heading, bar, '');   // double blank before heading, blank after
     }
     node.querySelectorAll(':scope > p, :scope > ul > li, :scope > ol > li').forEach(el => {
       const txt = el.textContent.trim().replace(/\s+/g, ' ');
       if (!txt) return;
-      lines.push(el.tagName === 'P' ? txt : '• ' + txt);
+      if (el.tagName === 'P') {
+        lines.push(txt, '');                  // blank line after each paragraph
+      } else {
+        lines.push('• ' + txt, '');           // blank line between each bullet
+      }
     });
   });
+
   // Fallback: no article/section structure
   if (lines.filter(l => l).length === 0) {
     d.querySelectorAll('h2').forEach(h => {
       const t = h.textContent.trim().toUpperCase();
-      lines.push('', t, '─'.repeat(Math.min(t.length, 42)));
+      lines.push('', '', t, '─'.repeat(Math.min(Math.max(t.length,20),44)), '');
     });
-    d.querySelectorAll('p').forEach(p => { const t = p.textContent.trim(); if (t) lines.push(t); });
-    d.querySelectorAll('li').forEach(li => { const t = li.textContent.trim(); if (t) lines.push('• ' + t); });
+    d.querySelectorAll('p').forEach(p => { const t = p.textContent.trim(); if (t) lines.push(t, ''); });
+    d.querySelectorAll('li').forEach(li => { const t = li.textContent.trim(); if (t) lines.push('• ' + t, ''); });
   }
-  const title = s.title ? s.title.toUpperCase() + '\n' + '═'.repeat(Math.min(s.title.length, 42)) + '\n' : '';
-  return (title + lines.join('\n')).replace(/\n{3,}/g, '\n\n').trim();
+
+  // Title block: bar above AND below for visual weight
+  let prefix = '';
+  if (s.title) {
+    const t = s.title.toUpperCase();
+    const bar = '═'.repeat(Math.min(Math.max(t.length, 24), 44));
+    prefix = bar + '\n' + t + '\n' + bar + '\n';
+  }
+
+  return (prefix + lines.join('\n')).replace(/\n{4,}/g, '\n\n\n').trim();
 }
 
 async function share() {
