@@ -190,10 +190,15 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .h-item-info{flex:1;min-width:0;text-align:left}
 .h-item-title{font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .h-item-date{font-size:.75rem;color:var(--muted);margin-top:2px}
-.h-item-del{background:none;border:none;color:var(--muted);cursor:pointer;
-  padding:6px;border-radius:6px;font-size:1.1rem;line-height:1;flex-shrink:0;
+.h-item-del,.h-item-edit{background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:6px;border-radius:6px;line-height:1;flex-shrink:0;
   -webkit-tap-highlight-color:transparent}
+.h-item-del{font-size:1.1rem}
+.h-item-edit{font-size:.95rem;opacity:.7}
 .h-item-del:active{color:var(--accent)}
+.h-item-edit:active{color:var(--accent);opacity:1}
+.h-title-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--accent);
+  color:var(--text);font-size:.9rem;font-weight:600;outline:none;padding:2px 0;font-family:inherit}
 .h-empty{color:var(--muted);font-size:.9rem;text-align:center;padding:32px 0}
 .h-badge{position:absolute;top:1px;right:1px;background:var(--accent);color:#fff;
   font-size:.55rem;font-weight:700;border-radius:100px;min-width:14px;height:14px;
@@ -467,7 +472,9 @@ const PROMPTS = {
 
 summary: `Analyze this audio recording carefully.
 Detect the language being spoken and respond ENTIRELY in that same language.
-Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word title in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
     <h2>[Summary heading]</h2>
@@ -490,7 +497,9 @@ Rules: Omit Action Items if none. Capture names, numbers, dates, decisions. Use 
 
 protocol: `Analyze this audio recording and produce formal meeting minutes.
 Detect the language being spoken and respond ENTIRELY in that same language.
-Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word title in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
     <h2>[Meeting Minutes heading]</h2>
@@ -525,7 +534,9 @@ Rules: Omit entire sections AND individual lines/list items for which the record
 
 brief: `Analyze this audio recording and produce a brief executive summary.
 Detect the language being spoken and respond ENTIRELY in that same language.
-Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word title in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
     <h2>[Brief Summary heading]</h2>
@@ -548,7 +559,9 @@ Rules: Be ruthlessly concise. No long prose. Max 5 bullets per section. Omit sec
 
 detailed: `Analyze this audio recording and produce a comprehensive, detailed summary.
 Detect the language being spoken and respond ENTIRELY in that same language.
-Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word title in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
     <h2>[Context heading]</h2>
@@ -581,7 +594,9 @@ Rules: Be thorough — capture all substance including numbers, names, dates and
 
 sales: `Analyze this audio recording of a sales meeting or customer call.
 Detect the language being spoken and respond ENTIRELY in that same language.
-Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word title in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
     <h2>[Customer heading]</h2>
@@ -821,7 +836,11 @@ async function generate(base64, mime) {
   }
   const d = await r.json();
   let txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+  txt = txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+  const titleMatch = txt.match(/^TITLE:\s*(.+?)[\r\n]/i);
+  const suggestedTitle = titleMatch ? titleMatch[1].trim() : '';
+  const html = txt.replace(/^TITLE:.*[\r\n]*/i, '').trim();
+  return { html, suggestedTitle };
 }
 
 // ── MAIN FLOW ──────────────────────────────────────────────────────────────
@@ -842,7 +861,11 @@ async function process(blob, mime) {
     $('progressWrap').style.display = 'none';
     $('workSpinner').style.display = '';
 
-    const html = await generate(base64, mime);
+    const { html, suggestedTitle } = await generate(base64, mime);
+    if (!s.title && suggestedTitle) {
+      s.title = suggestedTitle;
+      $('titleInput').value = suggestedTitle;
+    }
     s.resultHTML = html;
     saveToHistory(html, s.title);
     showResult(html);
@@ -1100,13 +1123,41 @@ function renderHistoryList() {
         <div class="h-item-title">${item.title ? escHtml(item.title) : '<em style="color:var(--muted);font-weight:400">Utan titel</em>'}</div>
         <div class="h-item-date">${fmtDate(item.date)}</div>
       </div>
+      <button class="h-item-edit" aria-label="Redigera titel">✎</button>
       <button class="h-item-del" aria-label="Ta bort">✕</button>
     </div>`).join('');
   list.querySelectorAll('.h-item').forEach(el => {
     const id = Number(el.dataset.id);
     el.querySelector('.h-item-info').onclick = () => loadFromHistory(id);
+    el.querySelector('.h-item-edit').onclick = e => { e.stopPropagation(); editHistoryTitle(id, el.querySelector('.h-item-title')); };
     el.querySelector('.h-item-del').onclick = e => { e.stopPropagation(); deleteFromHistory(id); };
   });
+}
+function updateHistoryTitle(id, newTitle) {
+  const history = getHistory().map(x => x.id === id ? { ...x, title: newTitle } : x);
+  localStorage.setItem(SH, JSON.stringify(history));
+}
+function editHistoryTitle(id, titleEl) {
+  const current = getHistory().find(x => x.id === id)?.title || '';
+  const input = document.createElement('input');
+  input.className = 'h-title-input';
+  input.value = current;
+  input.placeholder = 'Ange titel…';
+  titleEl.replaceWith(input);
+  input.focus();
+  input.select();
+  let saved = false;
+  function save() {
+    if (saved) return;
+    saved = true;
+    updateHistoryTitle(id, input.value.trim());
+    renderHistoryList();
+  }
+  input.onblur = save;
+  input.onkeydown = e => {
+    if (e.key === 'Enter') { input.blur(); }
+    if (e.key === 'Escape') { saved = true; renderHistoryList(); }
+  };
 }
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
