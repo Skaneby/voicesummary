@@ -369,12 +369,6 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
       <p id="resultTitle" style="display:none;font-weight:700;font-size:1rem;width:100%;max-width:680px;text-align:left"></p>
       <div class="result-box" id="resultBox"></div>
       <div class="btn-group">
-        <button class="btn-sec" id="copyHtmlBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-          Kopiera för e-post
-        </button>
         <button class="btn-sec" id="copyTxtBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
@@ -903,13 +897,6 @@ function toggleEdit() {
   }
 }
 
-async function copyHtml() {
-  s.resultHTML = $('resultBox').innerHTML;
-  try {
-    await navigator.clipboard.writeText(toEmailHtml(s.resultHTML));
-    toast('HTML kopierad ✓');
-  } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
-}
 async function copyText() {
   s.resultHTML = $('resultBox').innerHTML;
   try {
@@ -1138,7 +1125,6 @@ function init() {
 
   $('recordBtn').onclick = startRecording;
   $('stopBtn').onclick = stopRecording;
-  $('copyHtmlBtn').onclick = copyHtml;
   $('copyTxtBtn').onclick = copyText;
   $('editBtn').onclick = toggleEdit;
   $('shareBtn').onclick = share;
