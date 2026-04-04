@@ -124,6 +124,20 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   -webkit-tap-highlight-color:transparent;transition:background .15s}
 .btn-new:active{background:var(--accent-hover);transform:scale(.97)}
 
+/* PARTICIPANTS */
+.participants-wrap{width:100%;max-width:360px;text-align:left}
+.participants-label{display:block;font-size:.72rem;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.participants-wrap input{width:100%;padding:10px 12px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;color:var(--text);
+  font-size:.85rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.participants-wrap input:focus{border-color:var(--accent)}
+.participants-wrap input::placeholder{color:var(--muted);font-size:.82rem}
+
+/* EDIT */
+.result-box[contenteditable="true"]{outline:none;border-color:var(--accent);cursor:text;caret-color:var(--accent)}
+.btn-sec.is-editing{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+
 /* ERROR */
 .error-icon{font-size:2.5rem}
 .error-msg{color:var(--muted);font-size:.9rem;max-width:300px}
@@ -204,6 +218,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
           <line x1="8" y1="22" x2="16" y2="22"/>
         </svg>
       </button>
+      <div class="participants-wrap">
+        <label class="participants-label" for="participantsInput">Deltagare (valfritt)</label>
+        <input type="text" id="participantsInput" placeholder="t.ex. Anna (projektledare), Björn (kund)" autocomplete="off" spellcheck="false">
+      </div>
     </section>
 
     <!-- RECORDING -->
@@ -248,6 +266,13 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
           </svg>
           Kopiera text
+        </button>
+        <button class="btn-sec" id="editBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <span>Redigera</span>
         </button>
         <button class="btn-sec" id="shareBtn" style="display:none">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -299,7 +324,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 const API_BASE = 'https://generativelanguage.googleapis.com';
 const SK = 'vs_key', SM = 'vs_model';
 
-const PROMPT = `Analyze this audio recording carefully.
+const PROMPT_BASE = `Analyze this audio recording carefully.
 Detect the language being spoken and respond ENTIRELY in that same language.
 Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
 
@@ -329,6 +354,11 @@ Rules:
 - Use only: article, section, h2, p, ul, li, strong, em
 - No CSS, class/id attributes, inline styles or scripts`;
 
+function buildPrompt() {
+  if (!s.participants) return PROMPT_BASE;
+  return 'The following people are participating in this recording:\n' + s.participants + '\n\nUse their names and titles where relevant in the summary.\n\n' + PROMPT_BASE;
+}
+
 // ── STATE ──────────────────────────────────────────────────────────────────
 const s = {
   key: localStorage.getItem(SK) || '',
@@ -336,7 +366,7 @@ const s = {
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, timerRef: null,
   audioCtx: null, analyser: null, raf: null,
-  resultHTML: ''
+  resultHTML: '', participants: ''
 };
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -500,7 +530,7 @@ async function generate(base64, mime) {
       body: JSON.stringify({
         contents: [{ parts: [
           { inline_data: { mime_type: mime, data: base64 } },
-          { text: PROMPT }
+          { text: buildPrompt() }
         ]}],
         generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
       })
@@ -552,23 +582,62 @@ async function process(blob, mime) {
 }
 
 // ── RESULT ─────────────────────────────────────────────────────────────────
+function toEmailHtml(raw) {
+  const d = document.createElement('div');
+  d.innerHTML = raw;
+  const style = (sel, css) => d.querySelectorAll(sel).forEach(el => el.setAttribute('style', css));
+  style('article', 'max-width:600px;margin:0');
+  style('section', 'margin-bottom:24px');
+  style('h2', 'font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#111111;margin:0 0 10px 0;padding-bottom:6px;border-bottom:2px solid #dddddd');
+  style('p',  'font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.65;color:#333333;margin:0 0 8px 0');
+  style('ul', 'font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.65;color:#333333;margin:0 0 8px 0;padding-left:20px');
+  style('li', 'margin-bottom:5px');
+  style('strong', 'color:#111111;font-weight:600');
+  style('em', 'color:#555555;font-style:italic');
+  return '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"></head>\n<body style="margin:0;padding:24px;background:#ffffff;font-family:Arial,Helvetica,sans-serif">\n' + d.innerHTML + '\n</body>\n</html>';
+}
+
 function showResult(html) {
-  $('resultBox').innerHTML = html;
+  const box = $('resultBox');
+  box.contentEditable = 'false';
+  box.innerHTML = html;
+  $('editBtn').querySelector('span').textContent = 'Redigera';
+  $('editBtn').classList.remove('is-editing');
   $('shareBtn').style.display = navigator.share ? '' : 'none';
   show('result');
 }
 
+function toggleEdit() {
+  const box = $('resultBox');
+  const btn = $('editBtn');
+  if (box.isContentEditable) {
+    box.contentEditable = 'false';
+    s.resultHTML = box.innerHTML;
+    btn.querySelector('span').textContent = 'Redigera';
+    btn.classList.remove('is-editing');
+    toast('Ändringar sparade ✓');
+  } else {
+    box.contentEditable = 'true';
+    box.focus();
+    btn.querySelector('span').textContent = 'Klar';
+    btn.classList.add('is-editing');
+  }
+}
+
 async function copyHtml() {
-  await navigator.clipboard.writeText(s.resultHTML);
+  s.resultHTML = $('resultBox').innerHTML;
+  await navigator.clipboard.writeText(toEmailHtml(s.resultHTML));
   toast('HTML kopierad ✓');
 }
 async function copyText() {
+  s.resultHTML = $('resultBox').innerHTML;
   const d = document.createElement('div');
   d.innerHTML = s.resultHTML;
   await navigator.clipboard.writeText(d.innerText || d.textContent);
   toast('Text kopierad ✓');
 }
 async function share() {
+  s.resultHTML = $('resultBox').innerHTML;
   const d = document.createElement('div');
   d.innerHTML = s.resultHTML;
   try { await navigator.share({ title: 'Röstsammanfattning', text: d.innerText || d.textContent }); }
@@ -598,6 +667,7 @@ function init() {
   $('stopBtn').onclick = stopRecording;
   $('copyHtmlBtn').onclick = copyHtml;
   $('copyTxtBtn').onclick = copyText;
+  $('editBtn').onclick = toggleEdit;
   $('shareBtn').onclick = share;
   $('newBtn').onclick = () => show('idle');
   $('retryBtn').onclick = () => { if (s.blob) process(s.blob, (s.mimeType||'audio/webm').split(';')[0]); else show('idle'); };
@@ -605,6 +675,7 @@ function init() {
   $('settingsBtn').onclick = openSettings;
   $('s-overlay').onclick = closeSettings;
   $('sSaveBtn').onclick = saveSettings;
+  $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 }

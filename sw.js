@@ -1,4 +1,4 @@
-const CACHE = 'vs-v4';
+const CACHE = 'vs-v5';
 // Never cache index.html — always fetch fresh so updates reach users instantly
 const STATIC = ['./manifest.json', './icon.svg'];
 
