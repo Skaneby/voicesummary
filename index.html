@@ -490,9 +490,9 @@ Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML
 <article>
   <section>
     <h2>[Meeting Minutes heading]</h2>
-    <p><strong>[Date label]:</strong> [date if mentioned]</p>
-    <p><strong>[Attendees label]:</strong> [names and titles]</p>
-    <p><strong>[Purpose label]:</strong> [one sentence]</p>
+    <p><strong>[Date label]:</strong> [date — or omit this line if not mentioned]</p>
+    <p><strong>[Attendees label]:</strong> [names and titles — or omit this line if not mentioned]</p>
+    <p><strong>[Purpose label]:</strong> [one sentence — or omit this line if not clear]</p>
   </section>
   <section>
     <h2>[Agenda & Discussion heading]</h2>
@@ -517,7 +517,7 @@ Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML
     <p>[Date/time/format if mentioned]</p>
   </section>
 </article>
-Rules: Omit sections with no content. Use formal, neutral tone. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+Rules: Omit entire sections AND individual lines/list items for which the recording provides no information — never output a label or heading with empty or missing content. Use formal, neutral tone. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
 brief: `Analyze this audio recording and produce a brief executive summary.
 Detect the language being spoken and respond ENTIRELY in that same language.
@@ -921,9 +921,22 @@ async function copyText() {
 }
 async function share() {
   s.resultHTML = $('resultBox').innerHTML;
+  const title = s.title || 'Röstsammanfattning';
+
+  // Try sharing as a formatted HTML file (renders beautifully in email)
+  try {
+    const blob = new Blob([toEmailHtml(s.resultHTML)], { type: 'text/html' });
+    const file = new File([blob], title.replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g, '').trim() + '.html', { type: 'text/html' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title });
+      return;
+    }
+  } catch { /* fall through to plain text */ }
+
+  // Fallback: share as plain text (messaging apps)
   const d = document.createElement('div');
   d.innerHTML = s.resultHTML;
-  try { await navigator.share({ title: s.title || 'Röstsammanfattning', text: d.innerText || d.textContent }); }
+  try { await navigator.share({ title, text: d.innerText || d.textContent }); }
   catch { /* cancelled */ }
 }
 
