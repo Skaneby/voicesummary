@@ -375,6 +375,13 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
           </svg>
           Kopiera text
         </button>
+        <button class="btn-sec" id="copyMdBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            <line x1="9" y1="13" x2="15" y2="13"/>
+          </svg>
+          Kopiera MD
+        </button>
         <button class="btn-sec" id="editBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -905,6 +912,39 @@ async function copyText() {
   } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
 }
 
+async function copyMarkdown() {
+  s.resultHTML = $('resultBox').innerHTML;
+  try {
+    await navigator.clipboard.writeText(toMarkdown(s.resultHTML));
+    toast('Markdown kopierad ✓');
+  } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
+}
+
+function toMarkdown(raw) {
+  const d = document.createElement('div');
+  d.innerHTML = raw;
+  const lines = [];
+  if (s.title) lines.push('# ' + s.title, '');
+  d.querySelectorAll('article > section').forEach(sec => {
+    const h2 = sec.querySelector(':scope > h2');
+    if (h2) lines.push('## ' + h2.textContent.trim(), '');
+    sec.querySelectorAll(':scope > p, :scope > ul > li, :scope > ol > li').forEach(el => {
+      let txt = '';
+      el.childNodes.forEach(n => {
+        if (n.nodeType === 3) txt += n.textContent;
+        else if (n.nodeName === 'STRONG') txt += '**' + n.textContent + '**';
+        else if (n.nodeName === 'EM') txt += '*' + n.textContent + '*';
+        else txt += n.textContent;
+      });
+      txt = txt.trim().replace(/\s+/g, ' ');
+      if (!txt || (el.tagName === 'P' && /^[^:]{1,25}:\s*$/.test(txt))) return;
+      lines.push(el.tagName === 'P' ? txt : '- ' + txt);
+    });
+    lines.push('');
+  });
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 // Convert HTML summary → readable pseudo-rich text for sharing/copying
 function toRichText(raw) {
   const d = document.createElement('div');
@@ -921,23 +961,27 @@ function toRichText(raw) {
     }
     node.querySelectorAll(':scope > p, :scope > ul > li, :scope > ol > li').forEach(el => {
       const txt = el.textContent.trim().replace(/\s+/g, ' ');
-      if (!txt) return;
+      // Skip empty labels like "Datum:" with no content after the colon
+      if (!txt || (el.tagName === 'P' && /^[^:]{1,25}:\s*$/.test(txt))) return;
       if (el.tagName === 'P') {
-        lines.push(txt, '');                  // blank line after each paragraph
+        lines.push(txt, '\u00A0');            // non-breaking space keeps blank line visible in email
       } else {
-        lines.push('• ' + txt, '');           // blank line between each bullet
+        lines.push('• ' + txt, '\u00A0');    // non-breaking space between bullets
       }
     });
   });
 
   // Fallback: no article/section structure
-  if (lines.filter(l => l).length === 0) {
+  if (lines.filter(l => l && l !== '\u00A0').length === 0) {
     d.querySelectorAll('h2').forEach(h => {
       const t = h.textContent.trim().toUpperCase();
-      lines.push('', '', t, '─'.repeat(Math.min(Math.max(t.length,20),44)), '');
+      lines.push('\u00A0', '\u00A0', t, '─'.repeat(Math.min(Math.max(t.length,20),44)), '\u00A0');
     });
-    d.querySelectorAll('p').forEach(p => { const t = p.textContent.trim(); if (t) lines.push(t, ''); });
-    d.querySelectorAll('li').forEach(li => { const t = li.textContent.trim(); if (t) lines.push('• ' + t, ''); });
+    d.querySelectorAll('p').forEach(p => {
+      const t = p.textContent.trim();
+      if (t && !/^[^:]{1,25}:\s*$/.test(t)) lines.push(t, '\u00A0');
+    });
+    d.querySelectorAll('li').forEach(li => { const t = li.textContent.trim(); if (t) lines.push('• ' + t, '\u00A0'); });
   }
 
   // Title block: bar above AND below for visual weight
@@ -945,10 +989,10 @@ function toRichText(raw) {
   if (s.title) {
     const t = s.title.toUpperCase();
     const bar = '═'.repeat(Math.min(Math.max(t.length, 24), 44));
-    prefix = bar + '\n' + t + '\n' + bar + '\n';
+    prefix = bar + '\n' + t + '\n' + bar + '\n\u00A0\n';
   }
 
-  return (prefix + lines.join('\n')).replace(/\n{4,}/g, '\n\n\n').trim();
+  return (prefix + lines.join('\n')).replace(/(\n\u00A0){3,}/g, '\n\u00A0\n\u00A0\n').trim();
 }
 
 async function share() {
@@ -1126,6 +1170,7 @@ function init() {
   $('recordBtn').onclick = startRecording;
   $('stopBtn').onclick = stopRecording;
   $('copyTxtBtn').onclick = copyText;
+  $('copyMdBtn').onclick = copyMarkdown;
   $('editBtn').onclick = toggleEdit;
   $('shareBtn').onclick = share;
   $('newBtn').onclick = () => show('idle');
