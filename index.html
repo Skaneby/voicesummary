@@ -10,6 +10,19 @@
 <meta name="theme-color" content="#0f0f1a">
 <title>VoiceSummary – AI Transkribering</title>
 <link rel="manifest" href="manifest.json">
+<!-- Capture beforeinstallprompt ASAP — before main script — to suppress Chrome mini-infobar -->
+<script>
+window.__bip = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  window.__bip = e;
+  // Show install button once DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = '';
+  });
+});
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -228,6 +241,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
         </svg>
       </button>
       <div class="participants-wrap">
+        <label class="participants-label" for="titleInput">Titel (valfritt)</label>
+        <input type="text" id="titleInput" placeholder="t.ex. Säljmöte 2025-04-04" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="participants-wrap">
         <label class="participants-label" for="participantsInput">Deltagare (valfritt)</label>
         <input type="text" id="participantsInput" placeholder="t.ex. Anna (projektledare), Björn (kund)" autocomplete="off" spellcheck="false">
       </div>
@@ -262,6 +279,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         Sammanfattning klar
       </div>
+      <p id="resultTitle" style="display:none;font-weight:700;font-size:1rem;width:100%;max-width:680px;text-align:left"></p>
       <div class="result-box" id="resultBox"></div>
       <div class="btn-group">
         <button class="btn-sec" id="copyHtmlBtn">
@@ -364,8 +382,11 @@ Rules:
 - No CSS, class/id attributes, inline styles or scripts`;
 
 function buildPrompt() {
-  if (!s.participants) return PROMPT_BASE;
-  return 'The following people are participating in this recording:\n' + s.participants + '\n\nUse their names and titles where relevant in the summary.\n\n' + PROMPT_BASE;
+  let extra = '';
+  if (s.title) extra += 'Recording title: ' + s.title + '\n';
+  if (s.participants) extra += 'Participants: ' + s.participants + '\n';
+  if (extra) extra += 'Use this context where relevant in the summary.\n\n';
+  return extra + PROMPT_BASE;
 }
 
 // ── STATE ──────────────────────────────────────────────────────────────────
@@ -375,7 +396,7 @@ const s = {
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, timerRef: null,
   audioCtx: null, analyser: null, raf: null,
-  resultHTML: '', participants: ''
+  resultHTML: '', participants: '', title: ''
 };
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -613,6 +634,9 @@ function showResult(html) {
   $('editBtn').querySelector('span').textContent = 'Redigera';
   $('editBtn').classList.remove('is-editing');
   $('shareBtn').style.display = navigator.share ? '' : 'none';
+  const titleEl = $('resultTitle');
+  if (s.title) { titleEl.textContent = s.title; titleEl.style.display = ''; }
+  else { titleEl.style.display = 'none'; }
   show('result');
 }
 
@@ -649,7 +673,7 @@ async function share() {
   s.resultHTML = $('resultBox').innerHTML;
   const d = document.createElement('div');
   d.innerHTML = s.resultHTML;
-  try { await navigator.share({ title: 'Röstsammanfattning', text: d.innerText || d.textContent }); }
+  try { await navigator.share({ title: s.title || 'Röstsammanfattning', text: d.innerText || d.textContent }); }
   catch { /* cancelled */ }
 }
 
@@ -661,26 +685,27 @@ function showError(msg, showSettings) {
 }
 
 // ── INSTALL ────────────────────────────────────────────────────────────────
-let deferredInstall = null;
 const isIOS = () => /iP(ad|hone|od)/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isStandalone = () => window.matchMedia('(display-mode:standalone)').matches ||
   navigator.standalone === true;
 
+// Keep picking up late-firing events too
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
-  deferredInstall = e;
+  window.__bip = e;
   $('installBtn').style.display = '';
 });
 window.addEventListener('appinstalled', () => {
   $('installBtn').style.display = 'none';
-  deferredInstall = null;
+  window.__bip = null;
   toast('App installerad ✓');
 });
 function installApp() {
-  if (deferredInstall) {
-    deferredInstall.prompt();
-    deferredInstall.userChoice.then(() => { deferredInstall = null; $('installBtn').style.display = 'none'; });
+  const bip = window.__bip;
+  if (bip) {
+    bip.prompt();
+    bip.userChoice.then(() => { window.__bip = null; $('installBtn').style.display = 'none'; });
   } else if (isIOS() && !isStandalone()) {
     toast('Tryck Dela ↑ → Lägg till på hemskärmen');
   }
@@ -710,6 +735,7 @@ function init() {
   $('settingsBtn').onclick = openSettings;
   $('s-overlay').onclick = closeSettings;
   $('sSaveBtn').onclick = saveSettings;
+  $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
   $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
   $('installBtn').onclick = installApp;
 
