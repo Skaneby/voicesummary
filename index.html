@@ -157,6 +157,17 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .participants-wrap input:focus{border-color:var(--accent)}
 .participants-wrap input::placeholder{color:var(--muted);font-size:.82rem}
 
+/* FORMAT PILLS */
+.format-row{display:flex;gap:8px;overflow-x:auto;width:100%;padding-bottom:4px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.format-row::-webkit-scrollbar{display:none}
+.format-pill{flex-shrink:0;background:var(--card);border:1px solid var(--border);
+  color:var(--muted);padding:7px 13px;border-radius:100px;font-size:.78rem;font-weight:500;
+  cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;
+  transition:all .15s;line-height:1}
+.format-pill.active{background:var(--accent-dim);border-color:var(--accent);
+  color:var(--accent);font-weight:600}
+
 /* EDIT */
 .result-box[contenteditable="true"]{outline:none;border-color:var(--accent);cursor:text;caret-color:var(--accent)}
 .btn-sec.is-editing{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
@@ -314,6 +325,16 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
         <label class="participants-label" for="participantsInput">Deltagare (valfritt)</label>
         <input type="text" id="participantsInput" placeholder="t.ex. Anna (projektledare), Björn (kund)" autocomplete="off" spellcheck="false">
       </div>
+      <div class="participants-wrap" style="max-width:none;width:min(100%,500px)">
+        <label class="participants-label">Format</label>
+        <div class="format-row" id="formatRow">
+          <button class="format-pill" data-fmt="summary">Sammanfattning</button>
+          <button class="format-pill" data-fmt="protocol">Protokoll</button>
+          <button class="format-pill" data-fmt="brief">Kort</button>
+          <button class="format-pill" data-fmt="detailed">Detaljerad</button>
+          <button class="format-pill" data-fmt="sales">Säljmöte</button>
+        </div>
+      </div>
     </section>
 
     <!-- RECORDING -->
@@ -438,48 +459,173 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 const API_BASE = 'https://generativelanguage.googleapis.com';
 const SK = 'vs_key', SM = 'vs_model';
 
-const PROMPT_BASE = `Analyze this audio recording carefully.
+const PROMPTS = {
+
+summary: `Analyze this audio recording carefully.
 Detect the language being spoken and respond ENTIRELY in that same language.
 Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
-
-Structure your response exactly like this:
 <article>
   <section>
-    <h2>[Heading for Summary in detected language]</h2>
-    <p>[Comprehensive prose summary — 2-4 paragraphs, cover all main topics, context, conclusions]</p>
+    <h2>[Summary heading]</h2>
+    <p>[Comprehensive prose summary — 2-4 paragraphs covering main topics, context, conclusions]</p>
   </section>
   <section>
-    <h2>[Heading for Key Points in detected language]</h2>
+    <h2>[Key Points heading]</h2>
     <ul>
       <li><strong>[Topic/person]:</strong> [specific detail]</li>
     </ul>
   </section>
   <section>
-    <h2>[Heading for Action Items in detected language]</h2>
+    <h2>[Action Items heading]</h2>
     <ul>
-      <li>[Concrete action — include responsible person and deadline if mentioned]</li>
+      <li>[Action — include responsible person and deadline if mentioned]</li>
     </ul>
   </section>
 </article>
+Rules: Omit Action Items if none. Capture names, numbers, dates, decisions. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
-Rules:
-- Omit Action Items section entirely if none are present
-- Capture names, numbers, dates, decisions and commitments
-- Use only: article, section, h2, p, ul, li, strong, em
-- No CSS, class/id attributes, inline styles or scripts`;
+protocol: `Analyze this audio recording and produce formal meeting minutes.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Meeting Minutes heading]</h2>
+    <p><strong>[Date label]:</strong> [date if mentioned]</p>
+    <p><strong>[Attendees label]:</strong> [names and titles]</p>
+    <p><strong>[Purpose label]:</strong> [one sentence]</p>
+  </section>
+  <section>
+    <h2>[Agenda & Discussion heading]</h2>
+    <ul>
+      <li><strong>[Topic]:</strong> [what was discussed, by whom, key arguments]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Decisions heading]</h2>
+    <ul>
+      <li>[Decision — be precise and formal]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Action Items heading]</h2>
+    <ul>
+      <li><strong>[Person]:</strong> [action] — [deadline if mentioned]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Next Meeting heading]</h2>
+    <p>[Date/time/format if mentioned]</p>
+  </section>
+</article>
+Rules: Omit sections with no content. Use formal, neutral tone. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+brief: `Analyze this audio recording and produce a brief executive summary.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Brief Summary heading]</h2>
+    <p>[2-3 sentences maximum. The single most important outcome or conclusion only.]</p>
+  </section>
+  <section>
+    <h2>[Key Outcomes heading]</h2>
+    <ul>
+      <li>[One-line key point — maximum 5 bullets total]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Next Steps heading]</h2>
+    <ul>
+      <li>[Immediate action — who, what, when]</li>
+    </ul>
+  </section>
+</article>
+Rules: Be ruthlessly concise. No long prose. Max 5 bullets per section. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+detailed: `Analyze this audio recording and produce a comprehensive, detailed summary.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Context heading]</h2>
+    <p>[Who is present, the purpose, background and setting of the conversation]</p>
+  </section>
+  <section>
+    <h2>[Detailed Discussion heading]</h2>
+    <p>[Full coverage of every topic raised. Attribute statements to speakers by name where known. Include reasoning, arguments, disagreements and nuances. Write multiple paragraphs if needed.]</p>
+  </section>
+  <section>
+    <h2>[Decisions heading]</h2>
+    <ul>
+      <li><strong>[Decision]:</strong> [rationale and context]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Action Items heading]</h2>
+    <ul>
+      <li><strong>[Person]:</strong> [detailed action] — [deadline]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Open Questions heading]</h2>
+    <ul>
+      <li>[Unresolved issue, question or topic left for follow-up]</li>
+    </ul>
+  </section>
+</article>
+Rules: Be thorough — capture all substance including numbers, names, dates and specific details. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+sales: `Analyze this audio recording of a sales meeting or customer call.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return ONLY valid HTML — no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Customer heading]</h2>
+    <p><strong>[Company/person name]</strong></p>
+    <p>[Contact name, title, role — if mentioned]</p>
+  </section>
+  <section>
+    <h2>[Customer Situation heading]</h2>
+    <ul>
+      <li>[Current situation, challenges, pain points expressed by the customer]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Solution Discussed heading]</h2>
+    <ul>
+      <li>[What was presented, proposed or discussed as a solution or offering]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Customer Reaction heading]</h2>
+    <ul>
+      <li>[Interest level, positive signals, objections raised, concerns, questions]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Next Steps heading]</h2>
+    <ul>
+      <li><strong>[Person]:</strong> [specific action] — [date or timeline if mentioned]</li>
+    </ul>
+  </section>
+</article>
+Rules: Focus on sales-relevant details: budget signals, timeline, decision makers, competition mentioned. Omit sections with no relevant content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+
+};
 
 function buildPrompt() {
   let extra = '';
   if (s.title) extra += 'Recording title: ' + s.title + '\n';
   if (s.participants) extra += 'Participants: ' + s.participants + '\n';
-  if (extra) extra += 'Use this context where relevant in the summary.\n\n';
-  return extra + PROMPT_BASE;
+  if (extra) extra += 'Use this context where relevant in the output.\n\n';
+  return extra + (PROMPTS[s.style] || PROMPTS.summary);
 }
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 const s = {
   key: localStorage.getItem(SK) || '',
   model: localStorage.getItem(SM) || 'gemini-2.5-pro',
+  style: localStorage.getItem('vs_style') || 'summary',
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, timerRef: null,
   audioCtx: null, analyser: null, raf: null,
@@ -520,6 +666,15 @@ function getMime() {
     ? ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']
     : ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
   return order.find(t => MediaRecorder.isTypeSupported(t)) || '';
+}
+
+// ── FORMAT ─────────────────────────────────────────────────────────────────
+function setFormat(fmt) {
+  s.style = fmt;
+  localStorage.setItem('vs_style', fmt);
+  document.querySelectorAll('.format-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.fmt === fmt);
+  });
 }
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
@@ -937,6 +1092,10 @@ function init() {
   $('sSaveBtn').onclick = saveSettings;
   $('shareAppBtn').onclick = shareApp;
   $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
+  document.querySelectorAll('.format-pill').forEach(btn => {
+    btn.onclick = () => setFormat(btn.dataset.fmt);
+  });
+  setFormat(s.style);
   $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
   $('historyBtn').onclick = openHistory;
   $('h-overlay').onclick = closeHistory;
