@@ -194,7 +194,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 
 /* TOAST */
 .toast{position:fixed;bottom:calc(16px + var(--sb));left:50%;
-  transform:translateX(-50%) translateY(120%);background:var(--success);color:#fff;
+  transform:translateX(-50%) translateY(calc(100% + 80px));background:var(--success);color:#fff;
   padding:10px 22px;border-radius:100px;font-size:.85rem;font-weight:600;
   z-index:999;transition:transform .25s ease;white-space:nowrap;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
