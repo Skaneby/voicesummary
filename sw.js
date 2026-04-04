@@ -1,6 +1,6 @@
-const CACHE = 'vs-v5';
+const CACHE = 'vs-v6';
 // Never cache index.html — always fetch fresh so updates reach users instantly
-const STATIC = ['./manifest.json', './icon.svg'];
+const STATIC = ['./manifest.json', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC)));
