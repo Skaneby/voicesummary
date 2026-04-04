@@ -59,6 +59,16 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   border:1px solid rgba(233,69,96,.3);flex-shrink:0}
 .setup-title{font-size:1.5rem;font-weight:700}
 .setup-desc{color:var(--muted);font-size:.9rem;max-width:300px}
+.setup-steps{width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px}
+.setup-step{display:flex;gap:12px;align-items:flex-start;text-align:left}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--accent-dim);
+  border:1px solid rgba(233,69,96,.35);color:var(--accent);font-size:.75rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-body{flex:1}
+.step-label{font-size:.875rem;font-weight:600;margin-bottom:3px}
+.step-hint{font-size:.78rem;color:var(--muted);line-height:1.4}
+.step-link{display:inline-flex;align-items:center;gap:4px;color:var(--accent);
+  font-size:.8rem;font-weight:600;text-decoration:none;margin-top:5px}
 .input-group{width:100%;max-width:360px;text-align:left}
 .input-group label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);
   text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
@@ -253,13 +263,36 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
         </svg>
       </div>
       <h2 class="setup-title">VoiceSummary</h2>
-      <p class="setup-desc">Spela in ljud och få en AI-sammanfattning via Google Gemini</p>
-      <div class="input-group">
-        <label>Gemini API-nyckel</label>
-        <input type="password" id="setupKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="setup-desc">Kom igång på 2 minuter – helt gratis</p>
+      <div class="setup-steps">
+        <div class="setup-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-label">Skaffa en gratis API-nyckel</div>
+            <div class="step-hint">Google Gemini AI är gratis för privat bruk. Logga in med ditt Google-konto.</div>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="step-link">
+              Öppna aistudio.google.com/apikey →
+            </a>
+          </div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-label">Klistra in nyckeln nedan</div>
+            <div class="input-group" style="margin-top:8px;max-width:none">
+              <input type="password" id="setupKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+            </div>
+          </div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-label">Börja spela in!</div>
+            <div class="step-hint">Tryck på mikrofonen och prata. Gemini transkriberar och sammanfattar automatiskt på det språk du talar.</div>
+          </div>
+        </div>
       </div>
       <button class="btn-primary" id="setupSaveBtn">Kom igång</button>
-      <p class="link-hint">Gratis nyckel på <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a></p>
     </section>
 
     <!-- IDLE -->
@@ -387,6 +420,15 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
       </select>
     </div>
     <button class="s-save" id="sSaveBtn">Spara</button>
+    <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
+      <button class="btn-sec" id="shareAppBtn" style="width:100%;justify-content:center;gap:8px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        Dela appen med en vän
+      </button>
+    </div>
   </div>
 </aside>
 
@@ -507,6 +549,11 @@ function saveSettings() {
 
 // ── RECORDING ─────────────────────────────────────────────────────────────
 async function startRecording() {
+  if (!s.key) {
+    show('setup');
+    toast('Ange din Gemini API-nyckel för att komma igång');
+    return;
+  }
   try {
     s.stream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 }
@@ -723,6 +770,30 @@ async function share() {
   catch { /* cancelled */ }
 }
 
+// ── SHARE APP ──────────────────────────────────────────────────────────────
+async function shareApp() {
+  const url = 'https://skaneby.github.io/voicesummary/';
+  const text = `🎙️ VoiceSummary – spela in möten och få AI-sammanfattningar direkt på mobilen!
+
+Så här kommer du igång:
+
+1. Öppna appen: ${url}
+2. Skaffa en gratis Gemini API-nyckel (tar 1 minut):
+   https://aistudio.google.com/apikey
+3. Klistra in nyckeln i appen och tryck på mikrofonen.
+
+Appen är helt gratis, ingen registrering krävs och dina inspelningar lämnar aldrig din telefon.`;
+  try {
+    await navigator.share({ title: 'VoiceSummary', text, url });
+  } catch {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Text kopierad – klistra in i ett meddelande ✓');
+    } catch { toast('Dela via inställningsmenyn'); }
+  }
+  closeSettings();
+}
+
 // ── ERROR ──────────────────────────────────────────────────────────────────
 function showError(msg, showSettings) {
   $('errorMsg').textContent = msg;
@@ -860,6 +931,7 @@ function init() {
   $('settingsBtn').onclick = openSettings;
   $('s-overlay').onclick = closeSettings;
   $('sSaveBtn').onclick = saveSettings;
+  $('shareAppBtn').onclick = shareApp;
   $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
   $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
   $('historyBtn').onclick = openHistory;
