@@ -44,9 +44,9 @@ html[data-theme="twinpeaks"]{
 }
 /* ── PANASONIC ── */
 html[data-theme="panasonic"]{
-  --bg:#3a3a3c;--surface:#4a4a4e;--card:#545458;--border:#6a6a70;
-  --accent:#ff1a00;--accent-hover:#cc1500;--accent-dim:rgba(255,26,0,.15);
-  --text:#e8e8ec;--muted:#aaaaaf;--success:#44aa55;
+  --bg:#b4b4b8;--surface:#c8c8cc;--card:#d4d4d8;--border:#9a9a9e;
+  --accent:#e01000;--accent-hover:#b00c00;--accent-dim:rgba(224,16,0,.12);
+  --text:#1a1a1e;--muted:#555560;--success:#2a7a2a;
 }
 html{height:100%}
 body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);
@@ -301,60 +301,89 @@ html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,ser
 .gh-issue-link{display:block;color:var(--accent);font-size:.85rem;word-break:break-all;
   margin-top:8px;text-decoration:none}
 
-/* ── PANASONIC THEME — skeuomorphic cassette recorder ─────────────────── */
-/* Plastic body texture: subtle horizontal mold lines */
+/* ── PANASONIC THEME — authentic 1990s microcassette recorder ─────────────────── */
+/* Silver-gray plastic body — light, like actual Panasonic hardware */
 html[data-theme="panasonic"] body{
-  background:linear-gradient(160deg,#424246 0%,#353538 40%,#3e3e42 100%)}
+  background:linear-gradient(175deg,#ccccd0 0%,#b0b0b4 35%,#bcbcc0 70%,#a8a8ac 100%);
+  color:#1a1a1e}
+/* Horizontal mold lines — plastic injection molding texture */
 html[data-theme="panasonic"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:repeating-linear-gradient(0deg,
-    rgba(255,255,255,.03) 0px,rgba(255,255,255,.03) 1px,
-    transparent 1px,transparent 4px),
-  repeating-linear-gradient(90deg,
-    rgba(0,0,0,.04) 0px,rgba(0,0,0,.04) 1px,
-    transparent 1px,transparent 60px)}
-/* Header: silver panel top with speaker-grille dots */
+    rgba(255,255,255,.18) 0px,rgba(255,255,255,.18) 1px,
+    transparent 1px,transparent 6px),
+  repeating-linear-gradient(0deg,
+    rgba(0,0,0,.08) 0px,rgba(0,0,0,.08) 1px,
+    transparent 1px,transparent 24px)}
+/* Header: slightly lighter silver panel with speaker grille */
 html[data-theme="panasonic"] header{
-  background:linear-gradient(180deg,#5a5a5e 0%,#46464a 100%);
-  border-bottom:3px solid #222;
-  box-shadow:0 3px 0 #666,inset 0 1px 0 rgba(255,255,255,.15);
-  letter-spacing:.06em}
-/* Buttons: physical raised plastic keys */
+  background:linear-gradient(180deg,#dcdce0 0%,#c4c4c8 50%,#b8b8bc 100%);
+  border-bottom:2px solid #7a7a7e;
+  box-shadow:0 2px 0 rgba(255,255,255,.6),inset 0 -1px 0 rgba(0,0,0,.2),0 3px 8px rgba(0,0,0,.25);
+  color:#1a1a1e;letter-spacing:.1em}
+/* Speaker grille: horizontal slots on header right side */
+html[data-theme="panasonic"] header::after{content:'';position:absolute;right:60px;top:50%;transform:translateY(-50%);
+  width:40px;height:30px;
+  background:repeating-linear-gradient(180deg,
+    #8a8a8e 0px,#8a8a8e 2px,#c0c0c4 2px,#c0c0c4 5px);
+  border-radius:2px;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+/* Cassette window on record screen — dark smoked plastic viewport */
+html[data-theme="panasonic"] .record-btn-wrap::before{content:'CASSETTE';
+  display:block;margin:0 auto 16px;width:160px;height:60px;
+  background:linear-gradient(180deg,#1a1a1e 0%,#2a2a30 60%,#1e1e22 100%);
+  border-radius:4px;border:3px solid #6a6a6e;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.8),0 2px 0 rgba(255,255,255,.4),0 0 0 1px rgba(0,0,0,.3);
+  font-size:.45rem;letter-spacing:.25em;color:#3a3a40;padding-top:42px;text-align:center;
+  font-family:'Courier New',monospace}
+/* LED indicator dot */
+html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:10px;right:18px;
+  width:8px;height:8px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ff4433,#cc0000);
+  z-index:100;box-shadow:0 0 6px rgba(255,30,0,.9),0 0 12px rgba(255,30,0,.5),inset 0 1px 0 rgba(255,140,120,.4);
+  border:1px solid #880000}
+/* Buttons: dark charcoal raised plastic keys — high contrast on silver body */
 html[data-theme="panasonic"] .btn-sec{
-  background:linear-gradient(180deg,#5c5c62 0%,#484850 100%);
-  border:1px solid #333;border-radius:4px;
-  box-shadow:0 3px 0 #2a2a2e,0 4px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
-  color:#e8e8ec}
+  background:linear-gradient(180deg,#3c3c42 0%,#2a2a30 100%);
+  border:1px solid #1a1a1e;border-radius:3px;color:#e0e0e4;
+  box-shadow:0 3px 0 #111,0 4px 8px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.10);
+  letter-spacing:.05em}
 html[data-theme="panasonic"] .btn-sec:active{
   transform:translateY(2px);
-  box-shadow:0 1px 0 #2a2a2e,0 2px 4px rgba(0,0,0,.4)}
+  box-shadow:0 1px 0 #111,0 2px 4px rgba(0,0,0,.4)}
 html[data-theme="panasonic"] .btn-primary,html[data-theme="panasonic"] .btn-new,html[data-theme="panasonic"] .s-save{
-  border-radius:4px;
-  background:linear-gradient(180deg,#ee2200 0%,#bb1500 100%);
-  box-shadow:0 3px 0 #660800,0 4px 10px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,120,80,.3)}
+  border-radius:3px;color:#fff;
+  background:linear-gradient(180deg,#2c2c32 0%,#1a1a1e 100%);
+  box-shadow:0 3px 0 #0a0a0e,0 4px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
 html[data-theme="panasonic"] .btn-primary:active,html[data-theme="panasonic"] .btn-new:active{
-  transform:translateY(2px);box-shadow:0 1px 0 #660800}
-/* Record button: big physical red push-button with depth */
+  transform:translateY(2px);box-shadow:0 1px 0 #0a0a0e}
+/* Record button: bright red dome button — the one red element on the device */
 html[data-theme="panasonic"] .record-btn{
-  background:radial-gradient(circle at 38% 35%,#ff5544,#cc1100);
-  box-shadow:0 6px 0 #770800,0 8px 20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,180,160,.4);
-  border:2px solid #990a00;border-radius:50%}
+  background:radial-gradient(circle at 38% 32%,#ff6655,#dd0000 55%,#aa0000 100%);
+  box-shadow:0 5px 0 #660000,0 7px 18px rgba(0,0,0,.5),inset 0 2px 0 rgba(255,200,180,.5);
+  border:2px solid #880000;border-radius:50%}
 html[data-theme="panasonic"] .record-btn:active{
   transform:translateY(4px) scale(.97);
-  box-shadow:0 2px 0 #770800,0 4px 10px rgba(0,0,0,.5)}
-html[data-theme="panasonic"] .record-btn::before{border-color:rgba(255,80,60,.5)}
-/* Inputs: recessed dark slots */
+  box-shadow:0 1px 0 #660000,0 3px 8px rgba(0,0,0,.4)}
+html[data-theme="panasonic"] .record-btn::before{border-color:rgba(200,50,30,.6)}
+/* Inputs: dark recessed LCD-style display slots */
 html[data-theme="panasonic"] .input-group input,html[data-theme="panasonic"] .input-group select,
 html[data-theme="panasonic"] .participants-wrap input{
-  background:#2a2a2e;border:1px solid #222;border-radius:3px;color:#e8e8ec;
-  box-shadow:inset 0 2px 4px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.04)}
-/* Cards: recessed panel areas */
+  background:#1e1e22;border:1px solid #0a0a0e;border-radius:2px;color:#d8d8dc;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.05);
+  font-family:'Courier New',monospace}
+/* Cards: recessed panel areas, slight cream tint */
 html[data-theme="panasonic"] .result-box{
-  background:#2e2e32;border:1px solid #222;border-radius:4px;
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.4);border-left:3px solid var(--accent)}
-/* Red LED strip at top */
-html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,#660000,#ff1a00 30%,#ff4422 50%,#ff1a00 70%,#660000);
-  z-index:10;box-shadow:0 0 10px rgba(255,26,0,.9),0 0 20px rgba(255,26,0,.4)}
+  background:#e0e0e4;border:1px solid #9a9a9e;border-radius:3px;color:#1a1a1e;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.15),0 1px 0 rgba(255,255,255,.8);
+  border-left:3px solid var(--accent)}
+/* Settings cards and surface elements */
+html[data-theme="panasonic"] .settings-section,html[data-theme="panasonic"] .history-item{
+  background:linear-gradient(180deg,#d4d4d8 0%,#c8c8cc 100%);
+  border:1px solid #9a9a9e;color:#1a1a1e;
+  box-shadow:0 1px 0 rgba(255,255,255,.7),inset 0 1px 3px rgba(0,0,0,.08)}
+/* Icon buttons: darker for contrast on silver */
+html[data-theme="panasonic"] .icon-btn{color:#444448}
+html[data-theme="panasonic"] .icon-btn:hover,html[data-theme="panasonic"] .icon-btn:active{
+  background:rgba(0,0,0,.12);color:#1a1a1e}
 
 /* ── THEME PICKER ─────────────────────────────────────────────────────────── */
 .theme-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
@@ -1284,18 +1313,20 @@ async function shareCalendar() {
   const title = s.title || 'Sammanfattning';
   const d = document.createElement('div'); d.innerHTML = s.resultHTML;
   const ics = toICS(title, d.innerText || d.textContent);
-  const blob = new Blob([ics], { type: 'text/calendar' });
-  const file = new File([blob], title.replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g,'').trim() + '.ics', { type: 'text/calendar' });
+  const fname = title.replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g,'').trim() + '.ics';
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const file = new File([blob], fname, { type: 'text/calendar' });
+
+  // Android Chrome + iOS 15+: Web Share with file — shows native share sheet
   try {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], title }); return;
     }
   } catch(e) { if (e.name === 'AbortError') return; }
-  // Fallback: open URL directly — browser hands off to Calendar via MIME type
-  const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), { href: url }); // no download attr
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 15000);
+
+  // iOS Safari fallback: data: URI — Safari hands text/calendar directly to Calendar app
+  const dataUri = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+  window.open(dataUri, '_blank');
 }
 
 async function share() {
