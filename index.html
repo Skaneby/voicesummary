@@ -1064,8 +1064,8 @@ function toRichText(raw) {
 function toICS(title, description) {
   const fmtD = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
   const now = new Date();
-  const start = new Date(); start.setDate(start.getDate() + 1); start.setHours(9,0,0,0);
-  const end = new Date(start); end.setHours(10,0,0,0);
+  const start = new Date(); start.setDate(start.getDate() + 1); start.setSeconds(0,0);
+  const end = new Date(start.getTime() + 60*60*1000);
   const desc = description.replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
   return [
     'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//VoiceSummary//SV',
@@ -1090,13 +1090,12 @@ async function shareCalendar() {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], title }); return;
     }
-  } catch { /* fall through */ }
-  // Fallback: download
+  } catch(e) { if (e.name === 'AbortError') return; }
+  // Fallback: open URL directly — browser hands off to Calendar via MIME type
   const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), { href: url, download: file.name });
+  const a = Object.assign(document.createElement('a'), { href: url }); // no download attr
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
-  toast('Kalenderfil sparad ✓');
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
 }
 
 async function share() {
