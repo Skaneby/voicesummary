@@ -28,37 +28,57 @@ window.addEventListener('beforeinstallprompt', function(e) {
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
+  --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
+}
+/* ── ORIGINAL (default) ── */
+html,html[data-theme="original"]{
+  --bg:#0f0f1a;--surface:#1a1a2e;--card:#1e1e3a;--border:#2a2a45;
+  --accent:#e94560;--accent-hover:#c23152;--accent-dim:rgba(233,69,96,.15);
+  --text:#e8e8f0;--muted:#8888aa;--success:#22c55e;
+}
+/* ── TWIN PEAKS ── */
+html[data-theme="twinpeaks"]{
   --bg:#0e0205;--surface:#280810;--card:#320c14;--border:#6b1a28;
   --accent:#d4122e;--accent-hover:#a80e24;--accent-dim:rgba(212,18,46,.22);
   --text:#f5ead8;--muted:#a08878;--success:#4a9a6a;
-  --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
+}
+/* ── PANASONIC ── */
+html[data-theme="panasonic"]{
+  --bg:#1a1a1c;--surface:#232328;--card:#2c2c32;--border:#46464e;
+  --accent:#dd1a00;--accent-hover:#bb1400;--accent-dim:rgba(221,26,0,.15);
+  --text:#c4c4c8;--muted:#6c6c72;--success:#3a9950;
 }
 html{height:100%}
 body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);
-  font-family:'Special Elite','Courier New',monospace;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   font-size:16px;line-height:1.6;overflow:hidden}
-/* Black Lodge chevron floor — clearly visible */
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.28;
+html[data-theme="twinpeaks"] body{font-family:'Special Elite','Courier New',monospace}
+html[data-theme="panasonic"] body{font-family:'Courier New',Courier,monospace}
+/* Twin Peaks: Black Lodge chevron floor */
+html[data-theme="twinpeaks"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.28;
   background-image:repeating-linear-gradient(
     135deg,#fff 0px,#fff 2px,transparent 2px,transparent 22px),
   repeating-linear-gradient(
     45deg,#fff 0px,#fff 2px,transparent 2px,transparent 22px)}
-/* Red Room — strong crimson vignette */
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+/* Twin Peaks: Red Room — strong crimson vignette */
+html[data-theme="twinpeaks"] body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse at 50% 50%,transparent 0%,rgba(150,0,20,.65) 70%,rgba(8,0,2,.97) 100%)}
 #app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--st)}
-/* Red curtain strip at very top */
-#app::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+/* Twin Peaks: Red curtain strip at very top */
+html[data-theme="twinpeaks"] #app::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
   background:linear-gradient(90deg,#8b0000,#d4122e,#ff2244,#d4122e,#8b0000);
   z-index:10;box-shadow:0 0 16px rgba(212,18,46,.8)}
 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;
-  padding:14px 18px;border-bottom:2px solid var(--accent);flex-shrink:0;
+  padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;
+  background:var(--surface)}
+html[data-theme="twinpeaks"] header{border-bottom:2px solid var(--accent);
   background:linear-gradient(180deg,rgba(140,0,25,.6) 0%,rgba(20,2,8,.8) 100%);
   box-shadow:0 6px 32px rgba(212,18,46,.3)}
 header h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;
-  font-family:'Playfair Display',Georgia,serif;letter-spacing:.04em}
+  letter-spacing:.04em}
+html[data-theme="twinpeaks"] header h1{font-family:'Playfair Display',Georgia,serif}
 header h1 svg{color:var(--accent)}
 .icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;
   padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;
@@ -75,7 +95,8 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .setup-icon{width:80px;height:80px;border-radius:20px;background:var(--accent-dim);
   display:flex;align-items:center;justify-content:center;
   border:1px solid rgba(233,69,96,.3);flex-shrink:0}
-.setup-title{font-size:1.8rem;font-weight:700;font-family:'Playfair Display',Georgia,serif;letter-spacing:.06em}
+.setup-title{font-size:1.8rem;font-weight:700;letter-spacing:.06em}
+html[data-theme="twinpeaks"] .setup-title{font-family:'Playfair Display',Georgia,serif}
 .setup-desc{color:var(--muted);font-size:.9rem;max-width:300px}
 .setup-steps{width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px}
 .setup-step{display:flex;gap:12px;align-items:flex-start;text-align:left}
@@ -110,7 +131,8 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .record-btn{width:96px;height:96px;border-radius:50%;background:var(--accent);
   border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
   position:relative;-webkit-tap-highlight-color:transparent;transition:transform .15s;
-  box-shadow:0 0 24px rgba(212,18,46,.9),0 0 60px rgba(212,18,46,.5),0 0 100px rgba(212,18,46,.2),inset 0 0 20px rgba(255,255,255,.08)}
+  box-shadow:0 0 20px rgba(0,0,0,.4)}
+html[data-theme="twinpeaks"] .record-btn{box-shadow:0 0 24px rgba(212,18,46,.9),0 0 60px rgba(212,18,46,.5),0 0 100px rgba(212,18,46,.2),inset 0 0 20px rgba(255,255,255,.08)}
 .record-btn:active{transform:scale(.9)}
 .record-btn::before{content:'';position:absolute;width:116px;height:116px;
   border-radius:50%;border:2px solid var(--accent);opacity:.3;
@@ -149,8 +171,8 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .result-box article section{margin-bottom:20px}
 .result-box article section:last-child{margin-bottom:0}
 .result-box h2{font-size:.95rem;font-weight:700;margin-bottom:10px;padding-bottom:6px;
-  border-bottom:1px solid var(--border);color:var(--text);
-  font-family:'Playfair Display',Georgia,serif;letter-spacing:.03em}
+  border-bottom:1px solid var(--border);color:var(--text);letter-spacing:.03em}
+html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georgia,serif}
 .result-box p{color:var(--muted);margin-bottom:10px}
 .result-box p:last-child{margin-bottom:0}
 .result-box ul{padding-left:18px;color:var(--muted)}
@@ -245,7 +267,8 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   max-height:80vh;overflow-y:auto}
 #s-panel.open{transform:translateY(0)}
 .s-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px}
-.s-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;font-family:'Playfair Display',Georgia,serif;letter-spacing:.03em}
+.s-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;letter-spacing:.03em}
+html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,serif}
 .s-form{display:flex;flex-direction:column;gap:14px}
 .s-save{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
   font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px}
@@ -277,6 +300,32 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .gh-issue-link{display:block;color:var(--accent);font-size:.85rem;word-break:break-all;
   margin-top:8px;text-decoration:none}
+
+/* ── PANASONIC THEME ──────────────────────────────────────────────────────── */
+html[data-theme="panasonic"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0px,rgba(0,0,0,.08) 1px,transparent 1px,transparent 3px)}
+html[data-theme="panasonic"] header{background:var(--surface);border-bottom:2px solid var(--accent);box-shadow:none}
+html[data-theme="panasonic"] .record-btn{border-radius:50%;box-shadow:0 0 0 3px #111,0 0 0 5px var(--accent),0 0 20px rgba(221,26,0,.7)}
+html[data-theme="panasonic"] .record-btn::before{border-color:var(--accent)}
+html[data-theme="panasonic"] .btn-sec{border-radius:3px}
+html[data-theme="panasonic"] .input-group input,html[data-theme="panasonic"] .input-group select{border-radius:3px}
+html[data-theme="panasonic"] .result-box{border-radius:4px;border-left:3px solid var(--accent)}
+html[data-theme="panasonic"] .btn-primary{border-radius:4px}
+html[data-theme="panasonic"] .btn-new{border-radius:4px}
+html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--accent);z-index:10;box-shadow:0 0 8px var(--accent)}
+
+/* ── THEME PICKER ─────────────────────────────────────────────────────────── */
+.theme-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
+.theme-card{background:var(--card);border:2px solid var(--border);border-radius:10px;
+  padding:12px 8px;cursor:pointer;text-align:center;transition:border-color .15s;
+  -webkit-tap-highlight-color:transparent}
+.theme-card.active{border-color:var(--accent)}
+.theme-swatch{width:36px;height:36px;border-radius:50%;margin:0 auto 8px;
+  display:flex;align-items:center;justify-content:center;border:2px solid}
+.theme-dot{width:12px;height:12px;border-radius:50%}
+.theme-name{font-size:.72rem;font-weight:600;color:var(--muted);line-height:1.2}
+.theme-card.active .theme-name{color:var(--text)}
 </style>
 </head>
 <body>
@@ -505,6 +554,29 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   <h2 class="s-title">Inställningar</h2>
   <div class="s-form">
     <div class="input-group">
+      <label>Utseende</label>
+      <div class="theme-picker">
+        <button class="theme-card" data-theme="original">
+          <div class="theme-swatch" style="background:#0f0f1a;border-color:#e94560">
+            <div class="theme-dot" style="background:#e94560"></div>
+          </div>
+          <div class="theme-name">Original</div>
+        </button>
+        <button class="theme-card" data-theme="twinpeaks">
+          <div class="theme-swatch" style="background:#0e0205;border-color:#d4122e">
+            <div class="theme-dot" style="background:#d4122e"></div>
+          </div>
+          <div class="theme-name">Twin Peaks</div>
+        </button>
+        <button class="theme-card" data-theme="panasonic">
+          <div class="theme-swatch" style="background:#1a1a1c;border-color:#dd1a00">
+            <div class="theme-dot" style="background:#dd1a00"></div>
+          </div>
+          <div class="theme-name">Panasonic</div>
+        </button>
+      </div>
+    </div>
+    <div class="input-group">
       <label>Gemini API-nyckel</label>
       <input type="password" id="sKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
     </div>
@@ -551,6 +623,15 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 const API_BASE = 'https://generativelanguage.googleapis.com';
 const SK = 'vs_key', SM = 'vs_model';
 const SGH = 'vs_gh_token', SGHR = 'vs_gh_repos';
+const STHEME = 'vs_theme';
+
+function setTheme(name) {
+  document.documentElement.dataset.theme = name || 'original';
+  localStorage.setItem(STHEME, name || 'original');
+  document.querySelectorAll('.theme-card').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === (name || 'original'));
+  });
+}
 
 const PROMPTS = {
 
@@ -785,6 +866,10 @@ function openSettings() {
   $('sKey').value = s.key;
   $('sModel').value = s.model;
   $('sGHToken').value = localStorage.getItem(SGH) || '';
+  const savedTheme = localStorage.getItem(STHEME) || 'original';
+  document.querySelectorAll('.theme-card').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === savedTheme);
+  });
   $('s-panel').classList.add('open');
   $('s-overlay').classList.add('open');
 }
@@ -1504,6 +1589,13 @@ function init() {
 
   // Show install button on iOS if not already installed as app
   if (isIOS() && !isStandalone()) $('installBtn').style.display = '';
+
+  // Theme picker — applies immediately on click, no need to save
+  document.querySelectorAll('.theme-card').forEach(btn => {
+    btn.onclick = () => setTheme(btn.dataset.theme);
+  });
+  // Apply saved theme on load
+  setTheme(localStorage.getItem(STHEME) || 'original');
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
