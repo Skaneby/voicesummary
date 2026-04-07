@@ -44,9 +44,9 @@ html[data-theme="twinpeaks"]{
 }
 /* ── PANASONIC ── */
 html[data-theme="panasonic"]{
-  --bg:#1a1a1c;--surface:#232328;--card:#2c2c32;--border:#46464e;
-  --accent:#dd1a00;--accent-hover:#bb1400;--accent-dim:rgba(221,26,0,.15);
-  --text:#c4c4c8;--muted:#6c6c72;--success:#3a9950;
+  --bg:#3a3a3c;--surface:#4a4a4e;--card:#545458;--border:#6a6a70;
+  --accent:#ff1a00;--accent-hover:#cc1500;--accent-dim:rgba(255,26,0,.15);
+  --text:#e8e8ec;--muted:#aaaaaf;--success:#44aa55;
 }
 html{height:100%}
 body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);
@@ -301,19 +301,60 @@ html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,ser
 .gh-issue-link{display:block;color:var(--accent);font-size:.85rem;word-break:break-all;
   margin-top:8px;text-decoration:none}
 
-/* ── PANASONIC THEME ──────────────────────────────────────────────────────── */
+/* ── PANASONIC THEME — skeuomorphic cassette recorder ─────────────────── */
+/* Plastic body texture: subtle horizontal mold lines */
+html[data-theme="panasonic"] body{
+  background:linear-gradient(160deg,#424246 0%,#353538 40%,#3e3e42 100%)}
 html[data-theme="panasonic"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0px,rgba(0,0,0,.08) 1px,transparent 1px,transparent 3px)}
-html[data-theme="panasonic"] header{background:var(--surface);border-bottom:2px solid var(--accent);box-shadow:none}
-html[data-theme="panasonic"] .record-btn{border-radius:50%;box-shadow:0 0 0 3px #111,0 0 0 5px var(--accent),0 0 20px rgba(221,26,0,.7)}
-html[data-theme="panasonic"] .record-btn::before{border-color:var(--accent)}
-html[data-theme="panasonic"] .btn-sec{border-radius:3px}
-html[data-theme="panasonic"] .input-group input,html[data-theme="panasonic"] .input-group select{border-radius:3px}
-html[data-theme="panasonic"] .result-box{border-radius:4px;border-left:3px solid var(--accent)}
-html[data-theme="panasonic"] .btn-primary{border-radius:4px}
-html[data-theme="panasonic"] .btn-new{border-radius:4px}
+  background:repeating-linear-gradient(0deg,
+    rgba(255,255,255,.03) 0px,rgba(255,255,255,.03) 1px,
+    transparent 1px,transparent 4px),
+  repeating-linear-gradient(90deg,
+    rgba(0,0,0,.04) 0px,rgba(0,0,0,.04) 1px,
+    transparent 1px,transparent 60px)}
+/* Header: silver panel top with speaker-grille dots */
+html[data-theme="panasonic"] header{
+  background:linear-gradient(180deg,#5a5a5e 0%,#46464a 100%);
+  border-bottom:3px solid #222;
+  box-shadow:0 3px 0 #666,inset 0 1px 0 rgba(255,255,255,.15);
+  letter-spacing:.06em}
+/* Buttons: physical raised plastic keys */
+html[data-theme="panasonic"] .btn-sec{
+  background:linear-gradient(180deg,#5c5c62 0%,#484850 100%);
+  border:1px solid #333;border-radius:4px;
+  box-shadow:0 3px 0 #2a2a2e,0 4px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
+  color:#e8e8ec}
+html[data-theme="panasonic"] .btn-sec:active{
+  transform:translateY(2px);
+  box-shadow:0 1px 0 #2a2a2e,0 2px 4px rgba(0,0,0,.4)}
+html[data-theme="panasonic"] .btn-primary,html[data-theme="panasonic"] .btn-new,html[data-theme="panasonic"] .s-save{
+  border-radius:4px;
+  background:linear-gradient(180deg,#ee2200 0%,#bb1500 100%);
+  box-shadow:0 3px 0 #660800,0 4px 10px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,120,80,.3)}
+html[data-theme="panasonic"] .btn-primary:active,html[data-theme="panasonic"] .btn-new:active{
+  transform:translateY(2px);box-shadow:0 1px 0 #660800}
+/* Record button: big physical red push-button with depth */
+html[data-theme="panasonic"] .record-btn{
+  background:radial-gradient(circle at 38% 35%,#ff5544,#cc1100);
+  box-shadow:0 6px 0 #770800,0 8px 20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,180,160,.4);
+  border:2px solid #990a00;border-radius:50%}
+html[data-theme="panasonic"] .record-btn:active{
+  transform:translateY(4px) scale(.97);
+  box-shadow:0 2px 0 #770800,0 4px 10px rgba(0,0,0,.5)}
+html[data-theme="panasonic"] .record-btn::before{border-color:rgba(255,80,60,.5)}
+/* Inputs: recessed dark slots */
+html[data-theme="panasonic"] .input-group input,html[data-theme="panasonic"] .input-group select,
+html[data-theme="panasonic"] .participants-wrap input{
+  background:#2a2a2e;border:1px solid #222;border-radius:3px;color:#e8e8ec;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.04)}
+/* Cards: recessed panel areas */
+html[data-theme="panasonic"] .result-box{
+  background:#2e2e32;border:1px solid #222;border-radius:4px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.4);border-left:3px solid var(--accent)}
+/* Red LED strip at top */
 html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:var(--accent);z-index:10;box-shadow:0 0 8px var(--accent)}
+  background:linear-gradient(90deg,#660000,#ff1a00 30%,#ff4422 50%,#ff1a00 70%,#660000);
+  z-index:10;box-shadow:0 0 10px rgba(255,26,0,.9),0 0 20px rgba(255,26,0,.4)}
 
 /* ── THEME PICKER ─────────────────────────────────────────────────────────── */
 .theme-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
