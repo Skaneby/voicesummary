@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,21 +28,29 @@ window.addEventListener('beforeinstallprompt', function(e) {
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0f1a;--surface:#1a1a2e;--card:#1e1e3a;--border:#2a2a45;
-  --accent:#e94560;--accent-hover:#c23152;--accent-dim:rgba(233,69,96,.15);
-  --text:#e8e8f0;--muted:#8888aa;--success:#22c55e;
+  --bg:#0a0608;--surface:#140a0d;--card:#1c1012;--border:#3a1820;
+  --accent:#c41230;--accent-hover:#9b0f26;--accent-dim:rgba(196,18,48,.18);
+  --text:#f0e6d3;--muted:#9a8070;--success:#4a9a6a;
   --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
 }
 html{height:100%}
 body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  font-size:16px;line-height:1.5;overflow:hidden}
+  font-family:'Special Elite','Courier New',monospace;
+  font-size:16px;line-height:1.6;overflow:hidden}
+/* Subtle Red Room chevron texture */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.03;
+  background-image:repeating-linear-gradient(
+    135deg,var(--text) 0px,var(--text) 1px,transparent 1px,transparent 12px),
+  repeating-linear-gradient(
+    45deg,var(--text) 0px,var(--text) 1px,transparent 1px,transparent 12px)}
+#app{position:relative;z-index:1}
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--st)}
 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;
   padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
-header h1{font-size:1.05rem;font-weight:600;display:flex;align-items:center;gap:8px}
+header h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;
+  font-family:'Playfair Display',Georgia,serif;letter-spacing:.04em}
 header h1 svg{color:var(--accent)}
 .icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;
   padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;
@@ -57,12 +67,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .setup-icon{width:80px;height:80px;border-radius:20px;background:var(--accent-dim);
   display:flex;align-items:center;justify-content:center;
   border:1px solid rgba(233,69,96,.3);flex-shrink:0}
-.setup-title{font-size:1.5rem;font-weight:700}
+.setup-title{font-size:1.8rem;font-weight:700;font-family:'Playfair Display',Georgia,serif;letter-spacing:.06em}
 .setup-desc{color:var(--muted);font-size:.9rem;max-width:300px}
 .setup-steps{width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px}
 .setup-step{display:flex;gap:12px;align-items:flex-start;text-align:left}
 .step-num{width:26px;height:26px;border-radius:50%;background:var(--accent-dim);
-  border:1px solid rgba(233,69,96,.35);color:var(--accent);font-size:.75rem;font-weight:700;
+  border:1px solid rgba(196,18,48,.35);color:var(--accent);font-size:.75rem;font-weight:700;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .step-body{flex:1}
 .step-label{font-size:.875rem;font-weight:600;margin-bottom:3px}
@@ -96,7 +106,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .record-btn::before{content:'';position:absolute;width:116px;height:116px;
   border-radius:50%;border:2px solid var(--accent);opacity:.3;
   animation:pulse 2s ease-out infinite}
-@keyframes pulse{0%{transform:scale(1);opacity:.3}70%{transform:scale(1.15);opacity:0}100%{opacity:0}}
+@keyframes pulse{0%{transform:scale(1);opacity:.4}40%{transform:scale(1.08);opacity:.2}60%{transform:scale(1.14);opacity:.05}100%{transform:scale(1.18);opacity:0}}
 
 /* RECORDING */
 .recording-badge{display:flex;align-items:center;gap:8px;color:var(--accent);
@@ -130,7 +140,8 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .result-box article section{margin-bottom:20px}
 .result-box article section:last-child{margin-bottom:0}
 .result-box h2{font-size:.95rem;font-weight:700;margin-bottom:10px;padding-bottom:6px;
-  border-bottom:1px solid var(--border);color:var(--text)}
+  border-bottom:1px solid var(--border);color:var(--text);
+  font-family:'Playfair Display',Georgia,serif;letter-spacing:.03em}
 .result-box p{color:var(--muted);margin-bottom:10px}
 .result-box p:last-child{margin-bottom:0}
 .result-box ul{padding-left:18px;color:var(--muted)}
@@ -225,7 +236,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   max-height:80vh;overflow-y:auto}
 #s-panel.open{transform:translateY(0)}
 .s-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px}
-.s-title{font-size:1.05rem;font-weight:700;margin-bottom:20px}
+.s-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;font-family:'Playfair Display',Georgia,serif;letter-spacing:.03em}
 .s-form{display:flex;flex-direction:column;gap:14px}
 .s-save{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
   font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px}
