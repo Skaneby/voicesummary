@@ -6,9 +6,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="VoiceSummary">
+<meta name="apple-mobile-web-app-title" content="Diane">
 <meta name="theme-color" content="#0f0f1a">
-<title>VoiceSummary – AI Transkribering</title>
+<title>Diane – AI Transkribering</title>
 <link rel="manifest" href="manifest.json">
 <!-- Capture beforeinstallprompt ASAP — before main script — to suppress Chrome mini-infobar -->
 <script>
@@ -269,7 +269,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
         <line x1="12" y1="19" x2="12" y2="22"/>
         <line x1="8" y1="22" x2="16" y2="22"/>
       </svg>
-      VoiceSummary
+      Diane
     </h1>
     <div style="display:flex;gap:4px">
     <button class="icon-btn" id="historyBtn" aria-label="Historik" style="position:relative">
@@ -305,7 +305,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
           <line x1="8" y1="22" x2="16" y2="22"/>
         </svg>
       </div>
-      <h2 class="setup-title">VoiceSummary</h2>
+      <h2 class="setup-title">Diane</h2>
       <p class="setup-desc">Kom igång på 2 minuter – helt gratis</p>
       <div class="setup-steps">
         <div class="setup-step">
@@ -1122,20 +1122,20 @@ function toICS(title, description) {
   const end = new Date(start.getTime() + 60*60*1000);
   const desc = description.replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
   return [
-    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//VoiceSummary//SV',
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Diane//SV',
     'BEGIN:VEVENT',
-    'UID:' + Date.now() + '@voicesummary.app',
+    'UID:' + Date.now() + '@diane.app',
     'DTSTAMP:' + fmtD(now),
     'DTSTART:' + fmtD(start),
     'DTEND:' + fmtD(end),
-    'SUMMARY:' + (title || 'Röstsammanfattning'),
+    'SUMMARY:' + (title || 'Sammanfattning'),
     'DESCRIPTION:' + desc,
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
 }
 async function shareCalendar() {
   s.resultHTML = $('resultBox').innerHTML;
-  const title = s.title || 'Röstsammanfattning';
+  const title = s.title || 'Sammanfattning';
   const d = document.createElement('div'); d.innerHTML = s.resultHTML;
   const ics = toICS(title, d.innerText || d.textContent);
   const blob = new Blob([ics], { type: 'text/calendar' });
@@ -1154,7 +1154,7 @@ async function shareCalendar() {
 
 async function share() {
   s.resultHTML = $('resultBox').innerHTML;
-  const title = s.title || 'Röstsammanfattning';
+  const title = s.title || 'Sammanfattning';
   const richText = toRichText(s.resultHTML);
 
   // Build HTML file attachment
@@ -1176,7 +1176,7 @@ async function share() {
 // ── SHARE APP ──────────────────────────────────────────────────────────────
 async function shareApp() {
   const url = 'https://skaneby.github.io/voicesummary/';
-  const text = `🎙️ VoiceSummary – spela in möten och få AI-sammanfattningar direkt på mobilen!
+  const text = `🎙️ Diane – spela in möten och få AI-sammanfattningar direkt på mobilen!
 
 Så här kommer du igång:
 
@@ -1187,7 +1187,7 @@ Så här kommer du igång:
 
 Appen är helt gratis, ingen registrering krävs och dina inspelningar lämnar aldrig din telefon.`;
   try {
-    await navigator.share({ title: 'VoiceSummary', text, url });
+    await navigator.share({ title: "Diane", text, url });
   } catch {
     try {
       await navigator.clipboard.writeText(text);
@@ -1275,7 +1275,7 @@ function repoRow(full, isPinned) {
 
 async function createGHIssue(repo) {
   const token = localStorage.getItem(SGH) || '';
-  const title = s.title || 'Röstsammanfattning';
+  const title = s.title || 'Sammanfattning';
   s.resultHTML = $('resultBox').innerHTML;
   const body = toMarkdown(s.resultHTML);
   const st = $('ghStatus');

@@ -1,6 +1,6 @@
 {
-  "name": "VoiceSummary – AI Transkribering",
-  "short_name": "VoiceSummary",
+  "name": "Diane – AI Transkribering",
+  "short_name": "Diane",
   "description": "Spela in ljud och få AI-sammanfattning via Gemini",
   "start_url": "./",
   "display": "standalone",
