@@ -37,18 +37,22 @@ html{height:100%}
 body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);
   font-family:'Special Elite','Courier New',monospace;
   font-size:16px;line-height:1.6;overflow:hidden}
-/* Subtle Red Room chevron texture */
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.03;
+/* Red Room chevron floor texture */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.07;
   background-image:repeating-linear-gradient(
-    135deg,var(--text) 0px,var(--text) 1px,transparent 1px,transparent 12px),
+    135deg,var(--text) 0px,var(--text) 1px,transparent 1px,transparent 14px),
   repeating-linear-gradient(
-    45deg,var(--text) 0px,var(--text) 1px,transparent 1px,transparent 12px)}
-#app{position:relative;z-index:1}
-#app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--st)}
+    45deg,var(--text) 0px,var(--text) 1px,transparent 1px,transparent 14px)}
+/* Red Room vignette — crimson glow at edges */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 50% 50%,transparent 30%,rgba(80,0,15,.55) 100%)}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--st)}
 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;
-  padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+  padding:14px 18px;border-bottom:2px solid var(--accent);flex-shrink:0;
+  background:linear-gradient(180deg,rgba(80,0,15,.4) 0%,transparent 100%);
+  box-shadow:0 4px 24px rgba(196,18,48,.15)}
 header h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;
   font-family:'Playfair Display',Georgia,serif;letter-spacing:.04em}
 header h1 svg{color:var(--accent)}
@@ -101,7 +105,8 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .idle-hint{color:var(--muted);font-size:.9rem}
 .record-btn{width:96px;height:96px;border-radius:50%;background:var(--accent);
   border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  position:relative;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+  position:relative;-webkit-tap-highlight-color:transparent;transition:transform .15s;
+  box-shadow:0 0 32px rgba(196,18,48,.6),0 0 64px rgba(196,18,48,.25),0 0 4px rgba(196,18,48,.9)}
 .record-btn:active{transform:scale(.9)}
 .record-btn::before{content:'';position:absolute;width:116px;height:116px;
   border-radius:50%;border:2px solid var(--accent);opacity:.3;
@@ -135,7 +140,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 #screen-result{justify-content:flex-start;gap:16px}
 .result-header{display:flex;align-items:center;gap:8px;color:var(--success);
   font-weight:600;font-size:.9rem}
-.result-box{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
+.result-box{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);border-left:3px solid rgba(196,18,48,.5);
   border-radius:12px;padding:20px;text-align:left;font-size:.9rem;line-height:1.7}
 .result-box article section{margin-bottom:20px}
 .result-box article section:last-child{margin-bottom:0}
