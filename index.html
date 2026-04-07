@@ -230,6 +230,33 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .s-save{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
   font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px}
 .keep-open-hint{font-size:.78rem;color:var(--muted);margin-top:4px}
+
+/* GITHUB REPO PICKER */
+#gh-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
+#gh-overlay.open{display:block}
+#gh-panel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
+  padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:80vh;overflow-y:auto}
+#gh-panel.open{transform:translateY(0)}
+.gh-repos{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.gh-repo-btn{background:var(--card);border:1px solid var(--border);color:var(--text);
+  padding:12px 14px;border-radius:10px;font-size:.9rem;text-align:left;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  -webkit-tap-highlight-color:transparent;transition:border-color .15s}
+.gh-repo-btn:active{border-color:var(--accent)}
+.gh-repo-del{background:none;border:none;color:var(--muted);font-size:1rem;
+  cursor:pointer;padding:4px 8px;-webkit-tap-highlight-color:transparent}
+.gh-add-row{display:flex;gap:8px;margin-top:4px}
+.gh-add-row input{flex:1;padding:10px 12px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;color:var(--text);
+  font-size:.85rem;outline:none;-webkit-appearance:none}
+.gh-add-row input:focus{border-color:var(--accent)}
+.gh-add-btn{background:var(--accent);color:#fff;border:none;padding:10px 16px;
+  border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.gh-issue-link{display:block;color:var(--accent);font-size:.85rem;word-break:break-all;
+  margin-top:8px;text-decoration:none}
 </style>
 </head>
 <body>
@@ -408,6 +435,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
           </svg>
           Kalender
         </button>
+        <button class="btn-sec" id="githubBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          GitHub
+        </button>
         <button class="btn-sec" id="shareBtn" style="display:none">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
@@ -463,6 +496,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
         <option value="gemini-2.0-flash">gemini-2.0-flash</option>
       </select>
     </div>
+    <div class="input-group">
+      <label>GitHub Token (valfritt — för att skapa issues)</label>
+      <input type="password" id="sGHToken" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
     <button class="s-save" id="sSaveBtn">Spara</button>
     <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
       <button class="btn-sec" id="shareAppBtn" style="width:100%;justify-content:center;gap:8px">
@@ -476,11 +513,26 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   </div>
 </aside>
 
+<!-- GITHUB REPO PICKER -->
+<div id="gh-overlay"></div>
+<aside id="gh-panel" role="dialog" aria-label="Skapa GitHub Issue">
+  <div class="s-handle"></div>
+  <h2 class="s-title">Skapa GitHub Issue</h2>
+  <p style="font-size:.85rem;color:var(--muted);margin-top:-12px;margin-bottom:4px">Välj projekt eller lägg till nytt</p>
+  <div class="gh-repos" id="ghRepoList"></div>
+  <div class="gh-add-row">
+    <input id="ghRepoInput" placeholder="owner/repo" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button class="gh-add-btn" id="ghAddBtn">Lägg till</button>
+  </div>
+  <p id="ghStatus" style="font-size:.82rem;color:var(--muted);margin-top:12px;display:none"></p>
+</aside>
+
 <div class="toast" id="toast"></div>
 <script>
 'use strict';
 const API_BASE = 'https://generativelanguage.googleapis.com';
 const SK = 'vs_key', SM = 'vs_model';
+const SGH = 'vs_gh_token', SGHR = 'vs_gh_repos';
 
 const PROMPTS = {
 
@@ -714,6 +766,7 @@ function setFormat(fmt) {
 function openSettings() {
   $('sKey').value = s.key;
   $('sModel').value = s.model;
+  $('sGHToken').value = localStorage.getItem(SGH) || '';
   $('s-panel').classList.add('open');
   $('s-overlay').classList.add('open');
 }
@@ -727,6 +780,9 @@ function saveSettings() {
   s.key = k; s.model = $('sModel').value;
   localStorage.setItem(SK, k);
   localStorage.setItem(SM, s.model);
+  const ghToken = $('sGHToken').value.trim();
+  if (ghToken) localStorage.setItem(SGH, ghToken);
+  else localStorage.removeItem(SGH);
   closeSettings();
   toast('Inställningar sparade ✓');
   if (!document.querySelector('.screen.active') || $('screen-setup').classList.contains('active'))
@@ -1143,6 +1199,67 @@ Appen är helt gratis, ingen registrering krävs och dina inspelningar lämnar a
   closeSettings();
 }
 
+// ── GITHUB ────────────────────────────────────────────────────────────────
+function getGHRepos() { try { return JSON.parse(localStorage.getItem(SGHR) || '[]'); } catch { return []; } }
+function saveGHRepos(arr) { localStorage.setItem(SGHR, JSON.stringify(arr)); }
+
+function openGitHub() {
+  const token = localStorage.getItem(SGH) || '';
+  if (!token) { openSettings(); toast('Ange GitHub Token i inställningarna först'); return; }
+  renderGHRepos();
+  $('ghRepoInput').value = '';
+  $('ghStatus').style.display = 'none';
+  $('gh-panel').classList.add('open');
+  $('gh-overlay').classList.add('open');
+}
+function closeGitHub() {
+  $('gh-panel').classList.remove('open');
+  $('gh-overlay').classList.remove('open');
+}
+function renderGHRepos() {
+  const repos = getGHRepos();
+  const list = $('ghRepoList');
+  if (!repos.length) { list.innerHTML = '<p style="font-size:.85rem;color:var(--muted)">Inga sparade repos ännu — lägg till nedan</p>'; return; }
+  list.innerHTML = repos.map((r,i) => `
+    <div class="gh-repo-btn" data-i="${i}">
+      <span>${escHtml(r)}</span>
+      <button class="gh-repo-del" data-i="${i}" aria-label="Ta bort">✕</button>
+    </div>`).join('');
+  list.querySelectorAll('.gh-repo-btn').forEach(el => {
+    const i = Number(el.dataset.i);
+    el.onclick = () => createGHIssue(repos[i]);
+    el.querySelector('.gh-repo-del').onclick = e => {
+      e.stopPropagation();
+      const arr = getGHRepos(); arr.splice(i,1); saveGHRepos(arr); renderGHRepos();
+    };
+  });
+}
+async function createGHIssue(repo) {
+  const token = localStorage.getItem(SGH) || '';
+  const title = s.title || 'Röstsammanfattning';
+  s.resultHTML = $('resultBox').innerHTML;
+  const body = toMarkdown(s.resultHTML);
+  const st = $('ghStatus');
+  st.textContent = 'Skapar issue…'; st.style.color = 'var(--muted)'; st.style.display = '';
+  try {
+    const r = await fetch(`https://api.github.com/repos/${repo}/issues`, {
+      method: 'POST',
+      headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
+      body: JSON.stringify({ title, body })
+    });
+    if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.message || 'GitHub API-fel ' + r.status); }
+    const data = await r.json();
+    st.innerHTML = 'Issue skapad! <a class="gh-issue-link" href="' + data.html_url + '" target="_blank" rel="noopener">' + data.html_url + '</a>';
+    st.style.color = 'var(--success)';
+    // Save repo if not already saved
+    const repos = getGHRepos();
+    if (!repos.includes(repo)) { repos.unshift(repo); saveGHRepos(repos); renderGHRepos(); }
+    toast('GitHub Issue skapad ✓');
+  } catch(e) {
+    st.textContent = 'Fel: ' + e.message; st.style.color = 'var(--accent)';
+  }
+}
+
 // ── ERROR ──────────────────────────────────────────────────────────────────
 function showError(msg, showSettings) {
   $('errorMsg').textContent = msg;
@@ -1303,6 +1420,18 @@ function init() {
   $('stopBtn').onclick = stopRecording;
   $('copyTxtBtn').onclick = copyText;
   $('calendarBtn').onclick = shareCalendar;
+  $('githubBtn').onclick = openGitHub;
+  $('gh-overlay').onclick = closeGitHub;
+  $('ghAddBtn').onclick = () => {
+    const repo = $('ghRepoInput').value.trim();
+    if (!repo || !repo.includes('/')) { toast('Ange repo som owner/repo'); return; }
+    const repos = getGHRepos();
+    if (!repos.includes(repo)) { repos.unshift(repo); saveGHRepos(repos); }
+    $('ghRepoInput').value = '';
+    renderGHRepos();
+    toast('Repo sparat ✓');
+  };
+  $('ghRepoInput').onkeydown = e => { if (e.key === 'Enter') $('ghAddBtn').click(); };
   $('copyMdBtn').onclick = copyMarkdown;
   $('editBtn').onclick = toggleEdit;
   $('shareBtn').onclick = share;
