@@ -274,6 +274,16 @@ html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,ser
   font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px}
 .keep-open-hint{font-size:.78rem;color:var(--muted);margin-top:4px}
 
+/* HJÄLP DIANE PANEL */
+#help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
+#help-overlay.open{display:block}
+#help-panel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
+  padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:80vh;overflow-y:auto}
+#help-panel.open{transform:translateY(0)}
+
 /* GITHUB REPO PICKER */
 #gh-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
 #gh-overlay.open{display:block}
@@ -382,6 +392,11 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       Diane
     </h1>
     <div style="display:flex;gap:4px">
+    <button class="icon-btn" id="helpBtn" aria-label="Hjälp Diane">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </button>
     <button class="icon-btn" id="historyBtn" aria-label="Historik" style="position:relative">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -475,6 +490,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-pill" data-fmt="brief">Kort</button>
           <button class="format-pill" data-fmt="detailed">Detaljerad</button>
           <button class="format-pill" data-fmt="sales">Säljmöte</button>
+          <button class="format-pill" data-fmt="social">Sociala medier</button>
         </div>
       </div>
     </section>
@@ -658,6 +674,44 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
   <p id="ghStatus" style="font-size:.82rem;color:var(--muted);margin-top:12px;display:none"></p>
 </aside>
 
+<!-- HJÄLP DIANE PANEL -->
+<div id="help-overlay"></div>
+<aside id="help-panel" role="dialog" aria-label="Hjälp Diane">
+  <div class="s-handle"></div>
+  <h2 class="s-title">Hjälp Diane</h2>
+  <div class="s-form">
+    <div style="text-align:center;padding:8px 0 16px">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </div>
+    <p style="font-size:.95rem;color:var(--text);line-height:1.6;margin-bottom:16px">
+      <strong>Diane är gratis att använda</strong> — och det är ju bra! Men om du gillar appen och vill stödja fortsatt utveckling är det väldigt uppskattat. Det finns massor av idéer och funktioner som Diane vill göra i framtiden.
+    </p>
+    <p style="font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:20px">
+      Hör gärna av dig med tankar, feedback eller bara en hälsning till Dianes utvecklare:
+    </p>
+    <a href="mailto:johan@skaneby.se" style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);text-decoration:none;font-size:.9rem;margin-bottom:10px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <span>johan@skaneby.se</span>
+    </a>
+    <a href="swish://payment?data=%7B%22version%22%3A1%2C%22payee%22%3A%7B%22value%22%3A%220702472882%22%2C%22editable%22%3Afalse%7D%2C%22amount%22%3A%7B%22value%22%3A0%2C%22editable%22%3Atrue%7D%2C%22message%22%3A%7B%22value%22%3A%22Diane%22%2C%22editable%22%3Atrue%7D%7D" style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);text-decoration:none;font-size:.9rem;margin-bottom:20px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00b624" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+      </svg>
+      <div>
+        <div style="font-weight:600">Swisha en peng</div>
+        <div style="font-size:.8rem;color:var(--muted)">Öppnar Swish-appen direkt</div>
+      </div>
+    </a>
+    <p style="font-size:.78rem;color:var(--muted);text-align:center;line-height:1.5">
+      Tack för att du använder Diane 🙏
+    </p>
+  </div>
+</aside>
+
 <div class="toast" id="toast"></div>
 <script>
 'use strict';
@@ -834,7 +888,24 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     </ul>
   </section>
 </article>
-Rules: Focus on sales-relevant details: budget signals, timeline, decision makers, competition mentioned. Omit sections with no relevant content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Focus on sales-relevant details: budget signals, timeline, decision makers, competition mentioned. Omit sections with no relevant content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+social: `Analyze this audio recording and create a social media post based on it.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word title in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Post heading]</h2>
+    <p>[Write a personal, engaging social media post based on the recording. Use a warm and direct tone — as if speaking to followers or an audience. Keep it authentic and conversational. Maximum 500 words.]</p>
+  </section>
+  <section>
+    <h2>[Hashtags heading]</h2>
+    <p>[3–6 relevant hashtags based on the content]</p>
+  </section>
+</article>
+Rules: Keep it personal, punchy and social-media friendly. No corporate language. Max 500 words for the post. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -900,6 +971,16 @@ function setFormat(fmt) {
   document.querySelectorAll('.format-pill').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.fmt === fmt);
   });
+}
+
+// ── HJÄLP DIANE ───────────────────────────────────────────────────────────
+function openHelp() {
+  $('help-panel').classList.add('open');
+  $('help-overlay').classList.add('open');
+}
+function closeHelp() {
+  $('help-panel').classList.remove('open');
+  $('help-overlay').classList.remove('open');
 }
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
@@ -1622,6 +1703,8 @@ function init() {
   });
   setFormat(s.style);
   $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
+  $('helpBtn').onclick = openHelp;
+  $('help-overlay').onclick = closeHelp;
   $('historyBtn').onclick = openHistory;
   $('h-overlay').onclick = closeHistory;
   $('clearHistoryBtn').onclick = clearHistory;
