@@ -1022,10 +1022,39 @@ async function acquireWakeLock() {
 function releaseWakeLock() {
   if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
 }
-// Re-acquire when app returns to foreground during an active recording
+
+// ── KEEP-ALIVE AUDIO (iOS) ─────────────────────────────────────────────────
+// iOS suspends pages without active audio output even with Wake Lock.
+// A 1 Hz oscillator at near-zero gain is completely inaudible but signals
+// to iOS that audio output is active, preventing page suspension.
+let keepAliveCtx = null;
+function startKeepAlive() {
+  if (keepAliveCtx) return;
+  try {
+    keepAliveCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = keepAliveCtx.createOscillator();
+    const gain = keepAliveCtx.createGain();
+    osc.frequency.value = 1;    // 1 Hz — completely subsonic, inaudible
+    gain.gain.value = 0.001;    // near-zero gain — inaudible but not optimized away
+    osc.connect(gain);
+    gain.connect(keepAliveCtx.destination);
+    osc.start();
+  } catch(e) { /* not available */ }
+}
+function stopKeepAlive() {
+  if (!keepAliveCtx) return;
+  keepAliveCtx.close().catch(() => {});
+  keepAliveCtx = null;
+}
+
+// Re-acquire wake lock and resume audio contexts when returning to foreground
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
-  if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') acquireWakeLock();
+  if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') {
+    acquireWakeLock();
+    if (keepAliveCtx && keepAliveCtx.state === 'suspended') keepAliveCtx.resume().catch(() => {});
+    if (s.audioCtx && s.audioCtx.state === 'suspended') s.audioCtx.resume().catch(() => {});
+  }
 });
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
@@ -1129,8 +1158,9 @@ async function startRecording() {
     showError('Mikrofonåtkomst nekades. Tillåt mikrofon i webbläsarinställningarna.', false);
     return;
   }
-  // Keep screen on during recording
+  // Keep screen on + signal active audio to iOS (prevents page suspension)
   await acquireWakeLock();
+  startKeepAlive();
 
   // Detect if OS kills the microphone track (screen lock, background, interruption)
   s.stream.getTracks().forEach(track => {
@@ -1195,6 +1225,7 @@ function drawWave() {
 
 function stopRecording() {
   releaseWakeLock();
+  stopKeepAlive();
   if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') s.mediaRecorder.stop();
   clearInterval(s.timerRef);
   cancelAnimationFrame(s.raf);
