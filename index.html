@@ -977,10 +977,31 @@ function buildPrompt() {
   return extra + (PROMPTS[s.style] || PROMPTS.summary);
 }
 
+// ── HTML SANITIZER ────────────────────────────────────────────────────────
+// Whitelist only the tags the AI is instructed to return.
+// Strips all attributes and disallowed elements before injecting into DOM.
+const ALLOWED_TAGS = new Set(['article','section','h2','p','ul','ol','li','strong','em','br']);
+function sanitizeHtml(raw) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = raw;
+  (function clean(node) {
+    [...node.childNodes].forEach(child => {
+      if (child.nodeType === 3) return; // text node — keep
+      if (child.nodeType !== 1) { child.remove(); return; }
+      if (!ALLOWED_TAGS.has(child.tagName.toLowerCase())) { child.remove(); return; }
+      [...child.attributes].forEach(a => child.removeAttribute(a.name)); // strip all attrs
+      clean(child);
+    });
+  })(tmp);
+  return tmp.innerHTML;
+}
+
 // ── STATE ──────────────────────────────────────────────────────────────────
+const ALLOWED_MODELS = ['gemini-2.5-pro','gemini-2.5-flash','gemini-2.0-flash'];
+const _savedModel = localStorage.getItem(SM);
 const s = {
   key: localStorage.getItem(SK) || '',
-  model: localStorage.getItem(SM) || 'gemini-2.5-pro',
+  model: ALLOWED_MODELS.includes(_savedModel) ? _savedModel : 'gemini-2.5-pro',
   style: localStorage.getItem('vs_style') || 'summary',
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, elapsed: 0, paused: false, timerRef: null,
@@ -1294,7 +1315,7 @@ function showResult(html) {
   const meta = STYLE_META[s.style] || STYLE_META.summary;
   box.dataset.style = s.style;
   box.contentEditable = 'false';
-  box.innerHTML = html;
+  box.innerHTML = sanitizeHtml(html);
   $('resultLabel').textContent = meta.label;
   const badge = $('resultBadge');
   badge.textContent = meta.badge;
@@ -1590,7 +1611,8 @@ async function createGHIssue(repo) {
     });
     if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.message || 'GitHub API-fel ' + r.status); }
     const data = await r.json();
-    st.innerHTML = '✓ Issue skapad: <a class="gh-issue-link" href="' + data.html_url + '" target="_blank" rel="noopener">' + escHtml(data.html_url) + '</a>';
+    const safeUrl = (data.html_url || '').startsWith('https://github.com/') ? data.html_url : '#';
+    st.innerHTML = '✓ Issue skapad: <a class="gh-issue-link" href="' + escHtml(safeUrl) + '" target="_blank" rel="noopener noreferrer">' + escHtml(data.html_url || '') + '</a>';
     st.style.color = 'var(--success)';
     pinRepo(repo);
     toast('GitHub Issue skapad ✓');
