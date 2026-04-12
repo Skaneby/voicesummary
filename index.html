@@ -199,16 +199,22 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .participants-wrap input:focus{border-color:var(--accent)}
 .participants-wrap input::placeholder{color:var(--muted);font-size:.82rem}
 
-/* FORMAT PILLS */
-.format-row{display:flex;gap:8px;overflow-x:auto;width:100%;padding-bottom:4px;
-  scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.format-row::-webkit-scrollbar{display:none}
-.format-pill{flex-shrink:0;background:var(--card);border:1px solid var(--border);
-  color:var(--muted);padding:7px 13px;border-radius:100px;font-size:.78rem;font-weight:500;
-  cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;
-  transition:all .15s;line-height:1}
-.format-pill.active{background:var(--accent-dim);border-color:var(--accent);
-  color:var(--accent);font-weight:600}
+/* FORMAT GRID */
+.format-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:8px;width:min(100%,500px)}
+.format-card{background:var(--card);border:1px solid var(--border);border-left:3px solid transparent;
+  padding:10px 12px;border-radius:10px;cursor:pointer;text-align:left;
+  transition:all .15s;-webkit-tap-highlight-color:transparent}
+.format-card .fc-name{color:var(--text);font-weight:600;font-size:.84rem;margin-bottom:3px}
+.format-card .fc-desc{color:var(--muted);font-size:.72rem;line-height:1.4}
+.format-card[data-fmt="summary"]  {--fc:#e94560}
+.format-card[data-fmt="protocol"] {--fc:#4a9eff}
+.format-card[data-fmt="brief"]    {--fc:#ff8c42}
+.format-card[data-fmt="detailed"] {--fc:#3dd9c0}
+.format-card[data-fmt="sales"]    {--fc:#f0c040}
+.format-card[data-fmt="social"]   {--fc:#a855f7}
+.format-card.active{border-left-color:var(--fc);background:rgba(255,255,255,.04)}
+.format-card.active .fc-name{color:var(--fc)}
 
 /* PER-PRESET RESULT ACCENTS */
 .result-box[data-style="protocol"]{border-left-color:#4a9eff}
@@ -511,13 +517,31 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       </div>
       <div class="participants-wrap" style="max-width:none;width:min(100%,500px)">
         <label class="participants-label">Format</label>
-        <div class="format-row" id="formatRow">
-          <button class="format-pill" data-fmt="summary">Sammanfattning</button>
-          <button class="format-pill" data-fmt="protocol">Protokoll</button>
-          <button class="format-pill" data-fmt="brief">Kort</button>
-          <button class="format-pill" data-fmt="detailed">Detaljerad</button>
-          <button class="format-pill" data-fmt="sales">Säljmöte</button>
-          <button class="format-pill" data-fmt="social">Sociala medier</button>
+        <div class="format-grid" id="formatRow">
+          <button class="format-card" data-fmt="summary">
+            <div class="fc-name">Sammanfattning</div>
+            <div class="fc-desc">Övergripande sammanfattning med nyckelpoints</div>
+          </button>
+          <button class="format-card" data-fmt="protocol">
+            <div class="fc-name">Protokoll</div>
+            <div class="fc-desc">Formellt mötesprotokoll med beslut</div>
+          </button>
+          <button class="format-card" data-fmt="brief">
+            <div class="fc-name">Kort</div>
+            <div class="fc-desc">Kortfattad executive summary</div>
+          </button>
+          <button class="format-card" data-fmt="detailed">
+            <div class="fc-name">Detaljerad</div>
+            <div class="fc-desc">Komplett analys med full kontext</div>
+          </button>
+          <button class="format-card" data-fmt="sales">
+            <div class="fc-name">Säljmöte</div>
+            <div class="fc-desc">Kundinfo, situation &amp; nästa steg</div>
+          </button>
+          <button class="format-card" data-fmt="social">
+            <div class="fc-name">Sociala medier</div>
+            <div class="fc-desc">Personligt inlägg, max 500 ord</div>
+          </button>
         </div>
       </div>
     </section>
@@ -603,7 +627,15 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           Dela
         </button>
       </div>
-      <button class="btn-new" id="newBtn">Ny inspelning</button>
+      <div style="display:flex;gap:10px;width:100%;max-width:680px">
+        <button class="btn-sec" id="homeBtn" style="flex:0 0 auto;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Startsida
+        </button>
+        <button class="btn-new" id="newBtn" style="flex:1">Ny inspelning</button>
+      </div>
     </section>
 
     <!-- ERROR -->
@@ -996,7 +1028,7 @@ function getMime() {
 function setFormat(fmt) {
   s.style = fmt;
   localStorage.setItem('vs_style', fmt);
-  document.querySelectorAll('.format-pill').forEach(btn => {
+  document.querySelectorAll('.format-card').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.fmt === fmt);
   });
 }
@@ -1735,6 +1767,7 @@ function init() {
   $('editBtn').onclick = toggleEdit;
   $('shareBtn').onclick = share;
   $('newBtn').onclick = () => show('idle');
+  $('homeBtn').onclick = () => show('idle');
   $('retryBtn').onclick = () => { if (s.blob) process(s.blob, (s.mimeType||'audio/webm').split(';')[0]); else show('idle'); };
   $('errSettingsBtn').onclick = openSettings;
   $('settingsBtn').onclick = openSettings;
@@ -1742,7 +1775,7 @@ function init() {
   $('sSaveBtn').onclick = saveSettings;
   $('shareAppBtn').onclick = shareApp;
   $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
-  document.querySelectorAll('.format-pill').forEach(btn => {
+  document.querySelectorAll('.format-card').forEach(btn => {
     btn.onclick = () => setFormat(btn.dataset.fmt);
   });
   setFormat(s.style);
