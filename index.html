@@ -210,6 +210,33 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .format-pill.active{background:var(--accent-dim);border-color:var(--accent);
   color:var(--accent);font-weight:600}
 
+/* PER-PRESET RESULT ACCENTS */
+.result-box[data-style="protocol"]{border-left-color:#4a9eff}
+.result-box[data-style="protocol"] h2{color:#4a9eff;border-bottom-color:rgba(74,158,255,.2)}
+.result-box[data-style="brief"]{border-left-color:#ff8c42}
+.result-box[data-style="brief"] h2{color:#ff8c42;border-bottom-color:rgba(255,140,66,.2)}
+.result-box[data-style="detailed"]{border-left-color:#3dd9c0}
+.result-box[data-style="detailed"] h2{color:#3dd9c0;border-bottom-color:rgba(61,217,192,.2)}
+.result-box[data-style="sales"]{border-left-color:#f0c040}
+.result-box[data-style="sales"] h2{color:#f0c040;border-bottom-color:rgba(240,192,64,.2)}
+.result-box[data-style="social"]{border-left-color:#a855f7}
+.result-box[data-style="social"] h2{color:#a855f7;border-bottom-color:rgba(168,85,247,.2)}
+/* Panasonic theme: respect per-preset border color */
+html[data-theme="panasonic"] .result-box[data-style="protocol"]{border-left-color:#4a9eff}
+html[data-theme="panasonic"] .result-box[data-style="brief"]{border-left-color:#ff8c42}
+html[data-theme="panasonic"] .result-box[data-style="detailed"]{border-left-color:#3dd9c0}
+html[data-theme="panasonic"] .result-box[data-style="sales"]{border-left-color:#f0c040}
+html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:#a855f7}
+/* Result badge (preset name chip) */
+.result-badge{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:100px;
+  letter-spacing:.04em;text-transform:uppercase}
+.result-badge[data-style="summary"]{background:rgba(196,18,48,.15);color:var(--accent)}
+.result-badge[data-style="protocol"]{background:rgba(74,158,255,.15);color:#4a9eff}
+.result-badge[data-style="brief"]{background:rgba(255,140,66,.15);color:#ff8c42}
+.result-badge[data-style="detailed"]{background:rgba(61,217,192,.15);color:#3dd9c0}
+.result-badge[data-style="sales"]{background:rgba(240,192,64,.15);color:#f0c040}
+.result-badge[data-style="social"]{background:rgba(168,85,247,.15);color:#a855f7}
+
 /* EDIT */
 .result-box[contenteditable="true"]{outline:none;border-color:var(--accent);cursor:text;caret-color:var(--accent)}
 .btn-sec.is-editing{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
@@ -530,7 +557,8 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
     <section class="screen" id="screen-result">
       <div class="result-header">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Sammanfattning klar
+        <span id="resultLabel">Sammanfattning klar</span>
+        <span class="result-badge" id="resultBadge"></span>
       </div>
       <p id="resultTitle" style="display:none;font-weight:700;font-size:1rem;width:100%;max-width:680px;text-align:left"></p>
       <div class="result-box" id="resultBox"></div>
@@ -1220,10 +1248,25 @@ function toEmailHtml(raw) {
   return '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"></head>\n<body style="margin:0;padding:24px;background:#ffffff;font-family:Arial,Helvetica,sans-serif">\n' + d.innerHTML + '\n</body>\n</html>';
 }
 
+const STYLE_META = {
+  summary:  { label: 'Sammanfattning klar',    badge: 'Sammanfattning' },
+  protocol: { label: 'Protokoll klar',          badge: 'Protokoll' },
+  brief:    { label: 'Kortversion klar',         badge: 'Kort' },
+  detailed: { label: 'Detaljerad analys klar',   badge: 'Detaljerad' },
+  sales:    { label: 'Säljmöte sammanfattat',    badge: 'Säljmöte' },
+  social:   { label: 'Inlägg klart',             badge: 'Sociala medier' },
+};
+
 function showResult(html) {
   const box = $('resultBox');
+  const meta = STYLE_META[s.style] || STYLE_META.summary;
+  box.dataset.style = s.style;
   box.contentEditable = 'false';
   box.innerHTML = html;
+  $('resultLabel').textContent = meta.label;
+  const badge = $('resultBadge');
+  badge.textContent = meta.badge;
+  badge.dataset.style = s.style;
   $('editBtn').querySelector('span').textContent = 'Redigera';
   $('editBtn').classList.remove('is-editing');
   $('shareBtn').style.display = navigator.share ? '' : 'none';
@@ -1540,7 +1583,7 @@ function getHistory() {
 }
 function saveToHistory(html, title) {
   const history = getHistory();
-  history.unshift({ id: Date.now(), title: title || '', date: new Date().toISOString(), html });
+  history.unshift({ id: Date.now(), title: title || '', date: new Date().toISOString(), html, style: s.style });
   if (history.length > MAX_HISTORY) history.splice(MAX_HISTORY);
   localStorage.setItem(SH, JSON.stringify(history));
   updateHistoryBadge();
@@ -1625,6 +1668,7 @@ function loadFromHistory(id) {
   if (!item) return;
   s.resultHTML = item.html;
   s.title = item.title;
+  s.style = item.style || 'summary';
   closeHistory();
   showResult(item.html);
 }
