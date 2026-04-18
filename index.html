@@ -481,7 +481,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <div class="step-body">
             <div class="step-label">Klistra in nyckeln nedan</div>
             <div class="input-group" style="margin-top:8px;max-width:none">
-              <input type="password" id="setupKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+              <input type="password" id="setupKey" placeholder="AIza…" autocomplete="current-password" autocapitalize="off" spellcheck="false">
             </div>
           </div>
         </div>
@@ -696,7 +696,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
     </div>
     <div class="input-group">
       <label>Gemini API-nyckel</label>
-      <input type="password" id="sKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <input type="password" id="sKey" placeholder="AIza…" autocomplete="current-password" autocapitalize="off" spellcheck="false">
     </div>
     <div class="input-group">
       <label>Modell</label>
@@ -781,9 +781,17 @@ const SK = 'vs_key', SM = 'vs_model';
 const SGH = 'vs_gh_token', SGHR = 'vs_gh_repos';
 const STHEME = 'vs_theme';
 
+// Safe localStorage wrapper — throws SecurityError on Safari with "Block all cookies"
+const store = {
+  get(k, def = '') { try { return localStorage.getItem(k) || def; } catch { return def; } },
+  set(k, v)       { try { localStorage.setItem(k, v); } catch {} },
+  del(k)          { try { localStorage.removeItem(k); } catch {} },
+  json(k, def)    { try { return JSON.parse(localStorage.getItem(k) || 'null') ?? def; } catch { return def; } },
+};
+
 function setTheme(name) {
   document.documentElement.dataset.theme = name || 'original';
-  localStorage.setItem(STHEME, name || 'original');
+  store.set(STHEME, name || 'original');
   document.querySelectorAll('.theme-card').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.theme === (name || 'original'));
   });
@@ -999,11 +1007,11 @@ function sanitizeHtml(raw) {
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 const ALLOWED_MODELS = ['gemini-2.5-pro','gemini-2.5-flash','gemini-2.0-flash'];
-const _savedModel = localStorage.getItem(SM);
+const _savedModel = store.get(SM);
 const s = {
-  key: localStorage.getItem(SK) || '',
+  key: store.get(SK),
   model: ALLOWED_MODELS.includes(_savedModel) ? _savedModel : 'gemini-2.5-pro',
-  style: localStorage.getItem('vs_style') || 'summary',
+  style: store.get('vs_style', 'summary'),
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, elapsed: 0, paused: false, timerRef: null,
   audioCtx: null, analyser: null, raf: null,
@@ -1096,7 +1104,7 @@ function getMime() {
 // ── FORMAT ─────────────────────────────────────────────────────────────────
 function setFormat(fmt) {
   s.style = fmt;
-  localStorage.setItem('vs_style', fmt);
+  store.set('vs_style', fmt);
   document.querySelectorAll('.format-card').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.fmt === fmt);
   });
@@ -1116,8 +1124,8 @@ function closeHelp() {
 function openSettings() {
   $('sKey').value = s.key;
   $('sModel').value = s.model;
-  $('sGHToken').value = localStorage.getItem(SGH) || '';
-  const savedTheme = localStorage.getItem(STHEME) || 'original';
+  $('sGHToken').value = store.get(SGH);
+  const savedTheme = store.get(STHEME, 'original');
   document.querySelectorAll('.theme-card').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.theme === savedTheme);
   });
@@ -1132,11 +1140,11 @@ function saveSettings() {
   const k = $('sKey').value.trim();
   if (!k) { $('sKey').focus(); return; }
   s.key = k; s.model = $('sModel').value;
-  localStorage.setItem(SK, k);
-  localStorage.setItem(SM, s.model);
+  store.set(SK, k);
+  store.set(SM, s.model);
   const ghToken = $('sGHToken').value.trim();
-  if (ghToken) localStorage.setItem(SGH, ghToken);
-  else localStorage.removeItem(SGH);
+  if (ghToken) store.set(SGH, ghToken);
+  else store.del(SGH);
   closeSettings();
   toast('Inställningar sparade ✓');
   if (!document.querySelector('.screen.active') || $('screen-setup').classList.contains('active'))
@@ -1590,12 +1598,12 @@ Appen är helt gratis, ingen registrering krävs och dina inspelningar lämnar a
 
 // ── GITHUB ────────────────────────────────────────────────────────────────
 let ghAllRepos = [];   // fetched from API, cached for session
-function getPinnedRepos() { try { return JSON.parse(localStorage.getItem(SGHR) || '[]'); } catch { return []; } }
-function pinRepo(r) { const a = getPinnedRepos(); if (!a.includes(r)) { a.unshift(r); localStorage.setItem(SGHR, JSON.stringify(a)); } }
-function unpinRepo(r) { localStorage.setItem(SGHR, JSON.stringify(getPinnedRepos().filter(x => x !== r))); }
+function getPinnedRepos() { return store.json(SGHR, []); }
+function pinRepo(r) { const a = getPinnedRepos(); if (!a.includes(r)) { a.unshift(r); store.set(SGHR, JSON.stringify(a)); } }
+function unpinRepo(r) { store.set(SGHR, JSON.stringify(getPinnedRepos().filter(x => x !== r))); }
 
 async function openGitHub() {
-  const token = localStorage.getItem(SGH) || '';
+  const token = store.get(SGH);
   if (!token) { openSettings(); toast('Ange GitHub Token i inställningarna först'); return; }
   $('ghStatus').style.display = 'none';
   $('ghSearch').value = '';
@@ -1610,7 +1618,7 @@ function closeGitHub() {
 }
 
 async function fetchGHRepos() {
-  const token = localStorage.getItem(SGH) || '';
+  const token = store.get(SGH);
   $('ghRepoList').innerHTML = '<p style="font-size:.85rem;color:var(--muted)">Hämtar dina repos…</p>';
   try {
     // Fetch up to 100 repos sorted by last push
@@ -1665,7 +1673,7 @@ function repoRow(full, isPinned) {
 }
 
 async function createGHIssue(repo) {
-  const token = localStorage.getItem(SGH) || '';
+  const token = store.get(SGH);
   const title = s.title || 'Sammanfattning';
   s.resultHTML = $('resultBox').innerHTML;
   const body = toMarkdown(s.resultHTML);
@@ -1700,25 +1708,23 @@ function showError(msg, showSettings) {
 const SH = 'vs_history';
 const MAX_HISTORY = 40;
 
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem(SH) || '[]'); } catch { return []; }
-}
+function getHistory() { return store.json(SH, []); }
 function saveToHistory(html, title) {
   const history = getHistory();
   history.unshift({ id: Date.now(), title: title || '', date: new Date().toISOString(), html, style: s.style });
   if (history.length > MAX_HISTORY) history.splice(MAX_HISTORY);
-  localStorage.setItem(SH, JSON.stringify(history));
+  store.set(SH, JSON.stringify(history));
   updateHistoryBadge();
 }
 function deleteFromHistory(id) {
   const history = getHistory().filter(x => x.id !== id);
-  localStorage.setItem(SH, JSON.stringify(history));
+  store.set(SH, JSON.stringify(history));
   renderHistoryList();
   updateHistoryBadge();
 }
 function clearHistory() {
   if (!getHistory().length) return;
-  localStorage.removeItem(SH);
+  store.del(SH);
   renderHistoryList();
   updateHistoryBadge();
   toast('Historik rensad');
@@ -1758,7 +1764,7 @@ function renderHistoryList() {
 }
 function updateHistoryTitle(id, newTitle) {
   const history = getHistory().map(x => x.id === id ? { ...x, title: newTitle } : x);
-  localStorage.setItem(SH, JSON.stringify(history));
+  store.set(SH, JSON.stringify(history));
 }
 function editHistoryTitle(id, titleEl) {
   const current = getHistory().find(x => x.id === id)?.title || '';
@@ -1838,9 +1844,8 @@ function init() {
   $('setupSaveBtn').onclick = () => {
     const k = $('setupKey').value.trim();
     if (!k) { $('setupKey').focus(); return; }
-    s.key = k; localStorage.setItem(SK, k);
-    // model already defaulted to gemini-2.5-pro; persist it
-    localStorage.setItem(SM, s.model);
+    s.key = k; store.set(SK, k);
+    store.set(SM, s.model);
     show('idle');
   };
   $('setupKey').onkeydown = e => { if (e.key === 'Enter') $('setupSaveBtn').click(); };
@@ -1886,7 +1891,7 @@ function init() {
     btn.onclick = () => setTheme(btn.dataset.theme);
   });
   // Apply saved theme on load
-  setTheme(localStorage.getItem(STHEME) || 'original');
+  setTheme(store.get(STHEME, 'original'));
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
