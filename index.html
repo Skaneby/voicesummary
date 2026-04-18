@@ -504,6 +504,7 @@ html[data-theme="panasonic"] .icon-btn:hover,html[data-theme="panasonic"] .icon-
           <button class="format-pill" data-fmt="brief">Kort</button>
           <button class="format-pill" data-fmt="detailed">Detaljerad</button>
           <button class="format-pill" data-fmt="sales">Säljmöte</button>
+          <button class="format-pill" data-fmt="vibecoder">⚡ Vibe Prompt</button>
         </div>
       </div>
     </section>
@@ -863,7 +864,59 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     </ul>
   </section>
 </article>
-Rules: Focus on sales-relevant details: budget signals, timeline, decision makers, competition mentioned. Omit sections with no relevant content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Focus on sales-relevant details: budget signals, timeline, decision makers, competition mentioned. Omit sections with no relevant content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+vibecoder: `Analyze this audio recording of someone describing an app, feature, or product idea.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word project name in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+
+Your goal is to produce a structured prompt ready to paste directly into a vibe coding tool (Lovable, Bolt, v0, Cursor or similar).
+
+<article>
+  <section>
+    <h2>[Project Overview]</h2>
+    <p><strong>[Project name]</strong> — [One punchy sentence describing what it is and who it's for.]</p>
+    <p>[2–3 sentences on the core problem it solves and the main value proposition. Be concrete.]</p>
+  </section>
+  <section>
+    <h2>[Core Features]</h2>
+    <ul>
+      <li><strong>[Feature name]:</strong> [What it does and why it matters — one sentence]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Screens / User Flow]</h2>
+    <ul>
+      <li><strong>[Screen or step name]:</strong> [What the user sees and does here]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Design & Feel]</h2>
+    <ul>
+      <li>[Visual style, tone, color preferences, references or inspirations mentioned]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Technical Notes]</h2>
+    <ul>
+      <li>[Tech stack preferences, integrations, APIs, platform (web/iOS/Android), constraints or non-goals mentioned]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Out of Scope / Constraints]</h2>
+    <ul>
+      <li>[Anything explicitly excluded, deferred, or flagged as a limitation]</li>
+    </ul>
+  </section>
+</article>
+Rules:
+- Write the Core Features and Screens sections as if briefing a developer — specific and actionable.
+- If tech stack, platform or design preferences were NOT mentioned, omit those sections entirely.
+- Omit Out of Scope section if nothing was excluded.
+- Capture exact names, numbers and details from the recording.
+- Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
