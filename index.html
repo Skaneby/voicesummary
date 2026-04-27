@@ -212,7 +212,8 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .format-card[data-fmt="brief"]    {--fc:#ff8c42}
 .format-card[data-fmt="detailed"] {--fc:#3dd9c0}
 .format-card[data-fmt="sales"]    {--fc:#f0c040}
-.format-card[data-fmt="social"]   {--fc:#a855f7}
+.format-card[data-fmt="social"]    {--fc:#a855f7}
+.format-card[data-fmt="vibecoder"]{--fc:#f59e0b}
 .format-card.active{border-left-color:var(--fc);background:rgba(255,255,255,.04)}
 .format-card.active .fc-name{color:var(--fc)}
 
@@ -227,6 +228,8 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .result-box[data-style="sales"] h2{color:#f0c040;border-bottom-color:rgba(240,192,64,.2)}
 .result-box[data-style="social"]{border-left-color:#a855f7}
 .result-box[data-style="social"] h2{color:#a855f7;border-bottom-color:rgba(168,85,247,.2)}
+.result-box[data-style="vibecoder"]{border-left-color:#f59e0b}
+.result-box[data-style="vibecoder"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
 /* Panasonic theme: respect per-preset border color */
 html[data-theme="panasonic"] .result-box[data-style="protocol"]{border-left-color:#4a9eff}
 html[data-theme="panasonic"] .result-box[data-style="brief"]{border-left-color:#ff8c42}
@@ -242,6 +245,7 @@ html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:
 .result-badge[data-style="detailed"]{background:rgba(61,217,192,.15);color:#3dd9c0}
 .result-badge[data-style="sales"]{background:rgba(240,192,64,.15);color:#f0c040}
 .result-badge[data-style="social"]{background:rgba(168,85,247,.15);color:#a855f7}
+.result-badge[data-style="vibecoder"]{background:rgba(245,158,11,.15);color:#f59e0b}
 
 /* LETTER PRESET */
 .result-box[data-style="letter"]{border-left-color:#6e8efb}
@@ -514,7 +518,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <div class="step-body">
             <div class="step-label">Klistra in nyckeln nedan</div>
             <div class="input-group" style="margin-top:8px;max-width:none">
-              <input type="password" id="setupKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+              <input type="text" id="setupKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
             </div>
             <div class="step-hint" style="margin-top:6px">💡 Spara nyckeln i din lösenordshanterare — webbläsare kan rensa lagrad data.</div>
           </div>
@@ -591,6 +595,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="letter">
             <div class="fc-name">Formellt brev</div>
             <div class="fc-desc">Sakligt brev till myndighet eller organisation</div>
+          </button>
+          <button class="format-card" data-fmt="vibecoder">
+            <div class="fc-name">⚡ Vibe Prompt</div>
+            <div class="fc-desc">Prompt för Lovable, Bolt, v0, Cursor</div>
           </button>
         </div>
       </div>
@@ -764,7 +772,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         <button class="tip-btn" type="button" data-tip="tip-apikey">?</button>
       </div>
       <span class="tip-text" id="tip-apikey">Din personliga nyckel från Google AI Studio. Lagras bara lokalt i din webbläsare och skickas aldrig till Dianes servrar — bara direkt till Google.</span>
-      <input type="password" id="sKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <input type="text" id="sKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
     </div>
     <div class="input-group">
       <div style="display:flex;align-items:center;margin-bottom:6px">
@@ -780,7 +788,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
     </div>
     <div class="input-group">
       <label>GitHub Token (valfritt — för att skapa issues)</label>
-      <input type="password" id="sGHToken" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <input type="text" id="sGHToken" placeholder="ghp_…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
     </div>
     <button class="s-save" id="sSaveBtn">Spara</button>
     <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
@@ -1080,7 +1088,54 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     </ul>
   </section>
 </article>
-Rules: Use formal, respectful and objective language throughout. Be precise and factual. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Use formal, respectful and objective language throughout. Be precise and factual. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+vibecoder: `Analyze this audio recording of someone describing an app, feature, or product idea.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word project name in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+
+Your goal is to produce a structured prompt ready to paste directly into a vibe coding tool (Lovable, Bolt, v0, Cursor or similar).
+
+<article>
+  <section>
+    <h2>[Project Overview]</h2>
+    <p><strong>[Project name]</strong> — [One punchy sentence describing what it is and who it's for.]</p>
+    <p>[2–3 sentences on the core problem it solves and the main value proposition. Be concrete.]</p>
+  </section>
+  <section>
+    <h2>[Core Features]</h2>
+    <ul>
+      <li><strong>[Feature name]:</strong> [What it does and why it matters — one sentence]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Screens / User Flow]</h2>
+    <ul>
+      <li><strong>[Screen or step name]:</strong> [What the user sees and does here]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Design & Feel]</h2>
+    <ul>
+      <li>[Visual style, tone, color preferences, references or inspirations mentioned]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Technical Notes]</h2>
+    <ul>
+      <li>[Tech stack preferences, integrations, APIs, platform (web/iOS/Android), constraints mentioned]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Out of Scope]</h2>
+    <ul>
+      <li>[Anything explicitly excluded, deferred, or flagged as a limitation]</li>
+    </ul>
+  </section>
+</article>
+Rules: Write Core Features and Screens as if briefing a developer — specific and actionable. Omit Design, Technical Notes and Out of Scope sections if not mentioned. Capture exact names, numbers and details. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -1489,8 +1544,9 @@ const STYLE_META = {
   brief:    { label: 'Kortversion klar',         badge: 'Kort' },
   detailed: { label: 'Detaljerad analys klar',   badge: 'Detaljerad' },
   sales:    { label: 'Säljmöte sammanfattat',    badge: 'Säljmöte' },
-  social:   { label: 'Inlägg klart',             badge: 'Sociala medier' },
-  letter:   { label: 'Formellt brev klart',      badge: 'Formellt brev' },
+  social:     { label: 'Inlägg klart',             badge: 'Sociala medier' },
+  letter:     { label: 'Formellt brev klart',      badge: 'Formellt brev' },
+  vibecoder:  { label: 'Vibe Prompt klar',         badge: '⚡ Vibe Prompt' },
 };
 
 function showResult(html) {
@@ -1696,11 +1752,8 @@ async function shareCalendar() {
       await navigator.share({ files: [file], title }); return;
     }
   } catch(e) { if (e.name === 'AbortError') return; }
-  // Fallback: open URL directly — browser hands off to Calendar via MIME type
-  const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), { href: url }); // no download attr
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 15000);
+  // iOS Safari fallback: data: URI — Safari intercepts text/calendar and opens Calendar app directly
+  window.open('data:text/calendar;charset=utf-8,' + encodeURIComponent(ics), '_blank');
 }
 
 async function share() {
