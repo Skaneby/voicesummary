@@ -243,6 +243,39 @@ html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:
 .result-badge[data-style="sales"]{background:rgba(240,192,64,.15);color:#f0c040}
 .result-badge[data-style="social"]{background:rgba(168,85,247,.15);color:#a855f7}
 
+/* LETTER PRESET */
+.result-box[data-style="letter"]{border-left-color:#6e8efb}
+.result-box[data-style="letter"] h2{color:#6e8efb;border-bottom-color:rgba(110,142,251,.2)}
+html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:#6e8efb}
+.format-card[data-fmt="letter"]{--fc:#6e8efb}
+.result-badge[data-style="letter"]{background:rgba(110,142,251,.15);color:#6e8efb}
+
+/* FIND & REPLACE */
+.fnr-bar{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.fnr-row{display:flex;gap:6px;align-items:center}
+.fnr-input{flex:1;min-width:0;padding:7px 10px;background:var(--surface);
+  border:1px solid var(--border);border-radius:8px;color:var(--text);
+  font-size:.85rem;outline:none;-webkit-appearance:none}
+.fnr-input:focus{border-color:var(--accent)}
+.fnr-btn{flex-shrink:0;padding:7px 11px;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:.8rem;cursor:pointer;
+  white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.fnr-btn:active{opacity:.7}
+.fnr-label{font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.04em;white-space:nowrap}
+
+/* TOOLTIPS */
+.tip-btn{display:inline-flex;align-items:center;justify-content:center;
+  width:15px;height:15px;border-radius:50%;background:var(--border);
+  color:var(--muted);font-size:.6rem;font-weight:700;border:none;cursor:pointer;
+  flex-shrink:0;margin-left:4px;-webkit-tap-highlight-color:transparent;line-height:1;
+  vertical-align:middle}
+.tip-text{display:none;font-size:.75rem;color:var(--muted);line-height:1.5;
+  margin:4px 0 6px;padding:7px 10px;background:rgba(255,255,255,.04);
+  border-radius:7px;border-left:2px solid var(--border)}
+.tip-text.open{display:block}
+
 /* EDIT */
 .result-box[contenteditable="true"]{outline:none;border-color:var(--accent);cursor:text;caret-color:var(--accent)}
 .btn-sec.is-editing{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
@@ -509,15 +542,27 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         </svg>
       </button>
       <div class="participants-wrap">
-        <label class="participants-label" for="titleInput">Titel (valfritt)</label>
+        <div style="display:flex;align-items:center;margin-bottom:6px">
+          <label class="participants-label" for="titleInput" style="margin-bottom:0">Titel (valfritt)</label>
+          <button class="tip-btn" type="button" data-tip="tip-title">?</button>
+        </div>
+        <span class="tip-text" id="tip-title">Används som rubrik i sammanfattningen och i historiken. Lämna tomt om du vill att AI:n föreslår en titel automatiskt.</span>
         <input type="text" id="titleInput" placeholder="t.ex. Säljmöte 2025-04-04" autocomplete="off" spellcheck="false">
       </div>
       <div class="participants-wrap">
-        <label class="participants-label" for="participantsInput">Deltagare (valfritt)</label>
+        <div style="display:flex;align-items:center;margin-bottom:6px">
+          <label class="participants-label" for="participantsInput" style="margin-bottom:0">Deltagare (valfritt)</label>
+          <button class="tip-btn" type="button" data-tip="tip-participants">?</button>
+        </div>
+        <span class="tip-text" id="tip-participants">Hjälper AI:n att identifiera vem som säger vad i inspelningen. Ange namn och roll, t.ex. "Anna (projektledare), Björn (kund)".</span>
         <input type="text" id="participantsInput" placeholder="t.ex. Anna (projektledare), Björn (kund)" autocomplete="off" spellcheck="false">
       </div>
       <div class="participants-wrap" style="max-width:none;width:min(100%,500px)">
-        <label class="participants-label">Format</label>
+        <div style="display:flex;align-items:center;margin-bottom:6px">
+          <label class="participants-label" style="margin-bottom:0">Format</label>
+          <button class="tip-btn" type="button" data-tip="tip-format">?</button>
+        </div>
+        <span class="tip-text" id="tip-format">Välj hur inspelningen ska bearbetas. Varje format ger ett helt olika resultat — från mötesprotokoll till sociala medieinlägg.</span>
         <div class="format-grid" id="formatRow">
           <button class="format-card" data-fmt="summary">
             <div class="fc-name">Sammanfattning</div>
@@ -542,6 +587,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="social">
             <div class="fc-name">Sociala medier</div>
             <div class="fc-desc">Personligt inlägg, max 500 ord</div>
+          </button>
+          <button class="format-card" data-fmt="letter">
+            <div class="fc-name">Formellt brev</div>
+            <div class="fc-desc">Sakligt brev till myndighet eller organisation</div>
           </button>
         </div>
       </div>
@@ -588,6 +637,20 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       </div>
       <p id="resultTitle" style="display:none;font-weight:700;font-size:1rem;width:100%;max-width:680px;text-align:left"></p>
       <div class="result-box" id="resultBox"></div>
+      <div class="fnr-bar" id="fnrBar" style="display:none">
+        <div class="fnr-row">
+          <span class="fnr-label">Hitta</span>
+          <input class="fnr-input" id="fnrFind" placeholder="Söktext…" autocomplete="off" spellcheck="false">
+          <button class="fnr-btn" id="fnrPrev" title="Föregående träff">↑</button>
+          <button class="fnr-btn" id="fnrNext" title="Nästa träff">↓</button>
+        </div>
+        <div class="fnr-row">
+          <span class="fnr-label">Ersätt</span>
+          <input class="fnr-input" id="fnrReplace" placeholder="Ersättningstext…" autocomplete="off" spellcheck="false">
+          <button class="fnr-btn" id="fnrReplaceOne">Ersätt</button>
+          <button class="fnr-btn" id="fnrReplaceAll">Alla</button>
+        </div>
+      </div>
       <div class="btn-group">
         <button class="btn-sec" id="copyTxtBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -696,11 +759,19 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       </div>
     </div>
     <div class="input-group">
-      <label>Gemini API-nyckel</label>
+      <div style="display:flex;align-items:center;margin-bottom:6px">
+        <label style="margin-bottom:0">Gemini API-nyckel</label>
+        <button class="tip-btn" type="button" data-tip="tip-apikey">?</button>
+      </div>
+      <span class="tip-text" id="tip-apikey">Din personliga nyckel från Google AI Studio. Lagras bara lokalt i din webbläsare och skickas aldrig till Dianes servrar — bara direkt till Google.</span>
       <input type="password" id="sKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false">
     </div>
     <div class="input-group">
-      <label>Modell</label>
+      <div style="display:flex;align-items:center;margin-bottom:6px">
+        <label style="margin-bottom:0">Modell</label>
+        <button class="tip-btn" type="button" data-tip="tip-model">?</button>
+      </div>
+      <span class="tip-text" id="tip-model">2.5 Pro ger bäst kvalitet och förstår komplexa inspelningar bättre. Flash är snabbare och passar kortare inspelningar.</span>
       <select id="sModel">
         <option value="gemini-2.5-pro">gemini-2.5-pro (bäst kvalitet)</option>
         <option value="gemini-2.5-flash">gemini-2.5-flash (snabbare)</option>
@@ -975,7 +1046,41 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <p>[3–6 relevant hashtags based on the content]</p>
   </section>
 </article>
-Rules: Keep it personal, punchy and social-media friendly. No corporate language. Max 500 words for the post. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Keep it personal, punchy and social-media friendly. No corporate language. Max 500 words for the post. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+letter: `Analyze this audio recording and compose a formal letter based on its content.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [concise 4–6 word title describing the letter's purpose]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Date and sender heading]</h2>
+    <p>[Today's date. Sender's name and address if mentioned in the recording.]</p>
+  </section>
+  <section>
+    <h2>[Recipient heading]</h2>
+    <p>[Recipient name, authority or organisation, address — as mentioned. Use placeholders if not stated.]</p>
+  </section>
+  <section>
+    <h2>[Subject heading]</h2>
+    <p><strong>[Clear, concise subject line]</strong></p>
+  </section>
+  <section>
+    <h2>[Letter body heading]</h2>
+    <p>[Formal opening salutation.]</p>
+    <p>[State the matter clearly and objectively. Include all relevant facts, dates, reference numbers, amounts mentioned.]</p>
+    <p>[State any requests, demands or desired outcomes precisely.]</p>
+    <p>[Formal closing and sign-off.]</p>
+  </section>
+  <section>
+    <h2>[Attachments heading]</h2>
+    <ul>
+      <li>[List any mentioned attachments or enclosures, if applicable]</li>
+    </ul>
+  </section>
+</article>
+Rules: Use formal, respectful and objective language throughout. Be precise and factual. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -1385,6 +1490,7 @@ const STYLE_META = {
   detailed: { label: 'Detaljerad analys klar',   badge: 'Detaljerad' },
   sales:    { label: 'Säljmöte sammanfattat',    badge: 'Säljmöte' },
   social:   { label: 'Inlägg klart',             badge: 'Sociala medier' },
+  letter:   { label: 'Formellt brev klart',      badge: 'Formellt brev' },
 };
 
 function showResult(html) {
@@ -1399,6 +1505,7 @@ function showResult(html) {
   badge.dataset.style = s.style;
   $('editBtn').querySelector('span').textContent = 'Redigera';
   $('editBtn').classList.remove('is-editing');
+  $('fnrBar').style.display = 'none';
   $('shareBtn').style.display = navigator.share ? '' : 'none';
   const titleEl = $('resultTitle');
   if (s.title) { titleEl.textContent = s.title; titleEl.style.display = ''; }
@@ -1409,18 +1516,62 @@ function showResult(html) {
 function toggleEdit() {
   const box = $('resultBox');
   const btn = $('editBtn');
+  const fnrBar = $('fnrBar');
   if (box.isContentEditable) {
     box.contentEditable = 'false';
     s.resultHTML = box.innerHTML;
     btn.querySelector('span').textContent = 'Redigera';
     btn.classList.remove('is-editing');
+    fnrBar.style.display = 'none';
     toast('Ändringar sparade ✓');
   } else {
     box.contentEditable = 'true';
     box.focus();
     btn.querySelector('span').textContent = 'Klar';
     btn.classList.add('is-editing');
+    fnrBar.style.display = '';
+    $('fnrFind').focus();
   }
+}
+
+// ── FIND & REPLACE ────────────────────────────────────────────────────────
+function fnrFindNext(backward) {
+  const term = $('fnrFind').value;
+  if (!term) return;
+  $('resultBox').focus();
+  if (!window.find(term, false, !!backward, true, false, false, false))
+    toast('Ingen träff');
+}
+function fnrDoReplace() {
+  const term = $('fnrFind').value;
+  const repl = $('fnrReplace').value;
+  if (!term) return;
+  const sel = window.getSelection();
+  if (sel && sel.toString() === term) {
+    document.execCommand('insertText', false, repl);
+    s.resultHTML = $('resultBox').innerHTML;
+    fnrFindNext(false);
+  } else {
+    fnrFindNext(false);
+  }
+}
+function fnrDoReplaceAll() {
+  const term = $('fnrFind').value;
+  const repl = $('fnrReplace').value;
+  if (!term) return;
+  const box = $('resultBox');
+  const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let n;
+  while ((n = walker.nextNode())) nodes.push(n);
+  let count = 0;
+  nodes.forEach(node => {
+    if (!node.textContent.includes(term)) return;
+    node.textContent = node.textContent.split(term).join(repl);
+    count++;
+  });
+  s.resultHTML = box.innerHTML;
+  toast(count ? count + ' ersättning' + (count > 1 ? 'ar' : '') + ' gjord' + (count > 1 ? 'a' : '') : 'Ingen träff');
 }
 
 async function copyText() {
@@ -1893,6 +2044,27 @@ function init() {
   });
   // Apply saved theme on load
   setTheme(store.get(STHEME, 'original'));
+
+  // Find & Replace
+  $('fnrPrev').onclick = () => fnrFindNext(true);
+  $('fnrNext').onclick = () => fnrFindNext(false);
+  $('fnrReplaceOne').onclick = fnrDoReplace;
+  $('fnrReplaceAll').onclick = fnrDoReplaceAll;
+  $('fnrFind').onkeydown = e => { if (e.key === 'Enter') fnrFindNext(false); };
+
+  // Tooltips
+  document.querySelectorAll('.tip-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const tip = $(btn.dataset.tip);
+      const isOpen = tip.classList.contains('open');
+      document.querySelectorAll('.tip-text.open').forEach(t => t.classList.remove('open'));
+      if (!isOpen) tip.classList.add('open');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.tip-text.open').forEach(t => t.classList.remove('open'));
+  });
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
