@@ -1045,22 +1045,12 @@ Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [concise 4–6 word title in the detected language]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
-  <section>
-    <h2>[Post heading — naturally phrased, curiosity-driven, no clickbait]</h2>
-    <p>[Opening hook: one punchy sentence that grabs attention — a bold observation, a personal reflection, or a surprising truth from the recording. Sound like a real person, not a brand.]</p>
-    <p>[Body: share the story, insight or experience in a warm, direct, first-person voice. Build naturally — set the scene, share the tension or discovery, land on the key takeaway. Read like a human wrote it at 11pm, not a content team at 9am. Max 400 words total for the post.]</p>
-    <p>[Closing line: end with something that invites thought or resonates emotionally — a question, a quiet truth, or a call to reflect. No "follow me" or "like and share".]</p>
-  </section>
-  <section>
-    <h2>[SEO & discovery]</h2>
-    <p>[Write 1–2 sentences that naturally embed the core topic keywords — phrased as a plain-language summary a search engine or AI model would index. No keyword stuffing. This should read as a natural continuation of the post, not a separate block.]</p>
-  </section>
-  <section>
-    <h2>[Hashtags]</h2>
-    <p>[5–8 hashtags: mix of broad reach (#ledarskap, #entrepreneurship), niche topic tags, and 1–2 long-tail conversational tags that match how people actually search. Place the most relevant first.]</p>
-  </section>
+  <p>[Opening hook: one punchy sentence — a bold observation, personal reflection, or surprising truth. Sound like a real person, not a brand.]</p>
+  <p>[Story or insight: share the experience in a warm, first-person voice. Set the scene, build naturally, land on the key takeaway. Read like a human wrote it, not a content team. 200–350 words.]</p>
+  <p>[Closing line: a question, quiet truth, or reflection that invites thought. No "follow me" or "like and share".]</p>
+  <p>[5–8 hashtags as plain text: #tag1 #tag2 #tag3 — mix broad reach, niche topic, and 1–2 long-tail conversational tags. No heading, just the tags on one line.]</p>
 </article>
-Rules: Human voice throughout — no corporate language, no "I am excited to share", no bullet-point summaries masquerading as posts. The SEO section must flow naturally, not read like metadata. Max 500 words total. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+Rules: Human voice throughout — no corporate language, no "I am excited to share", no bullet-point summaries. Weave the core topic keywords naturally into the body so the post is discoverable by both search engines and AI models (GEO) — no separate keyword section, just fluent language. Max 500 words total. Use only: article, p, strong, em. No section, h2, ul, li, CSS, class/id, inline styles or scripts.`,
 
 letter: `Analyze this audio recording and compose a formal letter based on its content.
 Detect the language being spoken and respond ENTIRELY in that same language.
@@ -1765,17 +1755,27 @@ async function shareCalendar() {
 async function share() {
   s.resultHTML = $('resultBox').innerHTML;
   const title = s.title || 'Sammanfattning';
-  const richText = toRichText(s.resultHTML);
 
-  // Build HTML file attachment
+  // Social format: share clean plain text (no headings) for direct paste to social apps
+  if (s.style === 'social') {
+    const d = document.createElement('div');
+    d.innerHTML = s.resultHTML;
+    const text = [...d.querySelectorAll('p')]
+      .map(p => p.textContent.trim())
+      .filter(Boolean)
+      .join('\n\n');
+    try { await navigator.share({ text }); } catch { /* cancelled */ }
+    return;
+  }
+
+  // Other formats: rich text body + HTML file attachment
+  const richText = toRichText(s.resultHTML);
   let files = [];
   try {
     const blob = new Blob([toEmailHtml(s.resultHTML)], { type: 'text/html' });
     const fname = title.replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g, '').trim() || 'sammanfattning';
     files = [new File([blob], fname + '.html', { type: 'text/html' })];
   } catch { /* no file */ }
-
-  // Share: rich text body + HTML file if supported
   try {
     const payload = { title, text: richText };
     if (files.length && navigator.canShare && navigator.canShare({ files })) payload.files = files;
