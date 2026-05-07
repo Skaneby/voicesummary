@@ -1468,7 +1468,15 @@ async function generate(base64, mime) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
     if (r.status === 400) throw new Error('Ogiltig API-nyckel. Kontrollera att du kopierade hela nyckeln från aistudio.google.com och försök igen.');
-    if (r.status === 403) throw new Error('Åtkomst nekad. Trolig orsak: modellen ' + s.model + ' kräver att fakturering är aktiverat på ditt Google-konto. Byt till gemini-2.5-flash i Inställningar — den fungerar med alla gratisnycklar.');
+    if (r.status === 403) {
+      if (s.model !== 'gemini-2.5-flash') {
+        const blocked = s.model;
+        s.model = 'gemini-2.5-flash';
+        store.set(SM, s.model);
+        throw new Error(blocked + ' kräver fakturering på ditt Google-konto. Diane har automatiskt bytt till gemini-2.5-flash — tryck Försök igen.');
+      }
+      throw new Error('Åtkomst nekad (403). Kontrollera att API-nyckeln är aktiv på aistudio.google.com.');
+    }
     if (r.status === 429) throw new Error('Kvotgränsen nådd för din API-nyckel. Vänta en stund och försök igen, eller aktivera fakturering på ditt Google-konto för högre gränser.');
     throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
   }
