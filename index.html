@@ -1477,7 +1477,16 @@ async function generate(base64, mime) {
       }
       throw new Error('Åtkomst nekad (403). Kontrollera att API-nyckeln är aktiv på aistudio.google.com.');
     }
-    if (r.status === 429) throw new Error('Kvotgränsen nådd för din API-nyckel. Vänta en stund och försök igen, eller aktivera fakturering på ditt Google-konto för högre gränser.');
+    if (r.status === 429) {
+      const isZeroQuota = apiMsg.includes('limit: 0');
+      if (isZeroQuota && s.model !== 'gemini-2.5-flash') {
+        const blocked = s.model;
+        s.model = 'gemini-2.5-flash';
+        store.set(SM, s.model);
+        throw new Error(blocked + ' är inte tillgänglig på gratistier (kvot: 0). Diane har automatiskt bytt till gemini-2.5-flash — tryck Försök igen.');
+      }
+      throw new Error('Kvotgränsen nådd för din API-nyckel. Vänta en stund och försök igen, eller aktivera fakturering på ditt Google-konto för högre gränser.');
+    }
     throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
   }
   const d = await r.json();
