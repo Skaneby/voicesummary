@@ -1460,7 +1460,11 @@ async function generate(base64, mime) {
           { inline_data: { mime_type: mime, data: base64 } },
           { text: buildPrompt() }
         ]}],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
+          thinkingConfig: { thinkingBudget: 2048 }
+        }
       })
     }
   );
@@ -1490,7 +1494,12 @@ async function generate(base64, mime) {
     throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
   }
   const d = await r.json();
-  let txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const candidate = d.candidates?.[0];
+  const finishReason = candidate?.finishReason;
+  if (finishReason === 'MAX_TOKENS') throw new Error('Svaret blev för långt för att slutföra. Prova en kortare inspelning, eller byt till gemini-2.5-flash i Inställningar för högre tokenbudget.');
+  if (finishReason === 'SAFETY') throw new Error('Svaret blockerades av säkerhetsfilter. Prova igen.');
+  let txt = candidate?.content?.parts?.[0]?.text || '';
+  if (!txt) throw new Error('Tomt svar från Gemini. Kontrollera att inspelningen innehåller ljud och försök igen.');
   txt = txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
   const titleMatch = txt.match(/^TITLE:\s*(.+?)[\r\n]/i);
   const suggestedTitle = titleMatch ? titleMatch[1].trim() : '';
