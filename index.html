@@ -779,10 +779,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         <label style="margin-bottom:0">Modell</label>
         <button class="tip-btn" type="button" data-tip="tip-model">?</button>
       </div>
-      <span class="tip-text" id="tip-model">2.5 Pro ger bäst kvalitet och förstår komplexa inspelningar bättre. Flash är snabbare och passar kortare inspelningar.</span>
+      <span class="tip-text" id="tip-model">Flash fungerar med alla API-nycklar inklusive gratistier och är snabb. Pro ger bättre kvalitet på komplexa inspelningar men kräver att fakturering är aktiverat på ditt Google-konto.</span>
       <select id="sModel">
-        <option value="gemini-2.5-pro">gemini-2.5-pro (bäst kvalitet)</option>
-        <option value="gemini-2.5-flash">gemini-2.5-flash (snabbare)</option>
+        <option value="gemini-2.5-flash">gemini-2.5-flash (standard, gratis)</option>
+        <option value="gemini-2.5-pro">gemini-2.5-pro (bäst kvalitet, kräver fakturering)</option>
         <option value="gemini-2.0-flash">gemini-2.0-flash</option>
       </select>
     </div>
@@ -1167,7 +1167,7 @@ const ALLOWED_MODELS = ['gemini-2.5-pro','gemini-2.5-flash','gemini-2.0-flash'];
 const _savedModel = store.get(SM);
 const s = {
   key: store.get(SK),
-  model: ALLOWED_MODELS.includes(_savedModel) ? _savedModel : 'gemini-2.5-pro',
+  model: ALLOWED_MODELS.includes(_savedModel) ? _savedModel : 'gemini-2.5-flash',
   style: store.get('vs_style', 'summary'),
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, elapsed: 0, paused: false, timerRef: null,
@@ -1466,7 +1466,11 @@ async function generate(base64, mime) {
   );
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
-    throw new Error(e.error?.message || 'Gemini API-fel (' + r.status + ')');
+    const apiMsg = e.error?.message || '';
+    if (r.status === 400) throw new Error('Ogiltig API-nyckel. Kontrollera att du kopierade hela nyckeln från aistudio.google.com och försök igen.');
+    if (r.status === 403) throw new Error('Åtkomst nekad. Trolig orsak: modellen ' + s.model + ' kräver att fakturering är aktiverat på ditt Google-konto. Byt till gemini-2.5-flash i Inställningar — den fungerar med alla gratisnycklar.');
+    if (r.status === 429) throw new Error('Kvotgränsen nådd för din API-nyckel. Vänta en stund och försök igen, eller aktivera fakturering på ditt Google-konto för högre gränser.');
+    throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
   }
   const d = await r.json();
   let txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
