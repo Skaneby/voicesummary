@@ -1449,7 +1449,7 @@ function blobToBase64(blob) {
 }
 
 // ── GEMINI GENERATE (inline base64 — no CORS issues) ─────────────────────
-async function generate(base64, mime) {
+async function generate(base64, mime, attempt = 0) {
   const r = await fetch(
     API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
     {
@@ -1490,6 +1490,15 @@ async function generate(base64, mime) {
         throw new Error(blocked + ' är inte tillgänglig på gratistier (kvot: 0). Diane har automatiskt bytt till gemini-2.5-flash — tryck Försök igen.');
       }
       throw new Error('Kvotgränsen nådd för din API-nyckel. Vänta en stund och försök igen, eller aktivera fakturering på ditt Google-konto för högre gränser.');
+    }
+    if (r.status === 503 || r.status === 529) {
+      if (attempt < 3) {
+        const delay = (attempt + 1) * 3000;
+        $('workSub').textContent = 'Geminis servrar är belastade — försöker igen om ' + ((delay/1000)) + 's… (' + (attempt+1) + '/3)';
+        await new Promise(res => setTimeout(res, delay));
+        return generate(base64, mime, attempt + 1);
+      }
+      throw new Error('Geminis servrar är tillfälligt överbelastade. Vänta en minut och tryck Försök igen.');
     }
     throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
   }
