@@ -101,16 +101,99 @@ Drafted 2026-05-13. Status: **pending verification — do not start implementing
 
 ## Phase 2 — App refactor (week 1–2)
 
-- [ ] Remove API-key input UI from settings ([index.html:1281](../index.html#L1281) area)
-- [ ] Remove `s.key` from state, remove `vs_key` localStorage usage
-- [ ] Remove `gemini-2.5-pro`/`gemini-2.0-flash` model picker (server decides model)
-- [ ] Add `auth.js` module: Google Sign-In on Android, Apple Sign-In on iOS (Apple **requires** Apple Sign-In if any other social login is offered)
-- [ ] Add paywall screen (`#screen-paywall`): "Starta gratis i 7 dagar, sedan 40 kr/månad"
-- [ ] Replace direct `fetch(API_BASE + ...)` with `fetch(API_PROXY + '/summarize', { headers: { Authorization: 'Bearer ' + idToken } })`
-- [ ] Update `sanitizeHtml()` call site — server returns identical shape, no change needed
-- [ ] Update error handling for new HTTP codes: `401` (re-sign-in), `402` (paywall), `429` (cap reached), `503` (already handled)
-- [ ] Add "Hantera prenumeration" link in settings → RevenueCat customer portal URL or platform-native subscription manager
-- [ ] Add "Radera konto" button → calls `/delete-account` + signs out
+Goal: transform [index.html](../index.html) on the `mobile-app` branch into a
+client that authenticates with Google, checks subscription state against the
+backend, and proxies all Gemini calls through `/summarize` instead of holding
+its own API key. Stays single-file (no build step in Phase 2 — Capacitor
+adds bundling in Phase 3).
+
+**Locked decisions:**
+
+- [x] **GitHub Issues integration: REMOVE entirely.** Consumer app, paid subscription — power-user features add complexity, security surface (PATs in localStorage), and Play Store data-safety questions. The PWA on `main` keeps it for existing users.
+- [x] Settings panel content: keep theme picker + format picker; everything else (API key, model, GitHub token) goes away.
+
+**Constants to update at the top of the script section:**
+
+```
+const API_PROXY    = 'https://diane-api.johan-skaneby.workers.dev'; // until custom domain
+const GOOGLE_OAUTH_CLIENT_ID = '732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com';
+```
+
+### 2.0 Backend extension: `/me` endpoint
+
+Without this, the client can't know "am I subscribed?" without attempting `/summarize`. Required for routing between paywall and main screens.
+
+- [ ] `GET /me` — verify token, return `{ sub_active, period_end, summaries_used, audio_seconds_used, caps: { summaries, audio_seconds } }`
+- [ ] No D1 writes — pure read
+
+### 2.1 Auth: Google Sign-In via GIS web SDK
+
+- [ ] Load `https://accounts.google.com/gsi/client` script
+- [ ] Add `#screen-signin` screen with "Logga in med Google" button
+- [ ] On sign-in callback: store the ID token (in-memory + sessionStorage, NOT localStorage — ID tokens are short-lived)
+- [ ] Track sign-in state in `s.idToken`, `s.googleSub`, `s.email`
+- [ ] Auto-refresh token on expiry (GIS provides a renewal flow; for v1 we can prompt re-sign-in when a 401 comes back from the backend)
+
+### 2.2 Subscription gate
+
+- [ ] On app load (after sign-in): call `/me`, branch:
+  - `sub_active = 1` and `period_end > now` → main app (idle screen)
+  - else → paywall screen
+- [ ] Re-check `/me` when returning from a presumed subscription flow
+
+### 2.3 Remove deprecated PWA UI
+
+- [ ] Remove `#setup` (API key input) screen entirely
+- [ ] Remove `sKey`, `sModel` from settings panel
+- [ ] Remove model picker — server controls model via `GEMINI_MODEL` env var
+- [ ] Decision pending: GitHub Issues (`#gh-panel`, GitHub token field, repo browse UI — ~250 lines)
+
+### 2.4 Paywall screen
+
+- [ ] New `#screen-paywall`: "Starta gratis i 7 dagar, sedan 40 kr/månad"
+- [ ] Button: **"Prenumerera"** — in browser mode, shows "Tillgängligt i appen för Android" disclaimer. In Capacitor (Phase 3), this triggers RevenueCat purchase flow.
+- [ ] Secondary link: "Logga ut" (re-prompt different account)
+- [ ] Secondary link: "Radera konto" → calls `/account/delete` + signs out
+
+### 2.5 Replace Gemini call with proxy call
+
+- [ ] Replace `fetch(API_BASE + ...)` in `runSummary()` with:
+  ```js
+  fetch(API_PROXY + '/summarize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + s.idToken },
+    body: JSON.stringify({ prompt, audio_base64, audio_mime, audio_seconds })
+  })
+  ```
+- [ ] Server returns Gemini's full response unchanged — existing `sanitizeHtml()` and parsing code keeps working
+- [ ] Keep all 7 (or 8) format presets — they're prompt-text only, server-agnostic
+
+### 2.6 Error handling
+
+| Status | Meaning | UI action |
+|--------|---------|-----------|
+| 401 missing_auth / invalid_token | Token expired or rejected | Sign user out, return to sign-in screen |
+| 402 not_subscribed / expired | Sub lapsed | Route to paywall |
+| 429 rate_limited | Burst limit | Toast: "Vänta en stund och försök igen" |
+| 429 summary_cap_reached / audio_cap_reached | Monthly cap | Toast with cap info + days until reset |
+| 503 server_misconfigured | Backend issue (shouldn't happen post-launch) | Generic error toast |
+| 5xx other | Gemini upstream issue | Existing retry logic still applies |
+
+### 2.7 Account management UI
+
+- [ ] Settings panel: replace the API key section with:
+  - User email (read-only, "Inloggad som ...")
+  - "Hantera prenumeration" → opens `https://play.google.com/store/account/subscriptions` (Android) or `https://apps.apple.com/account/subscriptions` (iOS)
+  - "Radera konto" button (with confirmation modal in Swedish)
+  - "Logga ut"
+
+### 2.8 Test plan
+
+- [ ] Sign in via GIS in Chrome → verify `/me` returns `sub_active: 0` → paywall shown
+- [ ] Manually flip `sub_active: 1` in D1 → reload → main app shown
+- [ ] Record audio → /summarize call → summary rendered
+- [ ] Click "Radera konto" → confirm → /account/delete called → returned to sign-in screen
+- [ ] Manually delete user in D1 → try /summarize → 401 → returned to sign-in
 
 ## Phase 3 — Capacitor wrap (week 2)
 

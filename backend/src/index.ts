@@ -23,7 +23,7 @@ interface Env {
   RATE_LIMITER: RateLimit;
 }
 
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 
 // Origins allowed to call the API from a browser context. Native curl /
 // server-to-server requests (no Origin header) are unaffected — CORS is a
@@ -66,6 +66,9 @@ export default {
           }),
         );
 
+      case "/me":
+        return methodGuard(request, "GET", () => handleMe(request, env));
+
       case "/summarize":
         return methodGuard(request, "POST", () =>
           handleSummarize(request, env),
@@ -86,6 +89,58 @@ export default {
     }
   },
 } satisfies ExportedHandler<Env>;
+
+async function handleMe(request: Request, env: Env): Promise<Response> {
+  if (
+    !env.GOOGLE_OAUTH_CLIENT_ID ||
+    env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_")
+  ) {
+    return cors(request, json({ error: "server_misconfigured" }, 503));
+  }
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return cors(request, json({ error: "missing_auth" }, 401));
+  }
+  const token = authHeader.slice("Bearer ".length).trim();
+
+  let claims;
+  try {
+    claims = await verifyGoogleToken(token, env.GOOGLE_OAUTH_CLIENT_ID);
+  } catch {
+    return cors(request, json({ error: "invalid_token" }, 401));
+  }
+
+  // Upsert so the row exists if this is the user's first sign-in. The
+  // webhook also creates rows but won't have fired for non-subscribers.
+  const user = await upsertUser(env.DB, claims.sub, claims.email ?? null);
+
+  const caps = {
+    summaries: Number(env.USAGE_CAP_SUMMARIES) || 100,
+    audio_seconds: Number(env.USAGE_CAP_AUDIO_SECONDS) || 3600,
+  };
+
+  // Re-evaluate sub_active server-side instead of trusting the stored flag —
+  // catches the case where period_end has passed but the EXPIRATION webhook
+  // hasn't arrived yet.
+  const now = Math.floor(Date.now() / 1000);
+  const subActive =
+    user.sub_active === 1 &&
+    (user.period_end == null || user.period_end > now)
+      ? 1
+      : 0;
+
+  return cors(
+    request,
+    json({
+      email: user.email,
+      sub_active: subActive,
+      period_end: user.period_end,
+      summaries_used: user.summaries_used,
+      audio_seconds_used: user.audio_seconds_used,
+      caps,
+    }),
+  );
+}
 
 async function handleSummarize(
   request: Request,
