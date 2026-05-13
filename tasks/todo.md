@@ -12,11 +12,11 @@ Drafted 2026-05-13. Status: **pending verification — do not start implementing
 
 ## Open decisions (need answers before Phase 1)
 
-- [ ] Domain name for the backend (e.g. `api.diane.app`, `diane.skaneby.dev`, …)
+- [x] **Domain name for the backend:** `diane-api.skaneby.se` (subdomain of existing `skaneby.se` — no new domain purchase needed). DNS path TBD (move to Cloudflare vs CNAME at existing registrar).
 - [ ] Package name / app ID (e.g. `app.diane.android`, `se.skaneby.diane`)
 - [ ] Privacy policy: template (TermsFeed/iubenda) or lawyer-drafted?
-- [ ] Launch geography: Sweden only first, or worldwide from day 1?
-- [ ] Support email
+- [x] **Launch geography:** Sweden only (Play store country restriction).
+- [x] **Support email:** Johan.skaneby@gmail.com
 - [ ] Free trial length: 7 days (recommended) vs 14 days
 - [ ] Monthly usage cap per subscriber (recommended: 60 min audio OR 100 summaries, whichever first)
 
@@ -43,21 +43,52 @@ Drafted 2026-05-13. Status: **pending verification — do not start implementing
 
 ## Phase 1 — Backend proxy (week 1)
 
-- [ ] Register domain (depends on decision above)
-- [ ] Create Cloudflare account + Workers project `diane-api`
-- [ ] D1 database with one table: `users (id TEXT PK, sub_active INT, period_end INT, audio_seconds_used INT, period_started INT)`
-- [ ] `POST /summarize` endpoint:
-  - [ ] Verify `Authorization: Bearer <Google ID token>` via Google JWKS
-  - [ ] Look up user; reject if `sub_active != 1` or `period_end < now`
-  - [ ] Enforce monthly usage cap (reject with structured error so client can surface it)
-  - [ ] Forward multipart audio body to Gemini, stream response back
-  - [ ] Increment usage counter atomically
-- [ ] `POST /revenuecat-webhook` endpoint:
-  - [ ] Verify shared secret header
-  - [ ] Handle `INITIAL_PURCHASE`, `RENEWAL`, `CANCELLATION`, `EXPIRATION`, `BILLING_ISSUE`, `REFUND` — update `users` row
-- [ ] `POST /delete-account` endpoint (required by Play + Apple)
+### 1.0 Foundation (done)
+
+- [x] GCP project `diane-prod-skaneby` created with dedicated "Diane" billing account
+- [x] Generative Language API enabled
+- [x] Restricted Gemini API key created (locked to `generativelanguage.googleapis.com`)
+- [x] Cloudflare account + `workers.dev` subdomain set up
+- [x] Worker project scaffolded in `backend/` (TypeScript, Wrangler 4.90.1)
+- [x] Stub routes deployed and reachable at `https://diane-api.johan-skaneby.workers.dev`
+- [x] `GEMINI_API_KEY` uploaded as Worker secret (`/health` confirms `has_gemini_key: true`)
+
+### 1.1 Custom domain (next)
+
+- [ ] Add CNAME `diane-api.skaneby.se` → Worker, via one.com DNS panel
+- [ ] Add `diane-api.skaneby.se` as a Custom Domain in Cloudflare Workers settings
+- [ ] Uncomment `routes` in `backend/wrangler.jsonc`
+- [ ] Verify `https://diane-api.skaneby.se/health` works
+
+### 1.2 Data layer
+
+- [ ] D1 database `diane-prod` provisioned via `wrangler d1 create`
+- [ ] Schema: `users (id TEXT PK, email TEXT, sub_active INT, period_end INT, period_started INT, audio_seconds_used INT, summaries_used INT, created_at INT, updated_at INT, deleted_at INT)`
+- [ ] Bind D1 in `wrangler.jsonc`
+- [ ] Migration script in `backend/schema.sql`
+
+### 1.3 `POST /summarize` (real)
+
+- [ ] Verify `Authorization: Bearer <Google ID token>` via Google JWKS (cached in Worker)
+- [ ] Look up user by Google `sub`; reject if `sub_active != 1` or `period_end < now` (402)
+- [ ] Enforce monthly usage cap (429 with structured error)
+- [ ] Forward multipart audio body to Gemini, stream response back
+- [ ] Increment usage counter atomically
+
+### 1.4 `POST /webhook/revenuecat`
+
+- [ ] Verify shared secret header
+- [ ] Handle `INITIAL_PURCHASE`, `RENEWAL`, `CANCELLATION`, `EXPIRATION`, `BILLING_ISSUE`, `REFUND` — update `users` row
+
+### 1.5 `POST /account/delete`
+
+- [ ] Soft-delete the user row (set `deleted_at`, clear PII)
+- [ ] Required by Play + Apple
+
+### 1.6 Hardening
+
 - [ ] Rate limit per user (Workers KV counter, 60 req/min)
-- [ ] Deploy to chosen domain via `wrangler deploy`
+- [ ] Restrict CORS origins (capacitor://localhost, http://localhost:*) — drop `*`
 - [ ] Smoke test: curl with fake token → 401; with valid token but no sub → 402; with sub → proxies to Gemini
 
 ## Phase 2 — App refactor (week 1–2)
@@ -180,7 +211,7 @@ Per 40 SEK subscription, in Sweden:
 |------------------------|---------------|
 | Play Console           | $25 one-time  |
 | Apple Developer (for iOS phase) | ~$105/yr |
-| Domain (e.g. `.app`)   | ~150 SEK/yr   |
+| Domain                 | 0 SEK (subdomain of existing `skaneby.se`) |
 | Cloudflare Workers     | 0 SEK (free tier covers ~100K requests/day) |
 | RevenueCat             | 0 SEK (under $2.5K MRR) |
 | D1 database            | 0 SEK (free tier) |
