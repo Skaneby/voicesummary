@@ -119,81 +119,39 @@ const API_PROXY    = 'https://diane-api.johan-skaneby.workers.dev'; // until cus
 const GOOGLE_OAUTH_CLIENT_ID = '732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com';
 ```
 
-### 2.0 Backend extension: `/me` endpoint
+### 2.0 Backend extension: `/me` endpoint — done
 
-Without this, the client can't know "am I subscribed?" without attempting `/summarize`. Required for routing between paywall and main screens.
+- [x] `GET /me` — verifies token, upserts user row (first-touch creation), returns email + sub_active + period_end + usage + caps
+- [x] Server re-evaluates sub_active against current time so an expired-but-not-yet-EXPIRATION-webhook'd period reports as inactive
 
-- [ ] `GET /me` — verify token, return `{ sub_active, period_end, summaries_used, audio_seconds_used, caps: { summaries, audio_seconds } }`
-- [ ] No D1 writes — pure read
+### 2.1 — 2.7 Client refactor — done
 
-### 2.1 Auth: Google Sign-In via GIS web SDK
+All items below landed in a single commit (`347caab`):
 
-- [ ] Load `https://accounts.google.com/gsi/client` script
-- [ ] Add `#screen-signin` screen with "Logga in med Google" button
-- [ ] On sign-in callback: store the ID token (in-memory + sessionStorage, NOT localStorage — ID tokens are short-lived)
-- [ ] Track sign-in state in `s.idToken`, `s.googleSub`, `s.email`
-- [ ] Auto-refresh token on expiry (GIS provides a renewal flow; for v1 we can prompt re-sign-in when a 401 comes back from the backend)
+- [x] Google Identity Services script loaded async in `<head>`
+- [x] `#screen-signin` with GIS-rendered button
+- [x] On credential callback: token saved to `sessionStorage`, JWT decoded for instant email display
+- [x] State `s` holds `idToken`, `googleSub`, `email`, `subActive`, `periodEnd`, `summariesUsed`, `audioSecondsUsed`, `caps`
+- [x] App-load routing: stashed token → `/me` → idle vs paywall vs signin
+- [x] `#screen-paywall` with 7-day trial copy, feature bullets, subscribe button (placeholder until Phase 3), log out, delete account
+- [x] `#screen-setup` removed entirely; `sKey`, `sModel`, `sGHToken` removed from settings
+- [x] All GitHub Issues code removed (gh-panel, fetchGHRepos, renderGHRepos, createGHIssue, repoRow, pinRepo, unpinRepo, githubBtn, ghSearch, ghStatus, gh-overlay)
+- [x] `generate()` rewritten to call `POST /summarize` with `Authorization: Bearer ${idToken}` + JSON body containing base64 audio + duration
+- [x] Error mapping: 401 → re-sign-in, 402 → paywall, 429 (rate or cap) → Swedish toast, 503 → generic, 5xx → retry-with-backoff
+- [x] Settings panel: user email read-only, "Hantera prenumeration" (Play subscriptions URL), "Logga ut", "Radera konto"
+- [x] Service worker cache bumped `vs-v37`
 
-### 2.2 Subscription gate
+### 2.8 Test plan (manual — needs real Google sign-in)
 
-- [ ] On app load (after sign-in): call `/me`, branch:
-  - `sub_active = 1` and `period_end > now` → main app (idle screen)
-  - else → paywall screen
-- [ ] Re-check `/me` when returning from a presumed subscription flow
+- [ ] Local: `python3 -m http.server 8000` → http://localhost:8000 → sign in → verify `/me` returns `sub_active: 0` → paywall shown
+- [ ] Manually flip `sub_active: 1` in D1 → reload → idle screen shown
+- [ ] Record audio → `/summarize` call → summary rendered
+- [ ] Click "Radera konto" → confirm → `/account/delete` called → returned to sign-in
+- [ ] Manually delete user in D1 → try `/summarize` → 401 → returned to sign-in
 
-### 2.3 Remove deprecated PWA UI
+**Browser CORS note:** for testing from `http://localhost:8000`, the Worker's CORS allowlist already includes `http://localhost:*` so this Just Works.
 
-- [ ] Remove `#setup` (API key input) screen entirely
-- [ ] Remove `sKey`, `sModel` from settings panel
-- [ ] Remove model picker — server controls model via `GEMINI_MODEL` env var
-- [ ] Decision pending: GitHub Issues (`#gh-panel`, GitHub token field, repo browse UI — ~250 lines)
-
-### 2.4 Paywall screen
-
-- [ ] New `#screen-paywall`: "Starta gratis i 7 dagar, sedan 40 kr/månad"
-- [ ] Button: **"Prenumerera"** — in browser mode, shows "Tillgängligt i appen för Android" disclaimer. In Capacitor (Phase 3), this triggers RevenueCat purchase flow.
-- [ ] Secondary link: "Logga ut" (re-prompt different account)
-- [ ] Secondary link: "Radera konto" → calls `/account/delete` + signs out
-
-### 2.5 Replace Gemini call with proxy call
-
-- [ ] Replace `fetch(API_BASE + ...)` in `runSummary()` with:
-  ```js
-  fetch(API_PROXY + '/summarize', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + s.idToken },
-    body: JSON.stringify({ prompt, audio_base64, audio_mime, audio_seconds })
-  })
-  ```
-- [ ] Server returns Gemini's full response unchanged — existing `sanitizeHtml()` and parsing code keeps working
-- [ ] Keep all 7 (or 8) format presets — they're prompt-text only, server-agnostic
-
-### 2.6 Error handling
-
-| Status | Meaning | UI action |
-|--------|---------|-----------|
-| 401 missing_auth / invalid_token | Token expired or rejected | Sign user out, return to sign-in screen |
-| 402 not_subscribed / expired | Sub lapsed | Route to paywall |
-| 429 rate_limited | Burst limit | Toast: "Vänta en stund och försök igen" |
-| 429 summary_cap_reached / audio_cap_reached | Monthly cap | Toast with cap info + days until reset |
-| 503 server_misconfigured | Backend issue (shouldn't happen post-launch) | Generic error toast |
-| 5xx other | Gemini upstream issue | Existing retry logic still applies |
-
-### 2.7 Account management UI
-
-- [ ] Settings panel: replace the API key section with:
-  - User email (read-only, "Inloggad som ...")
-  - "Hantera prenumeration" → opens `https://play.google.com/store/account/subscriptions` (Android) or `https://apps.apple.com/account/subscriptions` (iOS)
-  - "Radera konto" button (with confirmation modal in Swedish)
-  - "Logga ut"
-
-### 2.8 Test plan
-
-- [ ] Sign in via GIS in Chrome → verify `/me` returns `sub_active: 0` → paywall shown
-- [ ] Manually flip `sub_active: 1` in D1 → reload → main app shown
-- [ ] Record audio → /summarize call → summary rendered
-- [ ] Click "Radera konto" → confirm → /account/delete called → returned to sign-in screen
-- [ ] Manually delete user in D1 → try /summarize → 401 → returned to sign-in
+**OAuth client note:** the `diane-server` Web OAuth client has `https://developers.google.com/oauthplayground` as its authorized redirect URI. For `localhost:8000` to work with Google Sign-In, we may need to add `http://localhost:8000` as an additional authorized JavaScript origin in the GCP Cloud Console. (No redirect URI needed — GIS uses popup/iframe, not redirect.)
 
 ## Phase 3 — Capacitor wrap (week 2)
 
