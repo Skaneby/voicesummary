@@ -67,23 +67,27 @@ Drafted 2026-05-13. Status: **pending verification — do not start implementing
 - [ ] Bind D1 in `wrangler.jsonc`
 - [ ] Migration script in `backend/schema.sql`
 
-### 1.3 `POST /summarize` (real)
+### 1.3 `POST /summarize` (real) — done
 
-- [ ] Verify `Authorization: Bearer <Google ID token>` via Google JWKS (cached in Worker)
-- [ ] Look up user by Google `sub`; reject if `sub_active != 1` or `period_end < now` (402)
-- [ ] Enforce monthly usage cap (429 with structured error)
-- [ ] Forward multipart audio body to Gemini, stream response back
-- [ ] Increment usage counter atomically
+- [x] Verify `Authorization: Bearer <Google ID token>` via Google JWKS (cached in Worker, via `jose`)
+- [x] Look up user by Google `sub`; reject if `sub_active != 1` or `period_end < now` (402)
+- [x] Enforce monthly usage cap (429 with structured error)
+- [x] Forward audio body to Gemini, pass response back
+- [x] Increment usage counter on success (best-effort)
+- [x] **Verified end-to-end**: real Google ID token → /summarize → user upserted in D1 → entitlement check → Gemini call → 200 response. 3.6s round-trip.
 
 ### 1.4 `POST /webhook/revenuecat`
 
 - [ ] Verify shared secret header
 - [ ] Handle `INITIAL_PURCHASE`, `RENEWAL`, `CANCELLATION`, `EXPIRATION`, `BILLING_ISSUE`, `REFUND` — update `users` row
+- [ ] **Blocked on:** user creating a RevenueCat account to get the webhook shared secret
 
-### 1.5 `POST /account/delete`
+### 1.5 `POST /account/delete` — done
 
-- [ ] Soft-delete the user row (set `deleted_at`, clear PII)
-- [ ] Required by Play + Apple
+- [x] Hard-delete the user row + cascade-delete `subscription_events`
+- [x] GDPR-compliant: deletion isn't a ban; returning user creates a fresh row with no subscription state
+- [x] **Verified end-to-end**: delete returns 200, user_count drops, follow-up /summarize creates fresh row and correctly returns 402
+- [ ] (later) Call RevenueCat `DELETE /v1/subscribers/{id}` to clean up RC-side too
 
 ### 1.6 Hardening
 

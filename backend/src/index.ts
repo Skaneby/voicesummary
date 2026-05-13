@@ -55,7 +55,7 @@ export default {
 
       case "/account/delete":
         return methodGuard(request, "POST", () =>
-          cors(json({ error: "not_implemented" }, 501)),
+          handleAccountDelete(request, env),
         );
 
       default:
@@ -139,6 +139,43 @@ async function handleSummarize(
       headers: { "content-type": "application/json" },
     }),
   );
+}
+
+async function handleAccountDelete(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  if (
+    !env.GOOGLE_OAUTH_CLIENT_ID ||
+    env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_")
+  ) {
+    return cors(json({ error: "server_misconfigured" }, 503));
+  }
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return cors(json({ error: "missing_auth" }, 401));
+  }
+  const token = authHeader.slice("Bearer ".length).trim();
+
+  let claims;
+  try {
+    claims = await verifyGoogleToken(token, env.GOOGLE_OAUTH_CLIENT_ID);
+  } catch {
+    return cors(json({ error: "invalid_token" }, 401));
+  }
+
+  // Hard delete — GDPR clean. RevenueCat retains its own purchase records;
+  // we should also call RC's DELETE /v1/subscribers/{id} from a follow-up,
+  // but for v1 the platform-side subscription is cancelled by the user
+  // separately via Play / Apple settings.
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM subscription_events WHERE user_id = ?").bind(
+      claims.sub,
+    ),
+    env.DB.prepare("DELETE FROM users WHERE id = ?").bind(claims.sub),
+  ]);
+
+  return cors(json({ ok: true, deleted: true }));
 }
 
 async function countUsers(db: D1Database): Promise<number> {
