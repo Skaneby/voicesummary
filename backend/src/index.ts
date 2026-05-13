@@ -8,6 +8,10 @@ import {
 import { callGemini, isSummarizeBody } from "./gemini";
 import { applyWebhookEvent, isRevenueCatWebhookBody } from "./webhook";
 
+interface RateLimit {
+  limit(opts: { key: string }): Promise<{ success: boolean }>;
+}
+
 interface Env {
   GEMINI_API_KEY: string;
   DB: D1Database;
@@ -16,22 +20,37 @@ interface Env {
   USAGE_CAP_AUDIO_SECONDS: string;
   GEMINI_MODEL: string;
   REVENUECAT_WEBHOOK_SECRET?: string;
+  RATE_LIMITER: RateLimit;
 }
 
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
+
+// Origins allowed to call the API from a browser context. Native curl /
+// server-to-server requests (no Origin header) are unaffected — CORS is a
+// browser security feature only.
+const ALLOWED_ORIGINS = new Set([
+  "capacitor://localhost", // iOS Capacitor default
+  "https://localhost", // Android Capacitor default (Capacitor 5+)
+  "ionic://localhost", // legacy Capacitor / Ionic
+]);
+const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
+  /^http:\/\/localhost(:\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+];
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
-      return cors(new Response(null, { status: 204 }));
+      return cors(request, new Response(null, { status: 204 }));
     }
 
     switch (url.pathname) {
       case "/":
       case "/health":
         return cors(
+          request,
           json({
             ok: true,
             service: "diane-api",
@@ -42,6 +61,7 @@ export default {
               Boolean(env.GOOGLE_OAUTH_CLIENT_ID) &&
               !env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_"),
             webhook_configured: Boolean(env.REVENUECAT_WEBHOOK_SECRET),
+            rate_limiter_configured: Boolean(env.RATE_LIMITER),
             user_count: await countUsers(env.DB).catch(() => null),
           }),
         );
@@ -62,7 +82,7 @@ export default {
         );
 
       default:
-        return cors(json({ error: "not_found" }, 404));
+        return cors(request, json({ error: "not_found" }, 404));
     }
   },
 } satisfies ExportedHandler<Env>;
@@ -75,12 +95,12 @@ async function handleSummarize(
     !env.GOOGLE_OAUTH_CLIENT_ID ||
     env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_")
   ) {
-    return cors(json({ error: "server_misconfigured" }, 503));
+    return cors(request, json({ error: "server_misconfigured" }, 503));
   }
 
   const authHeader = request.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return cors(json({ error: "missing_auth" }, 401));
+    return cors(request, json({ error: "missing_auth" }, 401));
   }
   const token = authHeader.slice("Bearer ".length).trim();
 
@@ -88,7 +108,14 @@ async function handleSummarize(
   try {
     claims = await verifyGoogleToken(token, env.GOOGLE_OAUTH_CLIENT_ID);
   } catch {
-    return cors(json({ error: "invalid_token" }, 401));
+    return cors(request, json({ error: "invalid_token" }, 401));
+  }
+
+  // Rate limit per authenticated user. 30 req/min — well above real usage,
+  // catches buggy clients and stolen tokens before they drain the budget.
+  const rl = await env.RATE_LIMITER.limit({ key: claims.sub });
+  if (!rl.success) {
+    return cors(request, json({ error: "rate_limited" }, 429));
   }
 
   const user = await upsertUser(env.DB, claims.sub, claims.email ?? null);
@@ -103,17 +130,17 @@ async function handleSummarize(
       check.reason === "not_subscribed" || check.reason === "expired"
         ? 402
         : 429;
-    return cors(json({ error: check.reason }, status));
+    return cors(request, json({ error: check.reason }, status));
   }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return cors(json({ error: "invalid_json" }, 400));
+    return cors(request, json({ error: "invalid_json" }, 400));
   }
   if (!isSummarizeBody(body)) {
-    return cors(json({ error: "invalid_body" }, 400));
+    return cors(request, json({ error: "invalid_body" }, 400));
   }
 
   const upstream = await callGemini(
@@ -125,6 +152,7 @@ async function handleSummarize(
   if (!upstream.ok) {
     const errText = await upstream.text();
     return cors(
+      request,
       new Response(errText, {
         status: upstream.status,
         headers: { "content-type": "application/json" },
@@ -132,11 +160,11 @@ async function handleSummarize(
     );
   }
 
-  // Best-effort usage tracking — don't fail the user request if this errors.
   await incrementUsage(env.DB, user.id, body.audio_seconds).catch(() => {});
 
   const respText = await upstream.text();
   return cors(
+    request,
     new Response(respText, {
       status: 200,
       headers: { "content-type": "application/json" },
@@ -149,14 +177,12 @@ async function handleRevenueCatWebhook(
   env: Env,
 ): Promise<Response> {
   if (!env.REVENUECAT_WEBHOOK_SECRET) {
-    return cors(json({ error: "server_misconfigured" }, 503));
+    return cors(request, json({ error: "server_misconfigured" }, 503));
   }
 
-  // RevenueCat sends the shared secret as the Authorization header
-  // (configured statically in their webhook UI). Constant-time compare.
   const authHeader = request.headers.get("authorization") ?? "";
   if (!constantTimeEqual(authHeader, env.REVENUECAT_WEBHOOK_SECRET)) {
-    return cors(json({ error: "invalid_signature" }, 401));
+    return cors(request, json({ error: "invalid_signature" }, 401));
   }
 
   const raw = await request.text();
@@ -164,14 +190,14 @@ async function handleRevenueCatWebhook(
   try {
     body = JSON.parse(raw);
   } catch {
-    return cors(json({ error: "invalid_json" }, 400));
+    return cors(request, json({ error: "invalid_json" }, 400));
   }
   if (!isRevenueCatWebhookBody(body)) {
-    return cors(json({ error: "invalid_body" }, 400));
+    return cors(request, json({ error: "invalid_body" }, 400));
   }
 
   const result = await applyWebhookEvent(env.DB, body.event, raw);
-  return cors(json({ ok: true, ...result }));
+  return cors(request, json({ ok: true, ...result }));
 }
 
 function constantTimeEqual(a: string, b: string): boolean {
@@ -191,11 +217,11 @@ async function handleAccountDelete(
     !env.GOOGLE_OAUTH_CLIENT_ID ||
     env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_")
   ) {
-    return cors(json({ error: "server_misconfigured" }, 503));
+    return cors(request, json({ error: "server_misconfigured" }, 503));
   }
   const authHeader = request.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return cors(json({ error: "missing_auth" }, 401));
+    return cors(request, json({ error: "missing_auth" }, 401));
   }
   const token = authHeader.slice("Bearer ".length).trim();
 
@@ -203,13 +229,9 @@ async function handleAccountDelete(
   try {
     claims = await verifyGoogleToken(token, env.GOOGLE_OAUTH_CLIENT_ID);
   } catch {
-    return cors(json({ error: "invalid_token" }, 401));
+    return cors(request, json({ error: "invalid_token" }, 401));
   }
 
-  // Hard delete — GDPR clean. RevenueCat retains its own purchase records;
-  // we should also call RC's DELETE /v1/subscribers/{id} from a follow-up,
-  // but for v1 the platform-side subscription is cancelled by the user
-  // separately via Play / Apple settings.
   await env.DB.batch([
     env.DB.prepare("DELETE FROM subscription_events WHERE user_id = ?").bind(
       claims.sub,
@@ -217,7 +239,7 @@ async function handleAccountDelete(
     env.DB.prepare("DELETE FROM users WHERE id = ?").bind(claims.sub),
   ]);
 
-  return cors(json({ ok: true, deleted: true }));
+  return cors(request, json({ ok: true, deleted: true }));
 }
 
 async function countUsers(db: D1Database): Promise<number> {
@@ -234,10 +256,20 @@ function json(body: object, status = 200): Response {
   });
 }
 
-// TODO: restrict to capacitor://localhost + https://localhost + http://localhost:*
-// before going live. Wide-open CORS is fine while we develop.
-function cors(res: Response): Response {
-  res.headers.set("access-control-allow-origin", "*");
+function isOriginAllowed(origin: string): boolean {
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  return ALLOWED_ORIGIN_PATTERNS.some((re) => re.test(origin));
+}
+
+function cors(request: Request, res: Response): Response {
+  const origin = request.headers.get("origin");
+  // Same-origin / non-browser requests don't send Origin. We don't need to
+  // set Allow-Origin in that case — only browsers enforce CORS, and they
+  // always send Origin on cross-origin requests.
+  if (origin && isOriginAllowed(origin)) {
+    res.headers.set("access-control-allow-origin", origin);
+    res.headers.set("vary", "origin");
+  }
   res.headers.set("access-control-allow-methods", "GET, POST, OPTIONS");
   res.headers.set("access-control-allow-headers", "content-type, authorization");
   return res;
@@ -249,7 +281,7 @@ function methodGuard(
   handler: () => Response | Promise<Response>,
 ): Response | Promise<Response> {
   if (request.method !== expected) {
-    return cors(json({ error: "method_not_allowed" }, 405));
+    return cors(request, json({ error: "method_not_allowed" }, 405));
   }
   return handler();
 }

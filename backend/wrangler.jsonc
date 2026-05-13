@@ -18,7 +18,21 @@
       "database_name": "diane-prod",
       "database_id": "d451e3de-0579-4e4b-bd1c-40978a0a4725"
     }
-  ]
+  ],
+
+  // Per-user rate limiter, 30 req/min. Defends against compromised tokens or
+  // buggy clients draining Gemini budget. The monthly usage cap is still the
+  // primary cost control — this is just a burst guard.
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "RATE_LIMITER",
+        "type": "ratelimit",
+        "namespace_id": "1001",
+        "simple": { "limit": 30, "period": 60 }
+      }
+    ]
+  }
 
   // Custom domain route (uncomment after DNS + zone are set up):
   // "routes": [

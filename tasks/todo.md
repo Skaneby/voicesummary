@@ -92,11 +92,12 @@ Drafted 2026-05-13. Status: **pending verification — do not start implementing
 - [x] **Verified end-to-end**: delete returns 200, user_count drops, follow-up /summarize creates fresh row and correctly returns 402
 - [ ] (later) Call RevenueCat `DELETE /v1/subscribers/{id}` to clean up RC-side too
 
-### 1.6 Hardening
+### 1.6 Hardening — done
 
-- [ ] Rate limit per user (Workers KV counter, 60 req/min)
-- [ ] Restrict CORS origins (capacitor://localhost, http://localhost:*) — drop `*`
-- [ ] Smoke test: curl with fake token → 401; with valid token but no sub → 402; with sub → proxies to Gemini
+- [x] Per-user rate limit via Cloudflare Workers Rate Limiting binding, 30 req/min keyed on Google `sub` (defends against compromised tokens / runaway clients)
+- [x] CORS allowlist: `capacitor://localhost`, `https://localhost`, `ionic://localhost`, plus regex match for `http://localhost:*` and `http://127.0.0.1:*`. Other origins get no `Access-Control-Allow-Origin` header — browsers block.
+- [x] **Verified**: evil.com origin returns no Allow-Origin header; capacitor + localhost origins are echoed correctly.
+- [x] Smoke tests (across Phases 1.3, 1.4, 1.5): unauth → 401; valid token + no sub → 402; sub active → 200 from Gemini; wrong webhook secret → 401; correct webhook → 200 + state updated in D1.
 
 ## Phase 2 — App refactor (week 1–2)
 
