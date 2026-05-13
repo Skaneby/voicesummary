@@ -53,12 +53,11 @@ Drafted 2026-05-13. Status: **pending verification — do not start implementing
 - [x] Stub routes deployed and reachable at `https://diane-api.johan-skaneby.workers.dev`
 - [x] `GEMINI_API_KEY` uploaded as Worker secret (`/health` confirms `has_gemini_key: true`)
 
-### 1.1 Custom domain (next)
+### 1.1 Custom domain — DEFERRED
 
-- [ ] Add CNAME `diane-api.skaneby.se` → Worker, via one.com DNS panel
-- [ ] Add `diane-api.skaneby.se` as a Custom Domain in Cloudflare Workers settings
-- [ ] Uncomment `routes` in `backend/wrangler.jsonc`
-- [ ] Verify `https://diane-api.skaneby.se/health` works
+Cloudflare Workers requires the zone to be on Cloudflare DNS to attach a custom domain. A simple CNAME at one.com is not enough. Moving DNS hosting from one.com to Cloudflare is the standard path — domain registration stays at one.com, only DNS moves. **Skipped for now** because the backend URL is internal (users never see it) and the email-downtime risk of a DNS migration isn't worth the cosmetic gain. The `*.workers.dev` URL is permanent and works forever.
+
+Revisit if/when: branding becomes important (e.g. surfacing the API URL in any user-facing documentation), or we have multiple backend services and want clean naming.
 
 ### 1.2 Data layer
 
