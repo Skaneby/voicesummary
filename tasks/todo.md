@@ -76,11 +76,14 @@ Drafted 2026-05-13. Status: **pending verification — do not start implementing
 - [x] Increment usage counter on success (best-effort)
 - [x] **Verified end-to-end**: real Google ID token → /summarize → user upserted in D1 → entitlement check → Gemini call → 200 response. 3.6s round-trip.
 
-### 1.4 `POST /webhook/revenuecat`
+### 1.4 `POST /webhook/revenuecat` — done
 
-- [ ] Verify shared secret header
-- [ ] Handle `INITIAL_PURCHASE`, `RENEWAL`, `CANCELLATION`, `EXPIRATION`, `BILLING_ISSUE`, `REFUND` — update `users` row
-- [ ] **Blocked on:** user creating a RevenueCat account to get the webhook shared secret
+- [x] Verify shared secret in `Authorization` header (constant-time compare)
+- [x] Handle `INITIAL_PURCHASE`, `RENEWAL`, `UNCANCELLATION`, `PRODUCT_CHANGE`, `SUBSCRIPTION_EXTENDED`, `EXPIRATION`, `BILLING_ISSUE`, `REFUND`, `SUBSCRIPTION_PAUSED`, `TEMPORARY_ENTITLEMENT_GRANT`, `TEST` — update `users` row
+- [x] `CANCELLATION` deliberately no-op: user stays active until `period_end`, RC sends `EXPIRATION` at that moment
+- [x] Insert audit row into `subscription_events` for every event received (even ignored ones)
+- [x] User row auto-created on first webhook (`INSERT OR IGNORE` before audit log) so purchase webhooks work before user calls `/summarize`
+- [x] **Verified end-to-end**: synthetic INITIAL_PURCHASE flips sub_active=1; RC's "Send test event" delivered TEST event, Worker returned 200, audit logged.
 
 ### 1.5 `POST /account/delete` — done
 
