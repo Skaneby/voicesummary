@@ -3,7 +3,16 @@
   "name": "diane-api",
   "main": "src/index.ts",
   "compatibility_date": "2025-12-01",
-  "workers_dev": true
+  "workers_dev": true,
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "diane-prod",
+      "database_id": "d451e3de-0579-4e4b-bd1c-40978a0a4725"
+    }
+  ]
+
   // Custom domain route (uncomment after DNS + zone are set up):
   // "routes": [
   //   { "pattern": "diane-api.skaneby.se/*", "zone_name": "skaneby.se" }

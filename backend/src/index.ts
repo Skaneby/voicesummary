@@ -1,6 +1,6 @@
 interface Env {
   GEMINI_API_KEY: string;
-  // DB: D1Database;  // added in Phase 1.2 when we wire D1
+  DB: D1Database;
 }
 
 const VERSION = "0.1.0";
@@ -22,6 +22,8 @@ export default {
             service: "diane-api",
             version: VERSION,
             has_gemini_key: Boolean(env.GEMINI_API_KEY),
+            has_db: Boolean(env.DB),
+            user_count: await countUsers(env.DB).catch(() => null),
           }),
         );
 
@@ -58,6 +60,13 @@ function cors(res: Response): Response {
   res.headers.set("access-control-allow-methods", "GET, POST, OPTIONS");
   res.headers.set("access-control-allow-headers", "content-type, authorization");
   return res;
+}
+
+async function countUsers(db: D1Database): Promise<number> {
+  const row = await db
+    .prepare("SELECT COUNT(*) AS n FROM users WHERE deleted_at IS NULL")
+    .first<{ n: number }>();
+  return row?.n ?? 0;
 }
 
 function methodGuard(
