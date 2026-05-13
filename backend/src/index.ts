@@ -6,6 +6,7 @@ import {
   type UsageCaps,
 } from "./entitlement";
 import { callGemini, isSummarizeBody } from "./gemini";
+import { applyWebhookEvent, isRevenueCatWebhookBody } from "./webhook";
 
 interface Env {
   GEMINI_API_KEY: string;
@@ -14,9 +15,10 @@ interface Env {
   USAGE_CAP_SUMMARIES: string;
   USAGE_CAP_AUDIO_SECONDS: string;
   GEMINI_MODEL: string;
+  REVENUECAT_WEBHOOK_SECRET?: string;
 }
 
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -39,6 +41,7 @@ export default {
             oauth_client_configured:
               Boolean(env.GOOGLE_OAUTH_CLIENT_ID) &&
               !env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_"),
+            webhook_configured: Boolean(env.REVENUECAT_WEBHOOK_SECRET),
             user_count: await countUsers(env.DB).catch(() => null),
           }),
         );
@@ -50,7 +53,7 @@ export default {
 
       case "/webhook/revenuecat":
         return methodGuard(request, "POST", () =>
-          cors(json({ error: "not_implemented" }, 501)),
+          handleRevenueCatWebhook(request, env),
         );
 
       case "/account/delete":
@@ -139,6 +142,45 @@ async function handleSummarize(
       headers: { "content-type": "application/json" },
     }),
   );
+}
+
+async function handleRevenueCatWebhook(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  if (!env.REVENUECAT_WEBHOOK_SECRET) {
+    return cors(json({ error: "server_misconfigured" }, 503));
+  }
+
+  // RevenueCat sends the shared secret as the Authorization header
+  // (configured statically in their webhook UI). Constant-time compare.
+  const authHeader = request.headers.get("authorization") ?? "";
+  if (!constantTimeEqual(authHeader, env.REVENUECAT_WEBHOOK_SECRET)) {
+    return cors(json({ error: "invalid_signature" }, 401));
+  }
+
+  const raw = await request.text();
+  let body: unknown;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return cors(json({ error: "invalid_json" }, 400));
+  }
+  if (!isRevenueCatWebhookBody(body)) {
+    return cors(json({ error: "invalid_body" }, 400));
+  }
+
+  const result = await applyWebhookEvent(env.DB, body.event, raw);
+  return cors(json({ ok: true, ...result }));
+}
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 async function handleAccountDelete(
