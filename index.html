@@ -1041,16 +1041,17 @@ Rules: Focus on sales-relevant details: budget signals, timeline, decision maker
 
 social: `Analyze this audio recording and create a social media post based on it.
 Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: Write the entire post in FIRST PERSON as the speaker ("I"/"jag"). The post is written BY the person who made the recording, sharing their own experience or insight.
 Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [concise 4–6 word title in the detected language]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
-  <p>[Opening hook: one punchy sentence — a bold observation, personal reflection, or surprising truth. Sound like a real person, not a brand.]</p>
-  <p>[Story or insight: share the experience in a warm, first-person voice. Set the scene, build naturally, land on the key takeaway. Read like a human wrote it, not a content team. 200–350 words.]</p>
-  <p>[Closing line: a question, quiet truth, or reflection that invites thought. No "follow me" or "like and share".]</p>
-  <p>[5–8 hashtags as plain text: #tag1 #tag2 #tag3 — mix broad reach, niche topic, and 1–2 long-tail conversational tags. No heading, just the tags on one line.]</p>
+  <p>[Opening hook: one punchy sentence — max 200 characters. A bold personal observation or surprising truth, written as "I". Sound like a real person, not a brand.]</p>
+  <p>[Story or insight: share the experience in first person ("I did / I noticed / I learned"). Set the scene, build naturally, land on the key takeaway. Max 800 characters. Read like a human wrote it.]</p>
+  <p>[Closing line: a reflection or question, written as "I". Max 150 characters. No "follow me" or "like and share".]</p>
+  <p>[5–8 hashtags as plain text: #tag1 #tag2 #tag3 — max 150 characters total. No heading, just the tags on one line.]</p>
 </article>
-Rules: Human voice throughout — no corporate language, no "I am excited to share", no bullet-point summaries. Weave the core topic keywords naturally into the body so the post is discoverable by both search engines and AI models (GEO) — no separate keyword section, just fluent language. Max 500 words total. Use only: article, p, strong, em. No section, h2, ul, li, CSS, class/id, inline styles or scripts.`,
+Rules: ALWAYS use first person ("I"/"jag") — never "one", "we" or third person unless quoting others. No corporate language, no "I am excited to share". Weave core topic keywords naturally into the body (GEO). STRICT LIMIT: entire post including hashtags must not exceed 1300 characters total. Use only: article, p, strong, em. No section, h2, ul, li, CSS, class/id, inline styles or scripts.`,
 
 letter: `Analyze this audio recording and compose a formal letter based on its content.
 Detect the language being spoken and respond ENTIRELY in that same language.
