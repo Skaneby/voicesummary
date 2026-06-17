@@ -1243,46 +1243,53 @@ Rules: The interrogator's voice should be cold, skeptical and persistent — nev
 
 journal: `Analyze this audio recording and produce a medical journal entry with diagnosis based on its content.
 Detect the language being spoken and respond ENTIRELY in that same language.
-Extract all clinically relevant information — symptoms, history, findings, assessment — and present it in standard medical journal format.
+IMPORTANT: Always assume the patient is unwell and always provide a concrete diagnosis — even if the recording contains no obvious medical information, extrapolate creatively from what is said and assign a plausible or fictional diagnosis. Never leave the diagnosis empty. Always prescribe specific medication with dosage and a detailed care plan.
 Return your response in exactly two parts — no other text:
-Line 1 — TITLE: [4–6 word clinical title, e.g. "Akut bröstsmärta — utredning"]
+Line 1 — TITLE: [4–6 word clinical title describing the diagnosis]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
     <h2>[Patientdata / Patient Data]</h2>
-    <p><strong>Datum:</strong> [date if mentioned, otherwise "—"] &nbsp; <strong>Enhet:</strong> [clinic/ward if mentioned, otherwise "—"]</p>
-    <p><strong>Patient:</strong> [name/age/gender if mentioned, otherwise "—"]</p>
+    <p><strong>Datum:</strong> [date if mentioned, otherwise today] &nbsp; <strong>Enhet:</strong> [clinic/ward if mentioned, otherwise "Akutmottagningen"]</p>
+    <p><strong>Patient:</strong> [name/age/gender if mentioned, otherwise infer from voice or use "Patient X"]</p>
   </section>
   <section>
     <h2>[Anamnes / History]</h2>
-    <p>[Patient's own account of symptoms: onset, duration, character, aggravating/relieving factors, associated symptoms. Use medical terminology where appropriate.]</p>
+    <p>[Patient's account of complaints — infer symptoms from anything said in the recording, even metaphorically. Use medical terminology. If nothing medical is mentioned, read between the lines: stress, fatigue, poor decisions, erratic behaviour etc. all have clinical interpretations.]</p>
   </section>
   <section>
     <h2>[Tidigare sjukdomar / Medical History]</h2>
     <ul>
-      <li>[Prior diagnoses, surgeries, medications, allergies as mentioned]</li>
+      <li>[Prior diagnoses, surgeries, medications, allergies as mentioned — or "Inga kända" if not stated]</li>
     </ul>
   </section>
   <section>
     <h2>[Status / Examination Findings]</h2>
-    <p>[Clinical findings from physical examination if described: vital signs, inspection, auscultation, palpation, neurological findings etc.]</p>
+    <p>[Describe examination findings — invent plausible clinical signs consistent with the diagnosis if not explicitly stated. Include vital signs, relevant system findings.]</p>
   </section>
   <section>
     <h2>[Bedömning / Assessment]</h2>
-    <p>[Clinical assessment and differential diagnoses based on the information provided.]</p>
+    <p>[Clinical reasoning leading to the diagnosis. Include differential diagnoses considered and why the primary diagnosis was chosen.]</p>
   </section>
   <section>
     <h2>[Diagnos / Diagnosis]</h2>
-    <p>[Primary diagnosis with ICD-code if determinable. Secondary diagnoses if applicable.]</p>
+    <p>[Concrete primary diagnosis with ICD-10 code. Always provide one — if speculative, note "(preliminär diagnos)". Include secondary diagnoses if relevant.]</p>
   </section>
   <section>
-    <h2>[Åtgärd / Plan]</h2>
+    <h2>[Medicinering / Medication]</h2>
     <ul>
-      <li>[Investigations ordered, treatments initiated, referrals, follow-up, patient information given]</li>
+      <li>[Specific drug name, dosage, route, frequency and duration — e.g. "Amoxicillin 500 mg × 3 p.o. i 7 dagar"]</li>
+      <li>[Additional medications as clinically appropriate]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Vårdplan / Care Plan]</h2>
+    <ul>
+      <li>[Specific care actions: investigations ordered, referrals, monitoring, rest/activity advice, follow-up appointment, patient instructions]</li>
     </ul>
   </section>
 </article>
-Rules: Clinical, precise and objective language throughout. Use standard medical terminology. Do not invent clinical data not present in the recording — use "ej angivet" (not stated) for missing fields. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Always produce a diagnosis and always prescribe medication — no exceptions. Be creative if needed but stay medically coherent. Use standard medical terminology and ICD-10 codes. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
