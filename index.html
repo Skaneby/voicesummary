@@ -267,6 +267,13 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .result-badge[data-style="journal"]{background:rgba(16,185,129,.15);color:#10b981}
 
 /* FIND & REPLACE */
+.reformat-wrap{width:100%;max-width:680px}
+.reformat-label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+.reformat-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.reformat-row::-webkit-scrollbar{display:none}
+.reformat-pill{flex-shrink:0;padding:5px 11px;border-radius:100px;font-size:.72rem;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s}
+.reformat-pill:hover{border-color:var(--accent);color:var(--text)}
+.reformat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .fnr-bar{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
   border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .fnr-row{display:flex;gap:6px;align-items:center}
@@ -669,6 +676,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       </div>
       <p id="resultTitle" style="display:none;font-weight:700;font-size:1rem;width:100%;max-width:680px;text-align:left"></p>
       <div class="result-box" id="resultBox"></div>
+      <div class="reformat-wrap" id="reformatWrap" style="display:none">
+        <div class="reformat-label">Kör om som</div>
+        <div class="reformat-row" id="reformatRow"></div>
+      </div>
       <div class="fnr-bar" id="fnrBar" style="display:none">
         <div class="fnr-row">
           <span class="fnr-label">Hitta</span>
@@ -1645,7 +1656,7 @@ async function generate(base64, mime, attempt = 0) {
   txt = txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
   const titleMatch = txt.match(/^TITLE:\s*(.+?)[\r\n]/i);
   const suggestedTitle = titleMatch ? titleMatch[1].trim() : '';
-  const html = txt.replace(/^TITLE:.*[\r\n]*/i, '').trim();
+  const html = txt.replace(/^TITLE:.*[\r\n]*/i, '').trim().replace(/^[^<]+/, '');
   return { html, suggestedTitle };
 }
 
@@ -1737,7 +1748,22 @@ function showResult(html) {
   const titleEl = $('resultTitle');
   if (s.title) { titleEl.textContent = s.title; titleEl.style.display = ''; }
   else { titleEl.style.display = 'none'; }
+  // Show re-format row only when we have a blob to re-process
+  const reformatWrap = $('reformatWrap');
+  reformatWrap.style.display = s.blob ? '' : 'none';
+  $('reformatRow').querySelectorAll('.reformat-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.fmt === s.style);
+  });
   show('result');
+}
+
+function reformatAs(fmt) {
+  if (!s.blob || fmt === s.style) return;
+  s.style = fmt;
+  store.set('vs_style', fmt);
+  setFormat(fmt);
+  const base = (s.mimeType || 'audio/webm').split(';')[0];
+  process(s.blob, base);
 }
 
 function toggleEdit() {
@@ -2260,6 +2286,17 @@ function init() {
     btn.onclick = () => setFormat(btn.dataset.fmt);
   });
   setFormat(s.style);
+
+  // Build re-format pills from STYLE_META
+  const reformatRow = $('reformatRow');
+  Object.entries(STYLE_META).forEach(([fmt, meta]) => {
+    const pill = document.createElement('button');
+    pill.className = 'reformat-pill';
+    pill.dataset.fmt = fmt;
+    pill.textContent = meta.badge;
+    pill.onclick = () => reformatAs(fmt);
+    reformatRow.appendChild(pill);
+  });
   $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
   $('helpBtn').onclick = openHelp;
   $('help-overlay').onclick = closeHelp;
