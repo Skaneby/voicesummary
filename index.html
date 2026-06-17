@@ -252,7 +252,19 @@ html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:
 .result-box[data-style="letter"] h2{color:#6e8efb;border-bottom-color:rgba(110,142,251,.2)}
 html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:#6e8efb}
 .format-card[data-fmt="letter"]{--fc:#6e8efb}
+.format-card[data-fmt="insandare"]{--fc:#ef4444}
+.format-card[data-fmt="forhor"]{--fc:#64748b}
+.format-card[data-fmt="journal"]{--fc:#10b981}
 .result-badge[data-style="letter"]{background:rgba(110,142,251,.15);color:#6e8efb}
+.result-box[data-style="insandare"]{border-left-color:#ef4444}
+.result-box[data-style="insandare"] h2{color:#ef4444;border-bottom-color:rgba(239,68,68,.2)}
+.result-badge[data-style="insandare"]{background:rgba(239,68,68,.15);color:#ef4444}
+.result-box[data-style="forhor"]{border-left-color:#64748b}
+.result-box[data-style="forhor"] h2{color:#64748b;border-bottom-color:rgba(100,116,139,.2)}
+.result-badge[data-style="forhor"]{background:rgba(100,116,139,.15);color:#94a3b8}
+.result-box[data-style="journal"]{border-left-color:#10b981}
+.result-box[data-style="journal"] h2{color:#10b981;border-bottom-color:rgba(16,185,129,.2)}
+.result-badge[data-style="journal"]{background:rgba(16,185,129,.15);color:#10b981}
 
 /* FIND & REPLACE */
 .fnr-bar{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
@@ -599,6 +611,18 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="vibecoder">
             <div class="fc-name">⚡ Vibe Prompt</div>
             <div class="fc-desc">Prompt för Lovable, Bolt, v0, Cursor</div>
+          </button>
+          <button class="format-card" data-fmt="insandare">
+            <div class="fc-name">😤 Arg insändare</div>
+            <div class="fc-desc">Engagerat inlägg till lokaltidningen</div>
+          </button>
+          <button class="format-card" data-fmt="forhor">
+            <div class="fc-name">🔍 Förhörsprotokoll</div>
+            <div class="fc-desc">Formellt protokoll i fråga-svar-form</div>
+          </button>
+          <button class="format-card" data-fmt="journal">
+            <div class="fc-name">🩺 Medicinsk journal</div>
+            <div class="fc-desc">Journalanteckning med diagnos</div>
           </button>
         </div>
       </div>
@@ -1132,7 +1156,115 @@ Your goal is to produce a structured prompt ready to paste directly into a vibe 
     </ul>
   </section>
 </article>
-Rules: Write Core Features and Screens as if briefing a developer — specific and actionable. Omit Design, Technical Notes and Out of Scope sections if not mentioned. Capture exact names, numbers and details. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Write Core Features and Screens as if briefing a developer — specific and actionable. Omit Design, Technical Notes and Out of Scope sections if not mentioned. Capture exact names, numbers and details. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+insandare: `Analyze this audio recording and write an angry, passionate letter to the editor of a local newspaper based on its content.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Write in first person ("I"/"jag") as a genuinely outraged local citizen. The tone should be indignant, emphatic and direct — but not offensive or threatening.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [punchy 4–7 word headline that captures the outrage]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Rubrik / Headline]</h2>
+    <p>[Opening salvo: state the outrage clearly and personally in 1–2 sentences. Use "I" and make it visceral.]</p>
+  </section>
+  <section>
+    <h2>[Bakgrund / Background]</h2>
+    <p>[What happened, what was said or decided, and why it is wrong. Be specific — names, places, decisions if mentioned.]</p>
+  </section>
+  <section>
+    <h2>[Konsekvenser / Consequences]</h2>
+    <p>[What will happen if nothing is done? Paint the picture of what is at stake for the local community.]</p>
+  </section>
+  <section>
+    <h2>[Krav / Demands]</h2>
+    <p>[Precise demands: what must be done, by whom, and by when. End with a rallying statement.]</p>
+  </section>
+</article>
+Rules: Passionate but coherent — anger with arguments, not just noise. Use strong verbs and short sentences for impact. Address decision-makers by role if mentioned. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+forhor: `Analyze this audio recording and produce a formal interrogation protocol based on its content.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Extract all statements, questions, answers and key facts from the recording and present them as a structured protocol.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word title identifying the case or subject]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Protokollhuvud / Protocol Header]</h2>
+    <p><strong>Datum/Date:</strong> [date if mentioned, otherwise "—"]</p>
+    <p><strong>Plats/Location:</strong> [location if mentioned, otherwise "—"]</p>
+    <p><strong>Förhörsledare/Interrogator:</strong> [name/role if mentioned, otherwise "—"]</p>
+    <p><strong>Förhörsperson/Subject:</strong> [name/role if mentioned, otherwise "—"]</p>
+    <p><strong>Övriga närvarande/Others present:</strong> [names/roles if mentioned, otherwise "—"]</p>
+  </section>
+  <section>
+    <h2>[Ärende / Subject Matter]</h2>
+    <p>[Brief neutral statement of what the interrogation concerns.]</p>
+  </section>
+  <section>
+    <h2>[Förhör / Interrogation]</h2>
+    <ul>
+      <li><strong>F:</strong> [Question as stated or implied in the recording]</li>
+      <li><strong>S:</strong> [Answer given]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Sammanfattning / Summary]</h2>
+    <p>[Key facts established, admissions made, contradictions noted.]</p>
+  </section>
+  <section>
+    <h2>[Åtgärder / Actions]</h2>
+    <ul>
+      <li>[Any follow-up actions, decisions or next steps mentioned]</li>
+    </ul>
+  </section>
+</article>
+Rules: Strictly neutral, precise and formal throughout. No interpretation beyond what is stated. Use "F:" (Fråga/Question) and "S:" (Svar/Answer) for each exchange. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+journal: `Analyze this audio recording and produce a medical journal entry with diagnosis based on its content.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Extract all clinically relevant information — symptoms, history, findings, assessment — and present it in standard medical journal format.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word clinical title, e.g. "Akut bröstsmärta — utredning"]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Patientdata / Patient Data]</h2>
+    <p><strong>Datum:</strong> [date if mentioned, otherwise "—"] &nbsp; <strong>Enhet:</strong> [clinic/ward if mentioned, otherwise "—"]</p>
+    <p><strong>Patient:</strong> [name/age/gender if mentioned, otherwise "—"]</p>
+  </section>
+  <section>
+    <h2>[Anamnes / History]</h2>
+    <p>[Patient's own account of symptoms: onset, duration, character, aggravating/relieving factors, associated symptoms. Use medical terminology where appropriate.]</p>
+  </section>
+  <section>
+    <h2>[Tidigare sjukdomar / Medical History]</h2>
+    <ul>
+      <li>[Prior diagnoses, surgeries, medications, allergies as mentioned]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Status / Examination Findings]</h2>
+    <p>[Clinical findings from physical examination if described: vital signs, inspection, auscultation, palpation, neurological findings etc.]</p>
+  </section>
+  <section>
+    <h2>[Bedömning / Assessment]</h2>
+    <p>[Clinical assessment and differential diagnoses based on the information provided.]</p>
+  </section>
+  <section>
+    <h2>[Diagnos / Diagnosis]</h2>
+    <p>[Primary diagnosis with ICD-code if determinable. Secondary diagnoses if applicable.]</p>
+  </section>
+  <section>
+    <h2>[Åtgärd / Plan]</h2>
+    <ul>
+      <li>[Investigations ordered, treatments initiated, referrals, follow-up, patient information given]</li>
+    </ul>
+  </section>
+</article>
+Rules: Clinical, precise and objective language throughout. Use standard medical terminology. Do not invent clinical data not present in the recording — use "ej angivet" (not stated) for missing fields. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -1583,6 +1715,9 @@ const STYLE_META = {
   social:     { label: 'Inlägg klart',             badge: 'Sociala medier' },
   letter:     { label: 'Formellt brev klart',      badge: 'Formellt brev' },
   vibecoder:  { label: 'Vibe Prompt klar',         badge: '⚡ Vibe Prompt' },
+  insandare:  { label: 'Insändare klar',            badge: '😤 Insändare' },
+  forhor:     { label: 'Förhörsprotokoll klart',    badge: '🔍 Förhör' },
+  journal:    { label: 'Journalanteckning klar',    badge: '🩺 Journal' },
 };
 
 function showResult(html) {
