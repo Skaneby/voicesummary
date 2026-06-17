@@ -253,8 +253,6 @@ html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:
 html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:#6e8efb}
 .format-card[data-fmt="letter"]{--fc:#6e8efb}
 .format-card[data-fmt="insandare"]{--fc:#ef4444}
-.format-card[data-fmt="forhor"]{--fc:#64748b}
-.format-card[data-fmt="journal"]{--fc:#10b981}
 .format-card[data-fmt="psyk"]{--fc:#a855f7}
 .result-box[data-style="psyk"]{border-left-color:#a855f7}
 .result-box[data-style="psyk"] h2{color:#a855f7;border-bottom-color:rgba(168,85,247,.2)}
@@ -263,12 +261,6 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .result-box[data-style="insandare"]{border-left-color:#ef4444}
 .result-box[data-style="insandare"] h2{color:#ef4444;border-bottom-color:rgba(239,68,68,.2)}
 .result-badge[data-style="insandare"]{background:rgba(239,68,68,.15);color:#ef4444}
-.result-box[data-style="forhor"]{border-left-color:#64748b}
-.result-box[data-style="forhor"] h2{color:#64748b;border-bottom-color:rgba(100,116,139,.2)}
-.result-badge[data-style="forhor"]{background:rgba(100,116,139,.15);color:#94a3b8}
-.result-box[data-style="journal"]{border-left-color:#10b981}
-.result-box[data-style="journal"] h2{color:#10b981;border-bottom-color:rgba(16,185,129,.2)}
-.result-badge[data-style="journal"]{background:rgba(16,185,129,.15);color:#10b981}
 
 /* FIND & REPLACE */
 .reformat-wrap{width:100%;max-width:680px}
@@ -626,14 +618,6 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="insandare">
             <div class="fc-name">😤 Arg insändare</div>
             <div class="fc-desc">Engagerat inlägg till lokaltidningen</div>
-          </button>
-          <button class="format-card" data-fmt="forhor">
-            <div class="fc-name">🔍 Förhörsprotokoll</div>
-            <div class="fc-desc">Formellt protokoll i fråga-svar-form</div>
-          </button>
-          <button class="format-card" data-fmt="journal">
-            <div class="fc-name">🩺 Medicinsk journal</div>
-            <div class="fc-desc">Journalanteckning med diagnos</div>
           </button>
           <button class="format-card" data-fmt="psyk">
             <div class="fc-name">🧠 Psykiatrisk utredning</div>
@@ -1203,102 +1187,6 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
 </article>
 Rules: Passionate but coherent — anger with arguments, not just noise. Use strong verbs and short sentences for impact. Address decision-makers by role if mentioned. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
-forhor: `Analyze this audio recording and produce a formal interrogation protocol based on its content.
-Detect the language being spoken and respond ENTIRELY in that same language.
-IMPORTANT: The interrogator is deeply skeptical and suspicious of everything stated in the recording. They question motives, challenge inconsistencies, probe for hidden truths and treat all claims as potentially false until proven otherwise. The interrogator's questions should reflect this attitude — pressing, pointed and distrustful.
-Extract all statements and facts from the recording, then construct a protocol where the interrogator actively challenges and cross-examines each claim.
-Return your response in exactly two parts — no other text:
-Line 1 — TITLE: [4–6 word title identifying the case or subject]
-Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
-<article>
-  <section>
-    <h2>[Protokollhuvud / Protocol Header]</h2>
-    <p><strong>Datum/Date:</strong> [date if mentioned, otherwise "—"]</p>
-    <p><strong>Plats/Location:</strong> [location if mentioned, otherwise "—"]</p>
-    <p><strong>Förhörsledare/Interrogator:</strong> [name/role if mentioned, otherwise "Okänd — misstänkt"]</p>
-    <p><strong>Förhörsperson/Subject:</strong> [name/role if mentioned, otherwise "—"]</p>
-    <p><strong>Övriga närvarande/Others present:</strong> [names/roles if mentioned, otherwise "—"]</p>
-  </section>
-  <section>
-    <h2>[Ärende / Subject Matter]</h2>
-    <p>[State what the interrogation concerns — with a note on why the stated version is being questioned.]</p>
-  </section>
-  <section>
-    <h2>[Misstanke / The Suspicion]</h2>
-    <p>[Based on what was said in the recording: what does the interrogator suspect is really going on? State the underlying suspicion clearly and directly — what is being hidden, why the story doesn't hold up, and what the interrogator believes actually happened. This is the interrogator's hypothesis before the questioning begins.]</p>
-  </section>
-  <section>
-    <h2>[Förhör / Interrogation]</h2>
-    <ul>
-      <li><strong>F:</strong> [Skeptical, probing question that challenges what was said — pressing for the real story, pointing out what doesn't add up, or questioning the subject's motives or credibility]</li>
-      <li><strong>S:</strong> [The subject's answer as given in the recording]</li>
-      <li><strong>F:</strong> [Follow-up that expresses disbelief or catches a contradiction — "Det stämmer inte med vad du sa tidigare…", "Varför skulle du göra det om inte…", "Är du säker på det?"]</li>
-      <li><strong>S:</strong> [Answer]</li>
-    </ul>
-  </section>
-  <section>
-    <h2>[Förhörsledarens bedömning / Interrogator's Assessment]</h2>
-    <p>[A suspicious, critical assessment of the subject's credibility. What is the interrogator not buying? What seems rehearsed, evasive or contradictory? What is the interrogator's gut feeling about what really happened?]</p>
-  </section>
-  <section>
-    <h2>[Åtgärder / Next Steps]</h2>
-    <ul>
-      <li>[What the interrogator wants to investigate further, verify or confront the subject with next]</li>
-    </ul>
-  </section>
-</article>
-Rules: The interrogator's voice should be cold, skeptical and persistent — never accepting answers at face value. Use "F:" for questions and "S:" for answers. Generate the interrogator's questions based on what was said in the recording — challenge every claim, look for gaps, question timing and motive. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
-
-journal: `Analyze this audio recording and produce a medical journal entry with diagnosis based on its content.
-Detect the language being spoken and respond ENTIRELY in that same language.
-IMPORTANT: Always assume the patient is unwell and always provide a concrete diagnosis — even if the recording contains no obvious medical information, extrapolate creatively from what is said and assign a plausible or fictional diagnosis. Never leave the diagnosis empty. Always prescribe specific medication with dosage and a detailed care plan. You may reinterpret, distort or reframe what the patient says in order to fit a plausible medical narrative — the journal reflects the clinician's interpretation, not the patient's literal words.
-Return your response in exactly two parts — no other text:
-Line 1 — TITLE: [4–6 word clinical title describing the diagnosis]
-Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
-<article>
-  <section>
-    <h2>[Patientdata / Patient Data]</h2>
-    <p><strong>Datum:</strong> [date if mentioned, otherwise today] &nbsp; <strong>Enhet:</strong> [clinic/ward if mentioned, otherwise "Akutmottagningen"]</p>
-    <p><strong>Patient:</strong> [name/age/gender if mentioned, otherwise infer from voice or use "Patient X"]</p>
-  </section>
-  <section>
-    <h2>[Anamnes / History]</h2>
-    <p>[Patient's account of complaints — infer symptoms from anything said in the recording, even metaphorically. Use medical terminology. If nothing medical is mentioned, read between the lines: stress, fatigue, poor decisions, erratic behaviour etc. all have clinical interpretations.]</p>
-  </section>
-  <section>
-    <h2>[Tidigare sjukdomar / Medical History]</h2>
-    <ul>
-      <li>[Prior diagnoses, surgeries, medications, allergies as mentioned — or "Inga kända" if not stated]</li>
-    </ul>
-  </section>
-  <section>
-    <h2>[Status / Examination Findings]</h2>
-    <p>[Describe examination findings — invent plausible clinical signs consistent with the diagnosis if not explicitly stated. Include vital signs, relevant system findings.]</p>
-  </section>
-  <section>
-    <h2>[Bedömning / Assessment]</h2>
-    <p>[Clinical reasoning leading to the diagnosis. Include differential diagnoses considered and why the primary diagnosis was chosen.]</p>
-  </section>
-  <section>
-    <h2>[Diagnos / Diagnosis]</h2>
-    <p>[Concrete primary diagnosis with ICD-10 code. Always provide one — if speculative, note "(preliminär diagnos)". Include secondary diagnoses if relevant.]</p>
-  </section>
-  <section>
-    <h2>[Medicinering / Medication]</h2>
-    <ul>
-      <li>[Specific drug name, dosage, route, frequency and duration — e.g. "Amoxicillin 500 mg × 3 p.o. i 7 dagar"]</li>
-      <li>[Additional medications as clinically appropriate]</li>
-    </ul>
-  </section>
-  <section>
-    <h2>[Vårdplan / Care Plan]</h2>
-    <ul>
-      <li>[Specific care actions: investigations ordered, referrals, monitoring, rest/activity advice, follow-up appointment, patient instructions]</li>
-    </ul>
-  </section>
-</article>
-Rules: Always produce a diagnosis and always prescribe medication — no exceptions. Be creative if needed but stay medically coherent. Use standard medical terminology and ICD-10 codes. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
-
 psyk: `Analyze this audio recording and produce a full psychiatric assessment of the person making the recording.
 Detect the language being spoken and respond ENTIRELY in that same language.
 IMPORTANT: You are a highly confident — perhaps overconfident — psychiatrist. Always find at least 2–3 psychiatric diagnoses. Read between the lines aggressively: interpret casual remarks as symptoms, misread metaphors as clinical signs, treat enthusiasm as mania, hesitation as avoidant personality disorder, and strong opinions as narcissistic ideation. The person is clearly struggling — the recording is proof. Invent fictional Latin-sounding diagnoses that sound gravely serious but do not exist in any real DSM or ICD. Use abundant Latin medical terminology to appear authoritative. Prescribe entirely fictional medications (invent names like "Oxaloprazin", "Vertilobam", "Defocusil retard") with precise-sounding dosages. Also prescribe non-pharmaceutical interventions tailored to what the person actually says — if they mention travel, prescribe specific travel; if they sound stressed, prescribe a forest walk with exact duration; if they mention food, prescribe dietary changes with flair.
@@ -1798,8 +1686,6 @@ const STYLE_META = {
   letter:     { label: 'Formellt brev klart',      badge: 'Formellt brev' },
   vibecoder:  { label: 'Vibe Prompt klar',         badge: '⚡ Vibe Prompt' },
   insandare:  { label: 'Insändare klar',            badge: '😤 Insändare' },
-  forhor:     { label: 'Förhörsprotokoll klart',    badge: '🔍 Förhör' },
-  journal:    { label: 'Journalanteckning klar',    badge: '🩺 Journal' },
   psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri' },
 };
 
