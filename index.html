@@ -255,6 +255,10 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .format-card[data-fmt="insandare"]{--fc:#ef4444}
 .format-card[data-fmt="forhor"]{--fc:#64748b}
 .format-card[data-fmt="journal"]{--fc:#10b981}
+.format-card[data-fmt="psyk"]{--fc:#a855f7}
+.result-box[data-style="psyk"]{border-left-color:#a855f7}
+.result-box[data-style="psyk"] h2{color:#a855f7;border-bottom-color:rgba(168,85,247,.2)}
+.result-badge[data-style="psyk"]{background:rgba(168,85,247,.15);color:#a855f7}
 .result-badge[data-style="letter"]{background:rgba(110,142,251,.15);color:#6e8efb}
 .result-box[data-style="insandare"]{border-left-color:#ef4444}
 .result-box[data-style="insandare"] h2{color:#ef4444;border-bottom-color:rgba(239,68,68,.2)}
@@ -630,6 +634,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="journal">
             <div class="fc-name">🩺 Medicinsk journal</div>
             <div class="fc-desc">Journalanteckning med diagnos</div>
+          </button>
+          <button class="format-card" data-fmt="psyk">
+            <div class="fc-name">🧠 Psykiatrisk utredning</div>
+            <div class="fc-desc">Fullständig psykiatrisk diagnos med ordination</div>
           </button>
         </div>
       </div>
@@ -1289,7 +1297,56 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     </ul>
   </section>
 </article>
-Rules: Always produce a diagnosis and always prescribe medication — no exceptions. Be creative if needed but stay medically coherent. Use standard medical terminology and ICD-10 codes. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Always produce a diagnosis and always prescribe medication — no exceptions. Be creative if needed but stay medically coherent. Use standard medical terminology and ICD-10 codes. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+psyk: `Analyze this audio recording and produce a full psychiatric assessment of the person making the recording.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: You are a highly confident — perhaps overconfident — psychiatrist. Always find at least 2–3 psychiatric diagnoses. Read between the lines aggressively: interpret casual remarks as symptoms, misread metaphors as clinical signs, treat enthusiasm as mania, hesitation as avoidant personality disorder, and strong opinions as narcissistic ideation. The person is clearly struggling — the recording is proof. Invent fictional Latin-sounding diagnoses that sound gravely serious but do not exist in any real DSM or ICD. Use abundant Latin medical terminology to appear authoritative. Prescribe entirely fictional medications (invent names like "Oxaloprazin", "Vertilobam", "Defocusil retard") with precise-sounding dosages. Also prescribe non-pharmaceutical interventions tailored to what the person actually says — if they mention travel, prescribe specific travel; if they sound stressed, prescribe a forest walk with exact duration; if they mention food, prescribe dietary changes with flair.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word dramatic clinical title describing the primary diagnosis]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Patientdata / Patient Data]</h2>
+    <p><strong>Datum:</strong> [today's date] &nbsp; <strong>Klinik:</strong> [invent a dramatic clinic name, e.g. "Centrum för Kognitiv Dysreglering"]</p>
+    <p><strong>Patient:</strong> [name/age/gender if mentioned, otherwise infer from voice or "Patient X, okänd ålder"] &nbsp; <strong>Remitterad av:</strong> [invent a referral source, e.g. "sig själv, efter uppenbar insikt"]</p>
+  </section>
+  <section>
+    <h2>[Remissorsak / Reason for Referral]</h2>
+    <p>[Describe why this person urgently needs psychiatric help — based on what they said in the recording. Be specific and clinical. Use Latin phrases freely. Frame mundane statements as alarming symptoms, e.g. "Patienten uppvisar tydliga tecken på voluntär kognitiv dissonans med inslag av narrativ självförstärkning."]</p>
+  </section>
+  <section>
+    <h2>[Psykisk Status / Mental Status Examination]</h2>
+    <p>[Clinical description of the patient's apparent mental state based on the recording. Comment on speech pattern, thought content, affect, insight, and judgment — all inferred or invented from what they said. Use Latin terms like "logorrhoea", "ideae fixae", "affect labil", "sensorium clarum", "insiktsbrist grad III" etc.]</p>
+  </section>
+  <section>
+    <h2>[Diagnoser / Diagnoses]</h2>
+    <ul>
+      <li><strong>[Primary fictional diagnosis with invented ICD-style code, e.g. "F99.7"]</strong> — [1–2 sentence clinical explanation of this entirely made-up condition, using Latin and Greek roots to sound legitimate]</li>
+      <li><strong>[Secondary fictional diagnosis]</strong> — [explanation]</li>
+      <li><strong>[Optional third diagnosis — especially if something absurd can be derived from the recording]</strong> — [explanation]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Psykofarmaka / Psychopharmacology]</h2>
+    <ul>
+      <li>[Invented medication name (e.g. "Oxaloprazin"), dosage (e.g. "25 mg × 2"), route (p.o.), duration, and brief rationale in clinical language]</li>
+      <li>[Second invented medication — consider side effects that sound real but are made up, e.g. "kan orsaka temporär åsiktsreduktion"]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Övriga Ordinationer / Additional Prescriptions]</h2>
+    <ul>
+      <li>[Non-pharmaceutical prescription directly derived from what the person said — e.g. "Daglig promenad i barrskog, minimum 47 minuter, utan mobiltelefon" or "Semesterresa till södra Europa, ej kortare än 11 dagar, med fokus på passivt solbadande och lokal matkultur"]</li>
+      <li>[Second non-pharma prescription — could be dietary, social, creative, or absurdly specific]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Terapeutisk Prognos / Therapeutic Prognosis]</h2>
+    <p>[Conclude with a dramatic but clinically phrased prognosis. Express cautious hope mixed with veiled concern. Use Latin. End with a recommendation for follow-up in a timeframe that sounds medically considered, e.g. "Återbesök om 6 veckor, förutsatt att patienten följer ordinationen sine deviatio."]</p>
+  </section>
+</article>
+Rules: Always produce at least 2 fictional diagnoses and always prescribe both medication and non-pharmaceutical interventions — no exceptions. The more absurd the recording content, the more dramatic the diagnosis. All medication names must be invented. Latin medical terminology should appear in every section. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -1743,6 +1800,7 @@ const STYLE_META = {
   insandare:  { label: 'Insändare klar',            badge: '😤 Insändare' },
   forhor:     { label: 'Förhörsprotokoll klart',    badge: '🔍 Förhör' },
   journal:    { label: 'Journalanteckning klar',    badge: '🩺 Journal' },
+  psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri' },
 };
 
 function showResult(html) {
