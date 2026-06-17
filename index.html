@@ -1197,7 +1197,8 @@ Rules: Passionate but coherent — anger with arguments, not just noise. Use str
 
 forhor: `Analyze this audio recording and produce a formal interrogation protocol based on its content.
 Detect the language being spoken and respond ENTIRELY in that same language.
-Extract all statements, questions, answers and key facts from the recording and present them as a structured protocol.
+IMPORTANT: The interrogator is deeply skeptical and suspicious of everything stated in the recording. They question motives, challenge inconsistencies, probe for hidden truths and treat all claims as potentially false until proven otherwise. The interrogator's questions should reflect this attitude — pressing, pointed and distrustful.
+Extract all statements and facts from the recording, then construct a protocol where the interrogator actively challenges and cross-examines each claim.
 Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [4–6 word title identifying the case or subject]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
@@ -1206,33 +1207,35 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <h2>[Protokollhuvud / Protocol Header]</h2>
     <p><strong>Datum/Date:</strong> [date if mentioned, otherwise "—"]</p>
     <p><strong>Plats/Location:</strong> [location if mentioned, otherwise "—"]</p>
-    <p><strong>Förhörsledare/Interrogator:</strong> [name/role if mentioned, otherwise "—"]</p>
+    <p><strong>Förhörsledare/Interrogator:</strong> [name/role if mentioned, otherwise "Okänd — misstänkt"]</p>
     <p><strong>Förhörsperson/Subject:</strong> [name/role if mentioned, otherwise "—"]</p>
     <p><strong>Övriga närvarande/Others present:</strong> [names/roles if mentioned, otherwise "—"]</p>
   </section>
   <section>
     <h2>[Ärende / Subject Matter]</h2>
-    <p>[Brief neutral statement of what the interrogation concerns.]</p>
+    <p>[State what the interrogation concerns — with a note on why the stated version is being questioned.]</p>
   </section>
   <section>
     <h2>[Förhör / Interrogation]</h2>
     <ul>
-      <li><strong>F:</strong> [Question as stated or implied in the recording]</li>
-      <li><strong>S:</strong> [Answer given]</li>
+      <li><strong>F:</strong> [Skeptical, probing question that challenges what was said — pressing for the real story, pointing out what doesn't add up, or questioning the subject's motives or credibility]</li>
+      <li><strong>S:</strong> [The subject's answer as given in the recording]</li>
+      <li><strong>F:</strong> [Follow-up that expresses disbelief or catches a contradiction — "Det stämmer inte med vad du sa tidigare…", "Varför skulle du göra det om inte…", "Är du säker på det?"]</li>
+      <li><strong>S:</strong> [Answer]</li>
     </ul>
   </section>
   <section>
-    <h2>[Sammanfattning / Summary]</h2>
-    <p>[Key facts established, admissions made, contradictions noted.]</p>
+    <h2>[Förhörsledarens bedömning / Interrogator's Assessment]</h2>
+    <p>[A suspicious, critical assessment of the subject's credibility. What is the interrogator not buying? What seems rehearsed, evasive or contradictory? What is the interrogator's gut feeling about what really happened?]</p>
   </section>
   <section>
-    <h2>[Åtgärder / Actions]</h2>
+    <h2>[Åtgärder / Next Steps]</h2>
     <ul>
-      <li>[Any follow-up actions, decisions or next steps mentioned]</li>
+      <li>[What the interrogator wants to investigate further, verify or confront the subject with next]</li>
     </ul>
   </section>
 </article>
-Rules: Strictly neutral, precise and formal throughout. No interpretation beyond what is stated. Use "F:" (Fråga/Question) and "S:" (Svar/Answer) for each exchange. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+Rules: The interrogator's voice should be cold, skeptical and persistent — never accepting answers at face value. Use "F:" for questions and "S:" for answers. Generate the interrogator's questions based on what was said in the recording — challenge every claim, look for gaps, question timing and motive. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
 journal: `Analyze this audio recording and produce a medical journal entry with diagnosis based on its content.
 Detect the language being spoken and respond ENTIRELY in that same language.
