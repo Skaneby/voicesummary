@@ -1195,54 +1195,45 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
 </article>
 Rules: Passionate but coherent — anger with arguments, not just noise. Use strong verbs and short sentences for impact. Address decision-makers by role if mentioned. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
-psyk: `Analyze this audio recording and produce a full psychiatric assessment of the person making the recording.
+psyk: `Analyze this audio recording and produce a concise psychiatric assessment of the person making the recording.
 Detect the language being spoken and respond ENTIRELY in that same language.
-IMPORTANT: You are a highly confident — perhaps overconfident — psychiatrist. Always find at least 2–3 psychiatric diagnoses. Read between the lines aggressively: interpret casual remarks as symptoms, misread metaphors as clinical signs, treat enthusiasm as mania, hesitation as avoidant personality disorder, and strong opinions as narcissistic ideation. The person is clearly struggling — the recording is proof. Invent fictional Latin-sounding diagnoses that sound gravely serious but do not exist in any real DSM or ICD. Use abundant Latin medical terminology to appear authoritative. Prescribe entirely fictional medications (invent names like "Oxaloprazin", "Vertilobam", "Defocusil retard") with precise-sounding dosages. Also prescribe non-pharmaceutical interventions tailored to what the person actually says — if they mention travel, prescribe specific travel; if they sound stressed, prescribe a forest walk with exact duration; if they mention food, prescribe dietary changes with flair.
+IMPORTANT: You are a highly confident — perhaps overconfident — psychiatrist. Always find 2–3 psychiatric diagnoses. Read between the lines aggressively: interpret casual remarks as symptoms, misread metaphors as clinical signs, treat enthusiasm as mania, hesitation as avoidance, strong opinions as narcissistic ideation. Invent fictional Latin-sounding diagnoses that sound gravely serious. Use Latin terminology throughout. Prescribe fictional medications (e.g. "Oxaloprazin", "Defocusil retard") with precise dosages. The crown of this assessment is the prescription section — make it rich, specific and creative: tailor every recommendation directly to what the person said, include absurdly precise non-pharmaceutical interventions (exact durations, destinations, dietary rules, social bans) alongside invented medications with invented side-effects.
 Return your response in exactly two parts — no other text:
-Line 1 — TITLE: [4–6 word dramatic clinical title describing the primary diagnosis]
+Line 1 — TITLE: [4–6 word dramatic clinical title]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
-    <h2>[Patientdata / Patient Data]</h2>
-    <p><strong>Datum:</strong> [today's date] &nbsp; <strong>Klinik:</strong> [invent a dramatic clinic name, e.g. "Centrum för Kognitiv Dysreglering"]</p>
-    <p><strong>Patient:</strong> [name/age/gender if mentioned, otherwise infer from voice or "Patient X, okänd ålder"] &nbsp; <strong>Remitterad av:</strong> [invent a referral source, e.g. "sig själv, efter uppenbar insikt"]</p>
+    <h2>[Patientdata]</h2>
+    <p><strong>Datum:</strong> [today] &nbsp; <strong>Klinik:</strong> [invent a dramatic clinic name] &nbsp; <strong>Patient:</strong> [name/age if mentioned, otherwise "Patient X"] &nbsp; <strong>Remitterad av:</strong> [invent, e.g. "sig själv, efter uppenbar insikt"]</p>
   </section>
   <section>
-    <h2>[Remissorsak / Reason for Referral]</h2>
-    <p>[Describe why this person urgently needs psychiatric help — based on what they said in the recording. Be specific and clinical. Use Latin phrases freely. Frame mundane statements as alarming symptoms, e.g. "Patienten uppvisar tydliga tecken på voluntär kognitiv dissonans med inslag av narrativ självförstärkning."]</p>
+    <h2>[Psykisk Status]</h2>
+    <p>[2–3 sentences. Clinical snapshot of the patient's mental state as heard in the recording. Use Latin terms: "logorrhoea", "ideae fixae", "affect labil", "insiktsbrist grad III" etc. Frame mundane speech as alarming clinical signs.]</p>
   </section>
   <section>
-    <h2>[Psykisk Status / Mental Status Examination]</h2>
-    <p>[Clinical description of the patient's apparent mental state based on the recording. Comment on speech pattern, thought content, affect, insight, and judgment — all inferred or invented from what they said. Use Latin terms like "logorrhoea", "ideae fixae", "affect labil", "sensorium clarum", "insiktsbrist grad III" etc.]</p>
-  </section>
-  <section>
-    <h2>[Diagnoser / Diagnoses]</h2>
+    <h2>[Diagnoser]</h2>
     <ul>
-      <li><strong>[Primary fictional diagnosis with invented ICD-style code, e.g. "F99.7"]</strong> — [1–2 sentence clinical explanation of this entirely made-up condition, using Latin and Greek roots to sound legitimate]</li>
-      <li><strong>[Secondary fictional diagnosis]</strong> — [explanation]</li>
-      <li><strong>[Optional third diagnosis — especially if something absurd can be derived from the recording]</strong> — [explanation]</li>
+      <li><strong>[Primary fictional diagnosis, invented ICD code e.g. F99.7]</strong> — [1 sentence explanation using Latin/Greek roots]</li>
+      <li><strong>[Secondary diagnosis]</strong> — [1 sentence]</li>
+      <li><strong>[Optional third — especially if something absurd can be derived]</strong> — [1 sentence]</li>
     </ul>
   </section>
   <section>
-    <h2>[Psykofarmaka / Psychopharmacology]</h2>
+    <h2>[Ordinationer]</h2>
     <ul>
-      <li>[Invented medication name (e.g. "Oxaloprazin"), dosage (e.g. "25 mg × 2"), route (p.o.), duration, and brief rationale in clinical language]</li>
-      <li>[Second invented medication — consider side effects that sound real but are made up, e.g. "kan orsaka temporär åsiktsreduktion"]</li>
+      <li><strong>Psykofarmaka:</strong> [Invented drug, e.g. "Vertilobam 40 mg × 1 p.o., morgon"] — [invented clinical rationale + 1 made-up side-effect, e.g. "kan orsaka temporär åsiktsreduktion och mild euforisk konformitet"]</li>
+      <li><strong>Psykofarmaka:</strong> [Second invented medication with dosage and invented side-effect]</li>
+      <li><strong>Livsstilsordination:</strong> [Highly specific non-pharma prescription derived directly from what the person said — exact duration, location, rules. E.g. "Promenad i barrskog, 47 min dagligen, utan mobiltelefon, helst i regn"]</li>
+      <li><strong>Livsstilsordination:</strong> [Second specific intervention — could be travel with exact destination and length, dietary rule, social restriction, creative activity, or something delightfully absurd but medically phrased]</li>
+      <li><strong>Livsstilsordination:</strong> [Third intervention if the recording content warrants it]</li>
     </ul>
   </section>
   <section>
-    <h2>[Övriga Ordinationer / Additional Prescriptions]</h2>
-    <ul>
-      <li>[Non-pharmaceutical prescription directly derived from what the person said — e.g. "Daglig promenad i barrskog, minimum 47 minuter, utan mobiltelefon" or "Semesterresa till södra Europa, ej kortare än 11 dagar, med fokus på passivt solbadande och lokal matkultur"]</li>
-      <li>[Second non-pharma prescription — could be dietary, social, creative, or absurdly specific]</li>
-    </ul>
-  </section>
-  <section>
-    <h2>[Terapeutisk Prognos / Therapeutic Prognosis]</h2>
-    <p>[Conclude with a dramatic but clinically phrased prognosis. Express cautious hope mixed with veiled concern. Use Latin. End with a recommendation for follow-up in a timeframe that sounds medically considered, e.g. "Återbesök om 6 veckor, förutsatt att patienten följer ordinationen sine deviatio."]</p>
+    <h2>[Prognos]</h2>
+    <p>[2 sentences. Cautious hope mixed with veiled concern. End with follow-up timing, e.g. "Återbesök om 6 veckor, sine deviatio."]</p>
   </section>
 </article>
-Rules: Always produce at least 2 fictional diagnoses and always prescribe both medication and non-pharmaceutical interventions — no exceptions. The more absurd the recording content, the more dramatic the diagnosis. All medication names must be invented. Latin medical terminology should appear in every section. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+Rules: Keep Patientdata and Psykisk Status brief — invest the space in Diagnoser and especially Ordinationer. Always produce at least 2 diagnoses and at least 3 ordinationer. All drug names must be invented. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
 tal: `Analyze this audio recording and transform its content into a passionate, political speech.
 Detect the language being spoken and respond ENTIRELY in that same language.
