@@ -254,6 +254,10 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .format-card[data-fmt="letter"]{--fc:#6e8efb}
 .format-card[data-fmt="insandare"]{--fc:#ef4444}
 .format-card[data-fmt="psyk"]{--fc:#a855f7}
+.format-card[data-fmt="tal"]{--fc:#e11d48}
+.result-box[data-style="tal"]{border-left-color:#e11d48}
+.result-box[data-style="tal"] h2{color:#e11d48;border-bottom-color:rgba(225,29,72,.2)}
+.result-badge[data-style="tal"]{background:rgba(225,29,72,.15);color:#e11d48}
 .result-box[data-style="psyk"]{border-left-color:#a855f7}
 .result-box[data-style="psyk"] h2{color:#a855f7;border-bottom-color:rgba(168,85,247,.2)}
 .result-badge[data-style="psyk"]{background:rgba(168,85,247,.15);color:#a855f7}
@@ -622,6 +626,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="psyk">
             <div class="fc-name">🧠 Psykiatrisk utredning</div>
             <div class="fc-desc">Fullständig psykiatrisk diagnos med ordination</div>
+          </button>
+          <button class="format-card" data-fmt="tal">
+            <div class="fc-name">🎤 Politiskt tal</div>
+            <div class="fc-desc">Eldigt brandtal med paroll</div>
           </button>
         </div>
       </div>
@@ -1234,7 +1242,38 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <p>[Conclude with a dramatic but clinically phrased prognosis. Express cautious hope mixed with veiled concern. Use Latin. End with a recommendation for follow-up in a timeframe that sounds medically considered, e.g. "Återbesök om 6 veckor, förutsatt att patienten följer ordinationen sine deviatio."]</p>
   </section>
 </article>
-Rules: Always produce at least 2 fictional diagnoses and always prescribe both medication and non-pharmaceutical interventions — no exceptions. The more absurd the recording content, the more dramatic the diagnosis. All medication names must be invented. Latin medical terminology should appear in every section. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Always produce at least 2 fictional diagnoses and always prescribe both medication and non-pharmaceutical interventions — no exceptions. The more absurd the recording content, the more dramatic the diagnosis. All medication names must be invented. Latin medical terminology should appear in every section. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+tal: `Analyze this audio recording and transform its content into a passionate, political speech.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: This is a fiery, committed and persuasive political address — not a summary. Expand boldly on the ideas in the recording. Elevate everyday concerns into matters of principle, justice and collective action. Use rhetorical devices freely: anaphora, contrast, rhetorical questions, crescendo. The speaker should sound both morally serious and emotionally charged.
+Begin the speech by directly addressing the audience — choose the form of address that fits the content and tone (e.g. "Medborgare!", "Kamrater!", "Herr/Fru talman!", "Kära vänner!", "Mina damer och herrar!" — or invent a fitting one). End with a memorable rallying slogan or paroll on its own line, in bold.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word title for the speech — dramatic and declarative]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Opening address + hook]</h2>
+    <p>[Address the audience by name. Open with a striking statement, a provocative question or a vivid image that immediately establishes the stakes. One powerful paragraph.]</p>
+  </section>
+  <section>
+    <h2>[The problem / The injustice]</h2>
+    <p>[Develop the core issue from the recording as a political and moral problem. Name what is wrong, who is affected, and why it cannot continue. Be specific but sweeping. Use contrast: what is versus what should be.]</p>
+  </section>
+  <section>
+    <h2>[The vision / The demand]</h2>
+    <p>[What must change? Paint a vivid picture of the alternative — the world as it could and should be. Make demands concrete. This is the idealistic heart of the speech.]</p>
+  </section>
+  <section>
+    <h2>[Call to action]</h2>
+    <p>[Urge the audience to act — vote, organise, speak up, resist, build. Make it personal and urgent. What must each listener do today, not someday?]</p>
+  </section>
+  <section>
+    <h2>[Paroll]</h2>
+    <p><strong>[A short, memorable, chantable slogan that captures the entire speech in one line. It should feel like it belongs on a banner or end a rally. Max 10 words.]</strong></p>
+  </section>
+</article>
+Rules: Every section must feel like it belongs in the same speech — build in momentum toward the paroll. Rhetoric over report: transform facts into moral arguments. Never be neutral. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -1754,6 +1793,7 @@ const STYLE_META = {
   vibecoder:  { label: 'Vibe Prompt klar',         badge: '⚡ Vibe Prompt' },
   insandare:  { label: 'Insändare klar',            badge: '😤 Insändare' },
   psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri' },
+  tal:        { label: 'Brandtal klart',             badge: '🎤 Politiskt tal' },
 };
 
 function showResult(html) {
