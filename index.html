@@ -255,6 +255,10 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .format-card[data-fmt="insandare"]{--fc:#ef4444}
 .format-card[data-fmt="psyk"]{--fc:#a855f7}
 .format-card[data-fmt="tal"]{--fc:#e11d48}
+.format-card[data-fmt="predikan"]{--fc:#d97706}
+.result-box[data-style="predikan"]{border-left-color:#d97706}
+.result-box[data-style="predikan"] h2{color:#d97706;border-bottom-color:rgba(217,119,6,.2)}
+.result-badge[data-style="predikan"]{background:rgba(217,119,6,.15);color:#d97706}
 .result-box[data-style="tal"]{border-left-color:#e11d48}
 .result-box[data-style="tal"] h2{color:#e11d48;border-bottom-color:rgba(225,29,72,.2)}
 .result-badge[data-style="tal"]{background:rgba(225,29,72,.15);color:#e11d48}
@@ -630,6 +634,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="tal">
             <div class="fc-name">🎤 Politiskt tal</div>
             <div class="fc-desc">Eldigt brandtal med paroll</div>
+          </button>
+          <button class="format-card" data-fmt="predikan">
+            <div class="fc-name">✝️ Predikan</div>
+            <div class="fc-desc">Religiöst brandtal med välsignelse och moral</div>
           </button>
         </div>
       </div>
@@ -1264,7 +1272,38 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <p><strong>[A short, memorable, chantable slogan that captures the entire speech in one line. It should feel like it belongs on a banner or end a rally. Max 10 words.]</strong></p>
   </section>
 </article>
-Rules: Every section must feel like it belongs in the same speech — build in momentum toward the paroll. Rhetoric over report: transform facts into moral arguments. Never be neutral. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Every section must feel like it belongs in the same speech — build in momentum toward the paroll. Rhetoric over report: transform facts into moral arguments. Never be neutral. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+predikan: `Analyze this audio recording and transform its content into a fervent religious sermon about blessing, morality and divine guidance.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: You are a passionate and theatrical preacher. Every topic in the recording — however mundane — must be reframed as a spiritual test, a divine lesson or a moral parable. Invent fictional apostles with plausible-sounding biblical names (e.g. "Aposteln Ezekarias", "Den heliga Mirjam av Betesda", "Profeten Nathanael den Unge"). Invent fictional Bible references that sound completely authentic (e.g. "Hesekiels bok, kapitel 14, vers 7", "Markusevangeliet 23:4", "Brevet till Thessalonikerna den äldre, vers 18") — but do not use real verses, only invent them. Use solemn, elevated language rich in repetition, rhetorical questions and divine imagery. The sermon should build to an emotional peak and close with a blessing.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word sermon title — solemn and declarative]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Öppningsbön / Opening Prayer]</h2>
+    <p>[Begin by addressing the congregation ("Kära bröder och systrar!", "Församling!", "Ni som söker ljuset!" — choose what fits). Open with an invocation of divine presence and a solemn framing of today's spiritual theme, drawn from the recording's content.]</p>
+  </section>
+  <section>
+    <h2>[Skriftens ord / The Word of Scripture]</h2>
+    <p>[Quote 1–2 entirely invented Bible verses that appear to speak directly to the recording's content. Format as: "<em>[Invented book name] [chapter]:[verse]</em>" followed by the invented verse in quotation marks. Then a sentence of interpretation.]</p>
+  </section>
+  <section>
+    <h2>[Apostelns vittnesbörd / The Apostle's Testimony]</h2>
+    <p>[Invoke a fictional apostle or saint by name and describe what they once said or did that relates to the recording's theme. The anecdote should sound ancient and authoritative. E.g. "Som Aposteln Ezekarias påminde oss i öknen utanför Damaskus: den som…"]</p>
+  </section>
+  <section>
+    <h2>[Den moraliska lärdomen / The Moral Lesson]</h2>
+    <p>[Take the specific content of the recording and reframe it as a divine moral lesson or spiritual warning. What sin is being tempted here? What virtue is being tested? Be theatrical — name the darkness before you name the light.]</p>
+  </section>
+  <section>
+    <h2>[Välsignelsen / The Blessing]</h2>
+    <p>[Close with a solemn, formal blessing addressed to the congregation. Invoke divine grace, peace and guidance. End with "Amen." on its own line in bold.]</p>
+    <p><strong>Amen.</strong></p>
+  </section>
+</article>
+Rules: Every section must elevate the mundane to the sacred. All Bible references must be invented — never quote real scripture. All apostles and saints must be fictional. Language should be formal, solemn and rhythmic throughout. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -1785,6 +1824,7 @@ const STYLE_META = {
   insandare:  { label: 'Insändare klar',            badge: '😤 Insändare' },
   psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri' },
   tal:        { label: 'Brandtal klart',             badge: '🎤 Politiskt tal' },
+  predikan:   { label: 'Predikan hållen',            badge: '✝️ Predikan' },
 };
 
 function showResult(html) {
