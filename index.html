@@ -1731,7 +1731,11 @@ async function generateFromText(inputText, attempt = 0) {
   return { html, suggestedTitle };
 }
 
+let _reqId = 0; // monotonic counter — stale responses are silently dropped
+
 async function processFromText(text) {
+  const reqId = ++_reqId;
+  const style = s.style; // capture before any await
   show('working');
   $('workTitle').textContent = 'Bearbetar text';
   $('workSub').textContent = 'Gemini tolkar om…';
@@ -1739,14 +1743,13 @@ async function processFromText(text) {
   $('workSpinner').style.display = '';
   try {
     const { html, suggestedTitle } = await generateFromText(text);
-    if (!s.title && suggestedTitle) {
-      s.title = suggestedTitle;
-      $('titleInput').value = suggestedTitle;
-    }
+    if (reqId !== _reqId) return; // a newer request started — discard this result
+    if (suggestedTitle) { s.title = suggestedTitle; $('titleInput').value = suggestedTitle; }
     s.resultHTML = html;
     saveToHistory(html, s.title);
-    showResult(html);
+    showResult(html, style);
   } catch(e) {
+    if (reqId !== _reqId) return;
     show('result');
     toast('Fel: ' + e.message);
   }
@@ -1754,6 +1757,8 @@ async function processFromText(text) {
 
 // ── MAIN FLOW ──────────────────────────────────────────────────────────────
 async function process(blob, mime) {
+  const reqId = ++_reqId;
+  const style = s.style; // capture before any await
   show('working');
   $('workTitle').textContent = 'Förbereder ljud';
   $('workSub').textContent = (blob.size / 1048576).toFixed(1) + ' MB';
@@ -1771,13 +1776,11 @@ async function process(blob, mime) {
     $('workSpinner').style.display = '';
 
     const { html, suggestedTitle } = await generate(base64, mime);
-    if (!s.title && suggestedTitle) {
-      s.title = suggestedTitle;
-      $('titleInput').value = suggestedTitle;
-    }
+    if (reqId !== _reqId) return; // stale — newer request already running
+    if (suggestedTitle) { s.title = suggestedTitle; $('titleInput').value = suggestedTitle; }
     s.resultHTML = html;
     saveToHistory(html, s.title);
-    showResult(html);
+    showResult(html, style);
   } catch(e) {
     const isFetch = e.name === 'TypeError' && e.message.toLowerCase().includes('fetch');
     const isAbort = e.name === 'AbortError';
@@ -1824,12 +1827,22 @@ const STYLE_META = {
   predikan:   { label: 'Predikan hållen',            badge: '✝️ Predikan' },
 };
 
-function showResult(html) {
+function showResult(html, style) {
+  style = style || s.style;
+  // Sync s.style so UI stays consistent with what's actually displayed
+  s.style = style;
   const box = $('resultBox');
-  const meta = STYLE_META[s.style] || STYLE_META.summary;
-  box.dataset.style = s.style;
+  const meta = STYLE_META[style] || STYLE_META.summary;
+  box.dataset.style = style;
   box.contentEditable = 'false';
   box.innerHTML = sanitizeHtml(html);
+  // Remove any <h2> that duplicates the title (model sometimes repeats it)
+  if (s.title) {
+    const titleLower = s.title.trim().toLowerCase();
+    box.querySelectorAll('h2').forEach(h2 => {
+      if (h2.textContent.trim().toLowerCase() === titleLower) h2.remove();
+    });
+  }
   // Store plain text for text-based reformatting
   const tmp = document.createElement('div');
   tmp.innerHTML = box.innerHTML;
@@ -1837,7 +1850,7 @@ function showResult(html) {
   $('resultLabel').textContent = meta.label;
   const badge = $('resultBadge');
   badge.textContent = meta.badge;
-  badge.dataset.style = s.style;
+  badge.dataset.style = style;
   $('editBtn').querySelector('span').textContent = 'Redigera';
   $('editBtn').classList.remove('is-editing');
   $('fnrBar').style.display = 'none';
@@ -1849,7 +1862,7 @@ function showResult(html) {
   const reformatWrap = $('reformatWrap');
   reformatWrap.style.display = (s.resultText || s.blob) ? '' : 'none';
   $('reformatRow').querySelectorAll('.reformat-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.fmt === s.style);
+    p.classList.toggle('active', p.dataset.fmt === style);
   });
   show('result');
 }
