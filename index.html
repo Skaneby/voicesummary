@@ -1305,10 +1305,11 @@ Rules: Every line must be about the specific content of the recording — never 
 };
 
 function buildPrompt() {
-  let extra = '';
+  const today = new Date().toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' });
+  let extra = 'Today\'s date: ' + today + '\n';
   if (s.title) extra += 'Recording title: ' + s.title + '\n';
   if (s.participants) extra += 'Participants: ' + s.participants + '\n';
-  if (extra) extra += 'Use this context where relevant in the output.\n\n';
+  extra += 'Use this context where relevant in the output.\n\n';
   return extra + (PROMPTS[s.style] || PROMPTS.summary);
 }
 
