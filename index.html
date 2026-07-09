@@ -1758,6 +1758,9 @@ async function processFromText(text) {
 
 // ── MAIN FLOW ──────────────────────────────────────────────────────────────
 async function process(blob, mime) {
+  // Clear stale result so old content can never bleed into a fresh recording
+  s.resultText = '';
+  s.resultHTML = '';
   const reqId = ++_reqId;
   const style = s.style; // capture before any await
   show('working');
