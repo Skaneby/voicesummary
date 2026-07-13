@@ -259,6 +259,14 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .result-box[data-style="predikan"]{border-left-color:#d97706}
 .result-box[data-style="predikan"] h2{color:#d97706;border-bottom-color:rgba(217,119,6,.2)}
 .result-badge[data-style="predikan"]{background:rgba(217,119,6,.15);color:#d97706}
+.format-card[data-fmt="drama"]{--fc:#f97316}
+.result-box[data-style="drama"]{border-left-color:#f97316}
+.result-box[data-style="drama"] h2{color:#f97316;border-bottom-color:rgba(249,115,22,.2)}
+.result-badge[data-style="drama"]{background:rgba(249,115,22,.15);color:#f97316}
+.format-card[data-fmt="konspiration"]{--fc:#6366f1}
+.result-box[data-style="konspiration"]{border-left-color:#6366f1}
+.result-box[data-style="konspiration"] h2{color:#6366f1;border-bottom-color:rgba(99,102,241,.2)}
+.result-badge[data-style="konspiration"]{background:rgba(99,102,241,.15);color:#6366f1}
 .result-box[data-style="tal"]{border-left-color:#e11d48}
 .result-box[data-style="tal"] h2{color:#e11d48;border-bottom-color:rgba(225,29,72,.2)}
 .result-badge[data-style="tal"]{background:rgba(225,29,72,.15);color:#e11d48}
@@ -638,6 +646,14 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="predikan">
             <div class="fc-name">✝️ Predikan</div>
             <div class="fc-desc">Religiöst brandtal med välsignelse och moral</div>
+          </button>
+          <button class="format-card" data-fmt="drama">
+            <div class="fc-name">🎭 Drama Lab</div>
+            <div class="fc-desc">Vardagliga händelser som episkt teater</div>
+          </button>
+          <button class="format-card" data-fmt="konspiration">
+            <div class="fc-name">🕵️ Konspiration</div>
+            <div class="fc-desc">Den dolda sanningen bakom det uppenbara</div>
           </button>
         </div>
       </div>
@@ -1300,7 +1316,70 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <p><strong>Amen.</strong></p>
   </section>
 </article>
-Rules: Every line must be about the specific content of the recording — never generic piety. All Bible references must be invented. All apostles and prophets must be fictional. Accusation first, grace second. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Every line must be about the specific content of the recording — never generic piety. All Bible references must be invented. All apostles and prophets must be fictional. Accusation first, grace second. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+drama: `Analyze this audio recording and transform its content into a short, intensely dramatic theatrical piece.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: You are a playwright who takes the mundane and makes it operatic. Every detail from the recording — however trivial — must be inflated into something of enormous emotional weight. A missed bus becomes a shattered life. A disagreement about dinner becomes the final unraveling of a decades-long relationship. If participants are named in the context above, cast them as the characters. Otherwise, invent names that suit the drama. Use theatrical stage directions in italics (em tags). Dialogue should be intense, poetic and slightly overwrought. The tone is serious — this is not parody; the characters believe completely in the gravity of their situation.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word dramatic title — the kind that appears on a theatre marquee]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Scen / Scene]</h2>
+    <p><em>[Set the scene in theatrical stage-direction style: time, place, atmosphere. Make even the most ordinary setting feel charged with meaning. E.g. "En kväll i slutet av sommaren. Köket. Lysröret flimrar. Det luktar kaffe som blivit kallt."]</em></p>
+  </section>
+  <section>
+    <h2>[Konflikten uppstår / The Conflict Emerges]</h2>
+    <p><em>[A brief stage direction establishing the emotional tension.]</em></p>
+    <p><strong>[Character name]:</strong> [Dialogue — intense, layered, hinting at deeper wounds. What is said on the surface is never the whole truth.]</p>
+    <p><strong>[Character name]:</strong> [Response — equally loaded. A pause. A look. Something shifts.]</p>
+  </section>
+  <section>
+    <h2>[Krisen / The Crisis]</h2>
+    <p><em>[The moment of peak dramatic tension — described in vivid stage directions. Something breaks, falls silent, or is finally said.]</em></p>
+    <p><strong>[Character]:</strong> [The line that cannot be taken back. Short. Devastating.]</p>
+  </section>
+  <section>
+    <h2>[Efterspelet / The Aftermath]</h2>
+    <p><em>[A final stage direction. The dust settles. What remains? Describe the silence, the object left behind, the door that closes. No resolution required — theatre thrives in ambiguity.]</em></p>
+  </section>
+</article>
+Rules: Nothing is trivial — everything carries weight. Use em tags for all stage directions. Named participants from the context must be the characters. Dialogue must feel theatrical, not realistic. End on an image, not an explanation. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+konspiration: `Analyze this audio recording and reframe its content as a fully developed conspiracy theory.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: You are a committed conspiracy theorist — not a joker, but a true believer with sources, patterns and a theory of who is really behind it all. Take the specific events and details from the recording and trace them back to shadowy forces, hidden agendas and suppressed truths. Invent credible-sounding organizations (e.g. "Kommitten för Global Konvergens", "Det Tredje Nätverket"), reference obscure documents and whistleblowers, connect the dots between seemingly unrelated facts. The more mundane the original content, the more satisfying the conspiracy. Speak with the calm authority of someone who has done their research.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word conspiratorial title — allusive and slightly ominous]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Vad de vill att du ska tro / What They Want You to Think]</h2>
+    <p>[Summarize the surface-level account from the recording — the "official story". Present it neutrally, almost sarcastically, as the version fed to the public.]</p>
+  </section>
+  <section>
+    <h2>[Men titta närmare / But Look Closer]</h2>
+    <ul>
+      <li>[First anomaly or "too convenient" detail from the recording — why this doesn't add up]</li>
+      <li>[Second detail that points to something larger — pattern, coincidence or suppressed information]</li>
+      <li>[Third thread — connect it to something that sounds institutional or systemic]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Aktörerna i skuggan / The Actors in the Shadows]</h2>
+    <p>[Name the invented organization(s) or forces behind it all. Describe their motive briefly. Reference an invented document, leaked memo or anonymous insider source to lend credibility.]</p>
+  </section>
+  <section>
+    <h2>[Kopplingarna / Connecting the Dots]</h2>
+    <p>[Draw the full picture: how the specific details from the recording fit into the larger pattern. What is this really about? What are they trying to achieve or conceal? Be specific — vague conspiracies are unconvincing.]</p>
+  </section>
+  <section>
+    <h2>[Sanningen de inte vill att du ska veta / The Truth They Don't Want You to Know]</h2>
+    <p>[Deliver the conclusion with quiet conviction. What is really going on? End with a line that sounds like a warning or an invitation to wake up — but measured, not hysterical.]</p>
+  </section>
+</article>
+Rules: Treat the recording's content as real evidence — reference it specifically. All organizations and documents must be invented but plausible. Calm, assured tone throughout — the most convincing conspiracy theories never shout. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -1829,6 +1908,8 @@ const STYLE_META = {
   psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri' },
   tal:        { label: 'Brandtal klart',             badge: '🎤 Politiskt tal' },
   predikan:   { label: 'Predikan hållen',            badge: '✝️ Predikan' },
+  drama:      { label: 'Dramat är satt',             badge: '🎭 Drama Lab' },
+  konspiration: { label: 'Sanningen avslöjad',       badge: '🕵️ Konspiration' },
 };
 
 function showResult(html, style) {
