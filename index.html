@@ -859,6 +859,15 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         Dela appen med en vän
       </button>
     </div>
+    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+      <button class="btn-sec" id="forceUpdateBtn" style="width:100%;justify-content:center;gap:8px;opacity:.75">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Tvinga uppdatering
+      </button>
+    </div>
   </div>
 </aside>
 
@@ -2470,6 +2479,18 @@ function init() {
   $('s-overlay').onclick = closeSettings;
   $('sSaveBtn').onclick = saveSettings;
   $('shareAppBtn').onclick = shareApp;
+  $('forceUpdateBtn').onclick = async function() {
+    const btn = this;
+    btn.textContent = 'Uppdaterar…';
+    btn.disabled = true;
+    try {
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) await reg.update();
+      }
+    } catch(e) { /* ignore */ }
+    window.location.reload();
+  };
   $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
   document.querySelectorAll('.format-card').forEach(btn => {
     btn.onclick = () => setFormat(btn.dataset.fmt);
@@ -2526,7 +2547,11 @@ function init() {
     document.querySelectorAll('.tip-text.open').forEach(t => t.classList.remove('open'));
   });
 
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    // Auto-reload when a new service worker takes control (skipWaiting already set in sw.js)
+    navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
+  }
 }
 
 init();
