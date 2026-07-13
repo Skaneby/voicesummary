@@ -838,10 +838,9 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         <label style="margin-bottom:0">Modell</label>
         <button class="tip-btn" type="button" data-tip="tip-model">?</button>
       </div>
-      <span class="tip-text" id="tip-model">Flash-Lite rekommenderas för gratisnyckel — stabil och tillräckligt snabb. Flash ger snabbare svar. Pro ger bäst kvalitet men kräver fakturering på ditt Google-konto.</span>
+      <span class="tip-text" id="tip-model">Flash rekommenderas för gratisnyckel — snabb och stabil. Pro ger bäst kvalitet men kräver fakturering på ditt Google-konto.</span>
       <select id="sModel">
-        <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (gratis, rekommenderas)</option>
-        <option value="gemini-2.5-flash">gemini-2.5-flash (gratis, snabbare)</option>
+        <option value="gemini-3.5-flash">gemini-3.5-flash (gratis, rekommenderas)</option>
         <option value="gemini-2.5-pro">gemini-2.5-pro (bäst kvalitet, kräver fakturering)</option>
       </select>
     </div>
@@ -1421,11 +1420,11 @@ function sanitizeHtml(raw) {
 }
 
 // ── STATE ──────────────────────────────────────────────────────────────────
-const ALLOWED_MODELS = ['gemini-2.5-pro','gemini-2.5-flash','gemini-2.5-flash-lite'];
+const ALLOWED_MODELS = ['gemini-2.5-pro','gemini-3.5-flash'];
 const _savedModel = store.get(SM);
 const s = {
   key: store.get(SK),
-  model: ALLOWED_MODELS.includes(_savedModel) ? _savedModel : 'gemini-2.5-flash-lite',
+  model: ALLOWED_MODELS.includes(_savedModel) ? _savedModel : 'gemini-3.5-flash',
   style: store.get('vs_style', 'summary'),
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, elapsed: 0, paused: false, timerRef: null,
@@ -1719,10 +1718,20 @@ async function generate(base64, mime, attempt = 0) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
     if (r.status === 400) throw new Error('Ogiltig API-nyckel. Kontrollera att du kopierade hela nyckeln från aistudio.google.com och försök igen.');
-    if (r.status === 403) {
-      if (s.model !== 'gemini-2.5-flash-lite') {
+    if (r.status === 404) {
+      // Model retired or unavailable — downgrade to gemini-3.5-flash if not already there
+      if (s.model !== 'gemini-3.5-flash') {
         const blocked = s.model;
-        s.model = s.model === 'gemini-2.5-pro' ? 'gemini-2.5-flash' : 'gemini-2.5-flash-lite';
+        s.model = 'gemini-3.5-flash';
+        store.set(SM, s.model);
+        throw new Error(blocked + ' är inte längre tillgänglig. Diane har automatiskt bytt till ' + s.model + ' — tryck Försök igen.');
+      }
+      throw new Error('Modellen hittades inte (404). ' + (apiMsg || 'Kontrollera modellinställningen.'));
+    }
+    if (r.status === 403) {
+      if (s.model !== 'gemini-3.5-flash') {
+        const blocked = s.model;
+        s.model = 'gemini-3.5-flash';
         store.set(SM, s.model);
         throw new Error(blocked + ' kräver fakturering. Diane har automatiskt bytt till ' + s.model + ' — tryck Försök igen.');
       }
@@ -1730,9 +1739,9 @@ async function generate(base64, mime, attempt = 0) {
     }
     if (r.status === 429) {
       const isZeroQuota = apiMsg.includes('limit: 0');
-      if (isZeroQuota && s.model !== 'gemini-2.5-flash-lite') {
+      if (isZeroQuota && s.model !== 'gemini-3.5-flash') {
         const blocked = s.model;
-        s.model = s.model === 'gemini-2.5-pro' ? 'gemini-2.5-flash' : 'gemini-2.5-flash-lite';
+        s.model = 'gemini-3.5-flash';
         store.set(SM, s.model);
         throw new Error(blocked + ' är inte tillgänglig på gratistier. Diane har automatiskt bytt till ' + s.model + ' — tryck Försök igen.');
       }
@@ -1752,7 +1761,7 @@ async function generate(base64, mime, attempt = 0) {
   const d = await r.json();
   const candidate = d.candidates?.[0];
   const finishReason = candidate?.finishReason;
-  if (finishReason === 'MAX_TOKENS') throw new Error('Svaret blev för långt. Prova en kortare inspelning, eller byt till gemini-2.5-flash eller gemini-2.5-pro i Inställningar.');
+  if (finishReason === 'MAX_TOKENS') throw new Error('Svaret blev för långt. Prova en kortare inspelning, eller byt till gemini-2.5-pro i Inställningar.');
   if (finishReason === 'SAFETY') throw new Error('Svaret blockerades av säkerhetsfilter. Prova igen.');
   let txt = candidate?.content?.parts?.[0]?.text || '';
   if (!txt) throw new Error('Tomt svar från Gemini. Kontrollera att inspelningen innehåller ljud och försök igen.');
@@ -1785,6 +1794,12 @@ async function generateFromText(inputText, attempt = 0) {
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
+    if (r.status === 404 && s.model !== 'gemini-3.5-flash') {
+      const blocked = s.model;
+      s.model = 'gemini-3.5-flash';
+      store.set(SM, s.model);
+      throw new Error(blocked + ' är inte längre tillgänglig. Diane har automatiskt bytt till ' + s.model + ' — tryck Försök igen.');
+    }
     if (r.status === 503 || r.status === 529) {
       if (attempt < 3) {
         const delay = (attempt + 1) * 3000;
