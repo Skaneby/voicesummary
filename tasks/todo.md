@@ -85,15 +85,21 @@ Typisk användare med gratisnyckel: hela funktionen kostar 0 kr.
 Storanvändare med fakturering: ett möte med 10 frågor + uppläsning ≈ 2–3 kr.
 
 ## Genomförande (checklista)
-- [ ] `QA_STYLES`-konstant + visa/dölj `#qaSection` i `showResult()`
-- [ ] Chatt-UI (markup + CSS i befintliga teman)
-- [ ] `askQuestion()` med flervändig historik + befintlig fallback-kedja
-- [ ] Web Speech-uppläsning med chunkning + stoppknapp
+- [x] `QA_STYLES`-konstant + visa/dölj `#qaSection` i `showResult()`
+- [x] Chatt-UI (markup + CSS i befintliga teman)
+- [x] `askQuestion()` med flervändig historik + befintlig fallback-kedja
+- [x] Bakgrundstranskribering (`transcribeAudio()`) — hela transkriptionen sparas
+      i minnet + i historiken (kapad till 120k tecken), Q&A blir semantisk
+- [x] Transkript återställs vid historik-laddning; ljudblob kopplas bort så
+      transkribering/omkörning aldrig sker mot fel ljud
+- [ ] Web Speech-uppläsning med chunkning + stoppknapp (röst — nästa steg)
 - [ ] iOS-test (gest-krav, långa svar)
-- [ ] Utöka smoke-testet
-- [ ] Bumpa SW-cache, push till main
-- [ ] (Steg B, separat release) ljud-fråga + transkriptionscache
+- [x] Utöka smoke-testet (52 tester, 12 nya för Q&A/transkription)
+- [x] Bumpa SW-cache (vs-v40), push till main
 - [ ] (Steg B, separat release) Gemini TTS som opt-in i Inställningar
 
 ## Review
-_(fylls i efter implementation)_
+- Q&A implementerad 2026-07-14: transkribering körs i bakgrunden direkt när
+  resultatet visas (QA-format + ljud i minnet), så svaren blir semantiska mot
+  hela mötet. Faller tyst tillbaka på resultattexten om transkriberingen
+  misslyckas. Uppläsning (röst) återstår.

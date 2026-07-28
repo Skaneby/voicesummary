@@ -286,6 +286,20 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .reformat-pill{flex-shrink:0;padding:5px 11px;border-radius:100px;font-size:.72rem;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s}
 .reformat-pill:hover{border-color:var(--accent);color:var(--text)}
 .reformat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.qa-wrap{width:100%;max-width:680px;display:flex;flex-direction:column;gap:8px}
+.qa-thread{display:flex;flex-direction:column;gap:8px}
+.qa-thread:empty{display:none}
+.qa-bubble{max-width:88%;padding:10px 14px;border-radius:14px;font-size:.88rem;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.qa-q{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.qa-a{align-self:flex-start;background:var(--card);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px}
+.qa-a.pending{color:var(--muted);font-style:italic}
+.qa-row{display:flex;gap:8px}
+.qa-input{flex:1;min-width:0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:.9rem;outline:none;font-family:inherit}
+.qa-input:focus{border-color:var(--accent)}
+.qa-input::placeholder{color:var(--muted)}
+.qa-send{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:0 18px;font-size:1rem;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.qa-send:disabled{opacity:.5;cursor:default}
+.qa-status{font-size:.72rem;color:var(--muted)}
 .fnr-bar{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
   border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .fnr-row{display:flex;gap:6px;align-items:center}
@@ -703,6 +717,15 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       <div class="reformat-wrap" id="reformatWrap" style="display:none">
         <div class="reformat-label">Kör om som</div>
         <div class="reformat-row" id="reformatRow"></div>
+      </div>
+      <div class="qa-wrap" id="qaSection" style="display:none">
+        <div class="reformat-label">Fråga om mötet</div>
+        <div class="qa-thread" id="qaThread"></div>
+        <div class="qa-row">
+          <input class="qa-input" id="qaInput" placeholder="Ställ en fråga om mötet…" autocomplete="off" enterkeyhint="send">
+          <button class="qa-send" id="qaSendBtn" aria-label="Skicka fråga">➤</button>
+        </div>
+        <div class="qa-status" id="qaStatus" style="display:none">Transkriberar ljudet i bakgrunden för bättre svar…</div>
       </div>
       <div class="fnr-bar" id="fnrBar" style="display:none">
         <div class="fnr-row">
@@ -1438,8 +1461,11 @@ const s = {
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, elapsed: 0, paused: false, timerRef: null,
   audioCtx: null, analyser: null, raf: null,
-  resultHTML: '', participants: '', title: ''
+  resultHTML: '', participants: '', title: '',
+  transcript: '', transcribing: false, qaHistory: [], qaPending: false, historyId: 0
 };
+// Format där "Fråga om mötet" är tillgängligt
+const QA_STYLES = ['sales', 'protocol', 'summary', 'detailed'];
 
 // ── WAKE LOCK ──────────────────────────────────────────────────────────────
 let wakeLock = null;
@@ -1855,7 +1881,7 @@ async function processFromText(text) {
     if (reqId !== _reqId) return; // a newer request started — discard this result
     if (suggestedTitle) { s.title = suggestedTitle; $('titleInput').value = suggestedTitle; }
     s.resultHTML = html;
-    saveToHistory(html, s.title);
+    s.historyId = saveToHistory(html, s.title);
     showResult(html, style);
   } catch(e) {
     if (reqId !== _reqId) return;
@@ -1869,6 +1895,8 @@ async function process(blob, mime) {
   // Clear stale result so old content can never bleed into a fresh recording
   s.resultText = '';
   s.resultHTML = '';
+  s.transcript = '';
+  s.qaHistory = [];
   const reqId = ++_reqId;
   const style = s.style; // capture before any await
   show('working');
@@ -1891,7 +1919,7 @@ async function process(blob, mime) {
     if (reqId !== _reqId) return; // stale — newer request already running
     if (suggestedTitle) { s.title = suggestedTitle; $('titleInput').value = suggestedTitle; }
     s.resultHTML = html;
-    saveToHistory(html, s.title);
+    s.historyId = saveToHistory(html, s.title);
     showResult(html, style);
   } catch(e) {
     const isFetch = e.name === 'TypeError' && e.message.toLowerCase().includes('fetch');
@@ -1981,7 +2009,148 @@ function showResult(html, style) {
   $('reformatRow').querySelectorAll('.reformat-pill').forEach(p => {
     p.classList.toggle('active', p.dataset.fmt === style);
   });
+  // Fråga om mötet — bara för format där svar på frågor är meningsfulla
+  const isQA = QA_STYLES.includes(style);
+  $('qaSection').style.display = isQA ? '' : 'none';
+  if (isQA) {
+    renderQaThread();
+    // Transkribera i bakgrunden så svaren blir semantiska mot hela mötet
+    if (s.blob && !s.transcript && !s.transcribing) transcribeAudio();
+  }
   show('result');
+}
+
+// ── FRÅGA OM MÖTET (Q&A) ──────────────────────────────────────────────────
+// Transkriberar inspelningen i bakgrunden så frågor kan besvaras semantiskt
+// mot hela mötet, inte bara sammanfattningen. Tyst vid fel — Q&A faller då
+// tillbaka på resultattexten.
+async function transcribeAudio() {
+  if (!s.blob || s.transcript || s.transcribing) return;
+  s.transcribing = true;
+  const blob = s.blob; // identitetskoll — ny inspelning kan starta under tiden
+  const histId = s.historyId;
+  $('qaStatus').style.display = '';
+  try {
+    const mime = (s.mimeType || 'audio/webm').split(';')[0];
+    const base64 = await blobToBase64(blob);
+    const r = await fetch(
+      API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [
+            { inline_data: { mime_type: mime, data: base64 } },
+            { text: 'Transcribe this audio recording verbatim in the spoken language. Output plain text only — no formatting, no timestamps, no commentary. If several speakers are clearly distinguishable, prefix their lines with "Talare 1:", "Talare 2:" etc.' }
+          ]}],
+          generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 2048 } }
+        })
+      }
+    );
+    if (!r.ok) throw new Error('transkribering misslyckades');
+    const d = await r.json();
+    const txt = (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
+    if (s.blob !== blob) return; // ny inspelning har tagit över
+    if (txt) {
+      s.transcript = txt;
+      if (histId) updateHistoryTranscript(histId, txt);
+    }
+  } catch { /* tyst */ }
+  finally {
+    s.transcribing = false;
+    $('qaStatus').style.display = 'none';
+  }
+}
+
+function qaContext() {
+  const src = s.transcript || s.resultText;
+  const kind = s.transcript ? 'fullständig transkription av mötet' : 'sammanfattning av mötet';
+  return 'Du är en assistent som svarar på frågor om ett inspelat möte. ' +
+    'Nedan finns en ' + kind + '. Svara kort, konkret och på samma språk som frågan ställs på. ' +
+    'Om svaret inte framgår av underlaget, säg det ärligt i stället för att gissa.\n\n' +
+    'Mötestitel: ' + (s.title || 'okänd') + '\n' +
+    'Dagens datum: ' + new Date().toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' }) + '\n\n' +
+    '--- UNDERLAG ---\n' + src;
+}
+
+async function askGemini(contents, attempt = 0) {
+  const r = await fetch(
+    API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents,
+        generationConfig: { temperature: 0.2, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 2048 } }
+      })
+    }
+  );
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    const apiMsg = e.error?.message || '';
+    if (r.status === 404) switchToFallback('är inte längre tillgänglig');
+    if (r.status === 403) switchToFallback('kräver fakturering');
+    if (r.status === 429) switchToFallback(apiMsg.includes('limit: 0') ? 'är inte tillgänglig på gratistier' : 'har nått kvotgränsen just nu');
+    if (r.status === 503 || r.status === 529) {
+      if (attempt < 2) {
+        await new Promise(res => setTimeout(res, (attempt + 1) * 3000));
+        return askGemini(contents, attempt + 1);
+      }
+      const next = MODEL_FALLBACK[s.model];
+      if (next) { s.model = next; store.set(SM, next); return askGemini(contents, 0); }
+    }
+    throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
+  }
+  const d = await r.json();
+  return (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
+}
+
+async function askQuestion() {
+  const input = $('qaInput');
+  const q = input.value.trim();
+  if (!q || s.qaPending) return;
+  s.qaPending = true;
+  $('qaSendBtn').disabled = true;
+  input.value = '';
+  s.qaHistory.push({ q, a: null });
+  renderQaThread();
+  try {
+    const contents = [
+      { role: 'user', parts: [{ text: qaContext() }] },
+      { role: 'model', parts: [{ text: 'Förstått. Jag svarar på frågor om mötet utifrån underlaget.' }] }
+    ];
+    // Tidigare frågor/svar ger flervändig kontext (fel-svar hoppas över)
+    s.qaHistory.forEach(t => {
+      if (t.a === null || t.a.startsWith('⚠️')) return;
+      contents.push({ role: 'user', parts: [{ text: t.q }] });
+      contents.push({ role: 'model', parts: [{ text: t.a }] });
+    });
+    contents.push({ role: 'user', parts: [{ text: q }] });
+    const a = await askGemini(contents);
+    s.qaHistory[s.qaHistory.length - 1].a = a || 'Jag fick inget svar — prova att formulera om frågan.';
+  } catch (e) {
+    s.qaHistory[s.qaHistory.length - 1].a = '⚠️ ' + e.message;
+  }
+  s.qaPending = false;
+  $('qaSendBtn').disabled = false;
+  renderQaThread();
+  input.focus();
+}
+
+function renderQaThread() {
+  const thread = $('qaThread');
+  thread.innerHTML = '';
+  s.qaHistory.forEach(t => {
+    const qEl = document.createElement('div');
+    qEl.className = 'qa-bubble qa-q';
+    qEl.textContent = t.q;
+    thread.appendChild(qEl);
+    const aEl = document.createElement('div');
+    aEl.className = 'qa-bubble qa-a' + (t.a === null ? ' pending' : '');
+    aEl.textContent = t.a === null ? 'Tänker…' : t.a;
+    thread.appendChild(aEl);
+  });
+  thread.lastElementChild?.scrollIntoView({ block: 'nearest' });
 }
 
 function reformatAs(fmt) {
@@ -2377,10 +2546,19 @@ const MAX_HISTORY = 40;
 function getHistory() { return store.json(SH, []); }
 function saveToHistory(html, title) {
   const history = getHistory();
-  history.unshift({ id: Date.now(), title: title || '', date: new Date().toISOString(), html, style: s.style });
+  const id = Date.now();
+  // Transkriptionen följer med posten (kapad för att inte spränga localStorage)
+  const transcript = (s.transcript || '').slice(0, 120000);
+  history.unshift({ id, title: title || '', date: new Date().toISOString(), html, style: s.style, transcript });
   if (history.length > MAX_HISTORY) history.splice(MAX_HISTORY);
   store.set(SH, JSON.stringify(history));
   updateHistoryBadge();
+  return id;
+}
+// Bakgrundstranskriberingen blir klar efter att posten sparats — patcha in den
+function updateHistoryTranscript(id, transcript) {
+  const history = getHistory().map(x => x.id === id ? { ...x, transcript: transcript.slice(0, 120000) } : x);
+  store.set(SH, JSON.stringify(history));
 }
 function deleteFromHistory(id) {
   const history = getHistory().filter(x => x.id !== id);
@@ -2463,6 +2641,12 @@ function loadFromHistory(id) {
   s.resultHTML = item.html;
   s.title = item.title;
   s.style = item.style || 'summary';
+  // Ljudet i minnet hör till en annan inspelning — koppla bort det så att
+  // transkribering och omkörning aldrig sker mot fel ljud
+  s.blob = null;
+  s.transcript = item.transcript || '';
+  s.qaHistory = [];
+  s.historyId = item.id;
   closeHistory();
   showResult(item.html);
 }
@@ -2526,6 +2710,8 @@ function init() {
   $('ghSearch').oninput = e => renderGHRepos(e.target.value);
   $('copyMdBtn').onclick = copyMarkdown;
   $('copyMailBtn').onclick = copyFormatted;
+  $('qaSendBtn').onclick = askQuestion;
+  $('qaInput').addEventListener('keydown', e => { if (e.key === 'Enter') askQuestion(); });
   $('editBtn').onclick = toggleEdit;
   $('shareBtn').onclick = share;
   $('newBtn').onclick = () => show('idle');
