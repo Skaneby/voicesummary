@@ -732,6 +732,12 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           </svg>
           Kopiera MD
         </button>
+        <button class="btn-sec" id="copyMailBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          Kopiera mail
+        </button>
         <button class="btn-sec" id="editBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -1903,7 +1909,7 @@ async function process(blob, mime) {
 }
 
 // ── RESULT ─────────────────────────────────────────────────────────────────
-function toEmailHtml(raw) {
+function toEmailHtml(raw, title) {
   const d = document.createElement('div');
   d.innerHTML = raw;
   const style = (sel, css) => d.querySelectorAll(sel).forEach(el => el.setAttribute('style', css));
@@ -1915,7 +1921,10 @@ function toEmailHtml(raw) {
   style('li', 'margin-bottom:5px');
   style('strong', 'color:#111111;font-weight:600');
   style('em', 'color:#555555;font-style:italic');
-  return '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"></head>\n<body style="margin:0;padding:24px;background:#ffffff;font-family:Arial,Helvetica,sans-serif">\n' + d.innerHTML + '\n</body>\n</html>';
+  const titleHtml = title
+    ? '<h1 style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;color:#111111;margin:0 0 16px 0">' + escHtml(title) + '</h1>\n'
+    : '';
+  return '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"></head>\n<body style="margin:0;padding:24px;background:#ffffff;font-family:Arial,Helvetica,sans-serif">\n' + titleHtml + d.innerHTML + '\n</body>\n</html>';
 }
 
 const STYLE_META = {
@@ -2066,6 +2075,28 @@ async function copyMarkdown() {
   } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
 }
 
+// Kopierar resultatet som formaterad text (text/html + text/plain) så att
+// inklistring i Mail/Gmail/Outlook behåller rubriker, fetstil och listor
+async function copyFormatted() {
+  s.resultHTML = $('resultBox').innerHTML;
+  const title = s.title || '';
+  const html = toEmailHtml(s.resultHTML, title);
+  const plain = (title ? title + '\n\n' : '') + toRichText(s.resultHTML);
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([plain], { type: 'text/plain' })
+    })]);
+    toast('Formaterad text kopierad — klistra in i ditt mail ✓');
+  } catch {
+    // ClipboardItem stöds inte — fall tillbaka till ren text
+    try {
+      await navigator.clipboard.writeText(plain);
+      toast('Kopierad som ren text (formatering stöds ej i denna webbläsare)');
+    } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
+  }
+}
+
 function toMarkdown(raw) {
   const d = document.createElement('div');
   d.innerHTML = raw;
@@ -2196,7 +2227,7 @@ async function share() {
   const richText = toRichText(s.resultHTML);
   let files = [];
   try {
-    const blob = new Blob([toEmailHtml(s.resultHTML)], { type: 'text/html' });
+    const blob = new Blob([toEmailHtml(s.resultHTML, title)], { type: 'text/html' });
     const fname = title.replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g, '').trim() || 'sammanfattning';
     files = [new File([blob], fname + '.html', { type: 'text/html' })];
   } catch { /* no file */ }
@@ -2494,6 +2525,7 @@ function init() {
   $('gh-overlay').onclick = closeGitHub;
   $('ghSearch').oninput = e => renderGHRepos(e.target.value);
   $('copyMdBtn').onclick = copyMarkdown;
+  $('copyMailBtn').onclick = copyFormatted;
   $('editBtn').onclick = toggleEdit;
   $('shareBtn').onclick = share;
   $('newBtn').onclick = () => show('idle');

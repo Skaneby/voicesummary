@@ -1,5 +1,10 @@
 # Backlog
 
+## SENARE: snyggare delning (uppföljning på "Kopiera mail")
+> "Kopiera mail"-knappen (formaterat urklipp) är implementerad. Kvar som idéer:
+- [ ] PDF som delningsbilaga (print-stylesheet + Spara som PDF, ev. inbyggd generering)
+- [ ] Dela som länk — komprimerat innehåll i URL-fragment, Diane renderar vid öppning
+
 ## SENARE: "Fråga om mötet" + uppläsning av svar
 > Status: planerad, ej påbörjad — genomförs vid senare tillfälle.
 
