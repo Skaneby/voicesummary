@@ -1,4 +1,7 @@
-# Plan: "Fråga om mötet" + uppläsning av svar
+# Backlog
+
+## SENARE: "Fråga om mötet" + uppläsning av svar
+> Status: planerad, ej påbörjad — genomförs vid senare tillfälle.
 
 ## Idé
 Efter att en inspelning gett ett resultat i formaten **säljmöte, protokoll,
