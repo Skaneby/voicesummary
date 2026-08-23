@@ -121,6 +121,40 @@ function check(name, ok, extra) {
   check('historik-laddning kopplar bort ljudblob', hist.blobNull);
   check('historik-laddning nollställer Q&A', hist.qaLen === 0);
 
+  console.log('\n── 5b. Kalender med valbar tid ──');
+  const cal = await page.evaluate(() => {
+    openCalendarDialog();
+    return {
+      open: $('cal-panel').classList.contains('open'),
+      date: $('calDate').value,
+      time: $('calTime').value,
+      dur: $('calDur').value
+    };
+  });
+  const tomorrow = await page.evaluate(() => {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    const p = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  });
+  check('dialogen öppnas med morgondagens datum', cal.open && cal.date === tomorrow, cal.date);
+  check('tiden är förifylld (HH:MM)', /^\d{2}:\d{2}$/.test(cal.time), cal.time);
+  check('längd förvald till 1 timme', cal.dur === '60');
+  const ics = await page.evaluate(() => {
+    const start = new Date('2026-09-01T14:30:00');
+    const out = toICS('Testmöte', 'beskrivning', start, 90);
+    const fmt = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    return { out, expStart: fmt(start), expEnd: fmt(new Date(start.getTime() + 90 * 60000)) };
+  });
+  check('ICS använder vald starttid', ics.out.includes('DTSTART:' + ics.expStart), ics.expStart);
+  check('ICS använder vald längd (90 min)', ics.out.includes('DTEND:' + ics.expEnd));
+  const calInvalid = await page.evaluate(async () => {
+    $('calDate').value = ''; $('calTime').value = '';
+    await confirmCalendar();
+    return $('cal-panel').classList.contains('open');
+  });
+  check('tomt datum/tid stoppas (dialogen stängs ej)', calInvalid === true);
+  await page.evaluate(() => closeCalendarDialog());
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
