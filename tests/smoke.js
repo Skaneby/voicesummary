@@ -155,6 +155,28 @@ function check(name, ok, extra) {
   check('tomt datum/tid stoppas (dialogen stängs ej)', calInvalid === true);
   await page.evaluate(() => closeCalendarDialog());
 
+  console.log('\n── 5c. Bloggpost-förinställning ──');
+  const blog = await page.evaluate(() => ({
+    card: !!document.querySelector('.format-card[data-fmt="blog"]'),
+    prompt: typeof PROMPTS === 'object' && /blog post/i.test(PROMPTS.blog || ''),
+    meta: !!STYLE_META.blog,
+    pill: !!document.querySelector('.reformat-pill[data-fmt="blog"]'),
+    // Alla format ska ha både prompt och meta — fånga halvfärdiga presets
+    consistent: Object.keys(STYLE_META).every(k => !!PROMPTS[k]) && Object.keys(PROMPTS).every(k => !!STYLE_META[k])
+  }));
+  check('formatkort för blog finns', blog.card);
+  check('PROMPTS.blog finns och nämner blog post', blog.prompt);
+  check('STYLE_META.blog finns', blog.meta);
+  check('reformat-pill för blog byggs', blog.pill);
+  check('PROMPTS och STYLE_META är konsistenta', blog.consistent);
+  await page.evaluate(() => showResult('<article><section><h2>Idé</h2><p>Text.</p></section></article>', 'blog'));
+  const blogUi = await page.evaluate(() => ({
+    label: $('resultLabel').textContent,
+    qaHidden: $('qaSection').style.display === 'none'
+  }));
+  check('resultatetikett "Bloggpost klar"', blogUi.label === 'Bloggpost klar', blogUi.label);
+  check('Q&A visas inte för blog', blogUi.qaHidden);
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');

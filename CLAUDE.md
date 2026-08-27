@@ -122,7 +122,7 @@ Live: https://skaneby.github.io/voicesummary/ — hosted on GitHub Pages, deploy
 
 ## Format presets
 
-Defined as keys in `PROMPTS` at [index.html:880](index.html#L880) and rendered as cards in `#formatRow` at [index.html:570](index.html#L570). Current set: `summary`, `protocol`, `brief`, `detailed`, `sales`, `social`, `letter`, `vibecoder`. Each prompt instructs Gemini to detect the spoken language and respond in that same language, returning a TITLE line + sanitizable HTML.
+Defined as keys in `PROMPTS` at [index.html:880](index.html#L880) and rendered as cards in `#formatRow` at [index.html:570](index.html#L570). Current set: `summary`, `protocol`, `brief`, `detailed`, `sales`, `social`, `blog`, `letter`, `vibecoder`, `insandare`, `psyk`, `tal`, `predikan`, `drama`, `konspiration`. Each prompt instructs Gemini to detect the spoken language and respond in that same language, returning a TITLE line + sanitizable HTML.
 
 ## Themes
 

@@ -213,6 +213,7 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .format-card[data-fmt="detailed"] {--fc:#3dd9c0}
 .format-card[data-fmt="sales"]    {--fc:#f0c040}
 .format-card[data-fmt="social"]    {--fc:#a855f7}
+.format-card[data-fmt="blog"]      {--fc:#f59e0b}
 .format-card[data-fmt="vibecoder"]{--fc:#f59e0b}
 .format-card.active{border-left-color:var(--fc);background:rgba(255,255,255,.04)}
 .format-card.active .fc-name{color:var(--fc)}
@@ -228,6 +229,8 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .result-box[data-style="sales"] h2{color:#f0c040;border-bottom-color:rgba(240,192,64,.2)}
 .result-box[data-style="social"]{border-left-color:#a855f7}
 .result-box[data-style="social"] h2{color:#a855f7;border-bottom-color:rgba(168,85,247,.2)}
+.result-box[data-style="blog"]{border-left-color:#f59e0b}
+.result-box[data-style="blog"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
 .result-box[data-style="vibecoder"]{border-left-color:#f59e0b}
 .result-box[data-style="vibecoder"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
 /* Panasonic theme: respect per-preset border color */
@@ -236,6 +239,7 @@ html[data-theme="panasonic"] .result-box[data-style="brief"]{border-left-color:#
 html[data-theme="panasonic"] .result-box[data-style="detailed"]{border-left-color:#3dd9c0}
 html[data-theme="panasonic"] .result-box[data-style="sales"]{border-left-color:#f0c040}
 html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:#a855f7}
+html[data-theme="panasonic"] .result-box[data-style="blog"]{border-left-color:#f59e0b}
 /* Result badge (preset name chip) */
 .result-badge{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:100px;
   letter-spacing:.04em;text-transform:uppercase}
@@ -245,6 +249,7 @@ html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:
 .result-badge[data-style="detailed"]{background:rgba(61,217,192,.15);color:#3dd9c0}
 .result-badge[data-style="sales"]{background:rgba(240,192,64,.15);color:#f0c040}
 .result-badge[data-style="social"]{background:rgba(168,85,247,.15);color:#a855f7}
+.result-badge[data-style="blog"]{background:rgba(245,158,11,.15);color:#f59e0b}
 .result-badge[data-style="vibecoder"]{background:rgba(245,158,11,.15);color:#f59e0b}
 
 /* LETTER PRESET */
@@ -649,6 +654,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="social">
             <div class="fc-name">Sociala medier</div>
             <div class="fc-desc">Personligt inlägg, max 500 ord</div>
+          </button>
+          <button class="format-card" data-fmt="blog">
+            <div class="fc-name">✍️ Bloggpost</div>
+            <div class="fc-desc">Personligt och inspirerat inlägg med tydlig struktur</div>
           </button>
           <button class="format-card" data-fmt="letter">
             <div class="fc-name">Formellt brev</div>
@@ -1191,6 +1200,31 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
   <p>[3–5 hashtags as plain text: #tag1 #tag2 #tag3 — max 70 characters total. No heading, just the tags on one line.]</p>
 </article>
 Rules: ALWAYS use first person ("I"/"jag") — never "one", "we" or third person unless quoting others. No corporate language, no "I am excited to share". Weave core topic keywords naturally into the body (GEO). STRICT LIMIT: entire post including hashtags must not exceed 500 characters total — count carefully. Use only: article, p, strong, em. No section, h2, ul, li, CSS, class/id, inline styles or scripts.`,
+
+blog: `Analyze this audio recording and write a personal blog post based on it.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: Write in FIRST PERSON as the speaker ("I"/"jag") — warm, personal and inspired, like a thoughtful blogger sharing an experience or insight with their readers.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [engaging 3–7 word blog title in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <p>[Opening: a personal hook that draws the reader in — an experience, a question or a bold thought from the recording. 2–3 sentences.]</p>
+  </section>
+  <section>
+    <h2>[Descriptive subheading for the first main idea]</h2>
+    <p>[Develop the idea pedagogically: explain it, give a concrete example from the recording, make it tangible. Short paragraphs, 2–4 sentences each.]</p>
+  </section>
+  <section>
+    <h2>[Subheading for the next idea]</h2>
+    <p>[One clear idea per section — use 2–4 main sections depending on how much substance the recording holds. Use a <ul> with <li> items for steps, tips or lists when it makes the point easier to follow.]</p>
+  </section>
+  <section>
+    <h2>[Closing subheading — the takeaway]</h2>
+    <p>[Wrap up: the key insight in one or two sentences, then a warm, reflective closing line addressed to the reader.]</p>
+  </section>
+</article>
+Rules: ALWAYS first person ("I"/"jag"). Pedagogical structure — one idea per section, descriptive subheadings that could stand alone as a table of contents, short paragraphs, concrete examples, plain language without jargon. Inspired but genuine — no corporate speak, no clichés like "in today's fast-paced world". Use <strong> sparingly to highlight key insights. Use only: article, section, h2, p, ul, ol, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
 letter: `Analyze this audio recording and compose a formal letter based on its content.
 Detect the language being spoken and respond ENTIRELY in that same language.
@@ -2004,6 +2038,7 @@ const STYLE_META = {
   detailed: { label: 'Detaljerad analys klar',   badge: 'Detaljerad' },
   sales:    { label: 'Säljmöte sammanfattat',    badge: 'Säljmöte' },
   social:     { label: 'Inlägg klart',             badge: 'Sociala medier' },
+  blog:       { label: 'Bloggpost klar',           badge: '✍️ Bloggpost' },
   letter:     { label: 'Formellt brev klart',      badge: 'Formellt brev' },
   vibecoder:  { label: 'Vibe Prompt klar',         badge: '⚡ Vibe Prompt' },
   insandare:  { label: 'Insändare klar',            badge: '😤 Insändare' },
