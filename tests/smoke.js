@@ -166,6 +166,7 @@ function check(name, ok, extra) {
   }));
   check('formatkort för blog finns', blog.card);
   check('PROMPTS.blog finns och nämner blog post', blog.prompt);
+  check('PROMPTS.blog kräver exakt 5 taggar', await page.evaluate(() => /exactly 5 (fitting )?tags/i.test(PROMPTS.blog)));
   check('STYLE_META.blog finns', blog.meta);
   check('reformat-pill för blog byggs', blog.pill);
   check('PROMPTS och STYLE_META är konsistenta', blog.consistent);
