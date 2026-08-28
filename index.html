@@ -1203,7 +1203,7 @@ Rules: ALWAYS use first person ("I"/"jag") — never "one", "we" or third person
 
 blog: `Analyze this audio recording and write a personal blog post based on it.
 Detect the language being spoken and respond ENTIRELY in that same language.
-IMPORTANT: Write in FIRST PERSON as the speaker ("I"/"jag") — warm, personal and inspired, like a thoughtful blogger sharing an experience or insight with their readers.
+IMPORTANT: Write in FIRST PERSON as the speaker ("I"/"jag") — and write the way the speaker actually TALKS. Reuse their own words, expressions and quirks from the recording. The text should read like a person typing to a friend, not like generated content: conversational and spoken in register, contractions where natural, sentences of varying length — some very short. It is fine to start sentences with "Och", "Men" or "Fast", to ask the reader a direct question, or to admit uncertainty ("jag vet inte riktigt än").
 Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [engaging 3–7 word blog title in the detected language]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
@@ -1227,7 +1227,9 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <p>[Exactly 5 fitting tags as plain text on one line: #tag1 #tag2 #tag3 #tag4 #tag5 — lowercase, drawn from the post's core topics, in the detected language. No heading, just the tags.]</p>
   </section>
 </article>
-Rules: ALWAYS first person ("I"/"jag"). ALWAYS end with exactly 5 tags. Pedagogical structure — one idea per section, descriptive subheadings that could stand alone as a table of contents, short paragraphs, concrete examples, plain language without jargon. Inspired but genuine — no corporate speak, no clichés like "in today's fast-paced world". Use <strong> sparingly to highlight key insights. Use only: article, section, h2, p, ul, ol, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+Rules: ALWAYS first person ("I"/"jag"). ALWAYS end with exactly 5 tags. Pedagogical structure — one idea per section, descriptive subheadings that could stand alone as a table of contents, short paragraphs, concrete examples, plain language without jargon.
+AVOID AI-SOUNDING TEXT — readers notice and dislike it. Banned: corporate speak; clichés like "in today's fast-paced world" / "i dagens samhälle"; generic transitions ("Sammanfattningsvis", "Avslutningsvis", "Låt oss dyka in"); symmetrical rule-of-three lists ("X, Y och Z") in every paragraph; balanced hedging ("å ena sidan… å andra sidan"); starting every paragraph the same way; exclamation marks as enthusiasm filler. Subheadings should sound like something the speaker would say, not like report headings. Imperfect and human beats polished and generic.
+Use <strong> sparingly to highlight key insights. Use only: article, section, h2, p, ul, ol, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
 letter: `Analyze this audio recording and compose a formal letter based on its content.
 Detect the language being spoken and respond ENTIRELY in that same language.
