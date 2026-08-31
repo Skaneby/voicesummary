@@ -4,12 +4,5 @@
   "webDir": "www",
   "server": {
     "androidScheme": "https"
-  },
-  "plugins": {
-    "GoogleAuth": {
-      "scopes": ["profile", "email"],
-      "serverClientId": "732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com",
-      "forceCodeForRefreshToken": false
-    }
   }
 }

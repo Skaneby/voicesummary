@@ -12,6 +12,8 @@ Läs-först-karta över projektet. Varje fil är självständig: du ska kunna l�
 | [modules/ios.md](modules/ios.md) | arbeta med iOS-porten |
 | [design-principles.md](design-principles.md) | designa gränssnitt för appen |
 | [conventions.md](conventions.md) | skriva kod eller commits i repot |
+| [runbooks/test-on-device.md](runbooks/test-on-device.md) | testa appen på din egen telefon |
+| [runbooks/play-store-checklist.md](runbooks/play-store-checklist.md) | veta vad Play kräver innan publicering |
 | [decisions/](decisions/) | förstå *varför* något är som det är |
 | [runbooks/](runbooks/) | deploya, släppa eller åtgärda ett driftläge |
 
