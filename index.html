@@ -1723,6 +1723,7 @@ function handleBack() {
     if (confirm('Avbryta inspelningen? Det inspelade går förlorat.')) {
       try { if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') s.mediaRecorder.stop(); } catch {}
       try { s.stream?.getTracks().forEach(t => t.stop()); } catch {}
+      recordingServiceStop();
       s.chunks = [];
       show('idle');
     }
@@ -1814,6 +1815,17 @@ function saveSettings() {
     show('idle');
 }
 
+// ── FÖRGRUNDSTJÄNST (Android) ──────────────────────────────────────────────
+// Håller processen vid liv när skärmen släcks. Utan den fryser Android
+// appen och inspelningen dör mitt i mötet. Allt är best-effort: saknas
+// plugin:et eller kastar det, ska inspelningen fortsätta ändå.
+function recordingServiceStart() {
+  try { window.Capacitor?.Plugins?.Recording?.start?.(); } catch {}
+}
+function recordingServiceStop() {
+  try { window.Capacitor?.Plugins?.Recording?.stop?.(); } catch {}
+}
+
 // ── RECORDING ─────────────────────────────────────────────────────────────
 // Play kräver ett tydligt medgivande i appen innan känslig data samlas in —
 // att det står i integritetspolicyn räcker inte. Visas en gång.
@@ -1849,6 +1861,7 @@ async function startRecording() {
   // Keep screen on + signal active audio to iOS (prevents page suspension)
   await acquireWakeLock();
   startKeepAlive();
+  recordingServiceStart();   // Android: hindrar systemet från att frysa appen
 
   // Detect if OS kills the microphone track (screen lock, background, interruption)
   s.stream.getTracks().forEach(track => {
@@ -1914,6 +1927,7 @@ function drawWave() {
 function stopRecording() {
   releaseWakeLock();
   stopKeepAlive();
+  recordingServiceStop();
   if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') s.mediaRecorder.stop();
   clearInterval(s.timerRef);
   cancelAnimationFrame(s.raf);

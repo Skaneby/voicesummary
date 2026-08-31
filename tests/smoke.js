@@ -292,6 +292,24 @@ function check(name, ok, extra) {
     return subFromToken(fake) === '12345';
   }));
 
+
+  // Förgrundstjänsten: bron måste vara defensiv — saknas plugin:et eller
+  // kastar det ska inspelningen fortsätta ändå
+  check('bron finns och kraschar inte utan plugin', await appPage.evaluate(() => {
+    delete window.Capacitor.Plugins.Recording;
+    try { recordingServiceStart(); recordingServiceStop(); return true; } catch { return false; }
+  }));
+  check('bron anropar plugin:et när det finns', await appPage.evaluate(() => {
+    const calls = [];
+    window.Capacitor.Plugins.Recording = { start: () => calls.push('start'), stop: () => calls.push('stop') };
+    recordingServiceStart(); recordingServiceStop();
+    return calls.join(',') === 'start,stop';
+  }));
+  check('kastande plugin stoppar inte inspelningen', await appPage.evaluate(() => {
+    window.Capacitor.Plugins.Recording = { start: () => { throw new Error('nej'); }, stop: () => { throw new Error('nej'); } };
+    try { recordingServiceStart(); recordingServiceStop(); return true; } catch { return false; }
+  }));
+
   await appPage.close();
 
   console.log('\n── 5e. Play-krav: publika sidor ──');
