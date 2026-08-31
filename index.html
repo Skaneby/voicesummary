@@ -1089,6 +1089,9 @@ const SK = 'vs_key', SM = 'vs_model';
 const isCapacitor = () => !!(window.Capacitor?.isNativePlatform?.());
 const APP_MODE = isCapacitor();
 const API_PROXY = 'https://diane-api.johan-skaneby.workers.dev';
+// Webbappens publika adress. Enda stället den står — ändras här om repot
+// byter namn eller får en egen domän.
+const APP_URL = 'https://skaneby.github.io/voicesummary/';
 const GOOGLE_OAUTH_CLIENT_ID = '732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com';
 const SGH = 'vs_gh_token', SGHR = 'vs_gh_repos';
 const STHEME = 'vs_theme';
@@ -2701,7 +2704,7 @@ async function share() {
 
 // ── SHARE APP ──────────────────────────────────────────────────────────────
 async function shareApp() {
-  const url = 'https://skaneby.github.io/voicesummary/';
+  const url = APP_URL;
   const text = `🎙️ Diane – spela in möten och få AI-sammanfattningar direkt på mobilen!
 
 Så här kommer du igång:
