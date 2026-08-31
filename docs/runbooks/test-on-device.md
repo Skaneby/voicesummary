@@ -15,13 +15,32 @@ Bygget kräver Android SDK, som inte finns i den här utvecklingsmiljön
 
 ## Bygg och installera
 
+Öppna en terminal (Terminal på Mac, Git Bash eller PowerShell på Windows) och
+kör raderna en i taget:
+
 ```bash
-git clone <repo> && cd voicesummary
+git clone https://github.com/Skaneby/voicesummary.git
+cd voicesummary
 git checkout mobile-app
 npm install
 npm run android:sync        # speglar roten till www/ + cap sync
 npm run android:open        # öppnar projektet i Android Studio
 ```
+
+Vad raderna gör: hämtar hem koden, går in i mappen, byter till grenen där
+mobilappen ligger (`main` är webbversionen), laddar ner biblioteken appen
+behöver, kopierar in webbfilerna i Android-projektet och öppnar det i
+Android Studio.
+
+**Har du redan repot på datorn** hoppar du över `git clone` och kör i stället
+`git pull origin mobile-app` i mappen du redan har.
+
+**Föredrar du grafiskt gränssnitt:** Android Studio kan klona åt dig via
+*File → New → Project from Version Control* med samma adress. Du behöver ändå
+köra `npm install` och `npm run android:sync` i terminalen efteråt.
+
+Kräver att [Node.js](https://nodejs.org) och [Git](https://git-scm.com) finns
+installerat — kontrollera med `node -v` och `git -v`.
 
 Anslut telefonen med USB, välj den i enhetslistan uppe i Android Studio och
 tryck ▶ Run. Appen installeras och startar.
