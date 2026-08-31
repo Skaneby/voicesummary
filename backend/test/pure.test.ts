@@ -68,3 +68,38 @@ test("kvotgränserna håller — annars äts marginalen upp", () => {
 test("prenumeration utan slutdatum betraktas som aktiv", () => {
   assert.equal(checkEntitlement(user({ period_end: null }), CAPS).allowed, true);
 });
+
+// ── TRANSFER: prenumerationen flyttas mellan identiteter ───────────────────
+import { transferPlan, isRevenueCatWebhookBody } from "../src/webhook.ts";
+
+test("överföring pekar ut vem som förlorar och vem som tar över", () => {
+  const p = transferPlan(ev("TRANSFER", {
+    transferred_from: ["google:1"], transferred_to: ["apple:2"],
+  }));
+  assert.deepEqual(p, { from: ["google:1"], to: "apple:2" });
+});
+
+test("överföring till sig själv ger inget att flytta bort", () => {
+  const p = transferPlan(ev("TRANSFER", {
+    transferred_from: ["google:1"], transferred_to: ["google:1"],
+  }));
+  assert.deepEqual(p, { from: [], to: "google:1" });
+});
+
+test("överföring utan mottagare ignoreras", () => {
+  assert.equal(transferPlan(ev("TRANSFER", { transferred_to: [] })), null);
+  assert.equal(transferPlan(ev("TRANSFER")), null);
+});
+
+test("andra händelser är inte överföringar", () => {
+  assert.equal(transferPlan(ev("RENEWAL")), null);
+});
+
+test("TRANSFER accepteras utan app_user_id", () => {
+  assert.equal(isRevenueCatWebhookBody({
+    event: { type: "TRANSFER", transferred_to: ["apple:2"] },
+  }), true);
+  assert.equal(isRevenueCatWebhookBody({
+    event: { type: "RENEWAL" },
+  }), false, "vanliga händelser kräver fortfarande app_user_id");
+});

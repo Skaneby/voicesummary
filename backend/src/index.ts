@@ -226,7 +226,10 @@ async function handleSummarize(
     );
   }
 
-  await incrementUsage(env.DB, user.id, body.audio_seconds).catch(() => {});
+  // Tappad räknare betyder tappad intäktskontroll — svälj inte felet tyst
+  await incrementUsage(env.DB, user.id, body.audio_seconds).catch((e) =>
+    console.error("incrementUsage failed", user.id, String(e)),
+  );
 
   const respText = await upstream.text();
   return cors(
