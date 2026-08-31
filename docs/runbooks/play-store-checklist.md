@@ -91,11 +91,12 @@ Ett kallt systemdialogfönster ger fler nekanden. Förklara först, fråga sedan
 | Målnivå API 36 | klart |
 | Prenumerationsvillkor på köpskärm | klart |
 | Kontoradering i appen | klart |
-| Integritetspolicy | **saknas** |
-| Webbsida för kontoradering | **saknas** |
-| Prominent disclosure för ljud | **saknas** |
+| Integritetspolicy | klart — `privacy.html` |
+| Webbsida för kontoradering | klart — `delete-account.html` |
+| Prominent disclosure för ljud | klart — dialog före första inspelningen |
+| Bakåtnavigering | klart |
+| Köpflöde och återställ köp | klart i koden — **kräver RevenueCat-nycklar** |
 | Testkonto åt granskare | görs vid inlämning |
-| Bakåtnavigering | **kvar** |
 | Edge-to-edge-insets | **kvar** |
 | Förgrundstjänst för inspelning | **kvar** |
-| Köpflöde (RevenueCat) | **kvar — Fas 3** |
+| Sidorna publikt nåbara | **kvar — kräver merge till `main`** |

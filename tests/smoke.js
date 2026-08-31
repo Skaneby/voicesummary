@@ -243,7 +243,66 @@ function check(name, ok, extra) {
   check('Kopiera mail finns kvar i appläge', await appPage.evaluate(() => typeof copyFormatted === 'function'));
   check('kalenderdialogen finns kvar i appläge', await appPage.evaluate(() => typeof openCalendarDialog === 'function' && !!$('calDate')));
   check('Bloggpost finns kvar i appläge', await appPage.evaluate(() => !!PROMPTS.blog && !!STYLE_META.blog));
+
+  // Bakåtnavigering — utan detta stänger bakåtgesten appen mitt i allt
+  check('bakåt stänger öppen panel först', await appPage.evaluate(() => {
+    show('idle'); openSettings();
+    const handled = handleBack();
+    return handled === true && !$('s-panel').classList.contains('open');
+  }));
+  check('bakåt från resultat går till startsidan', await appPage.evaluate(() => {
+    show('result');
+    return handleBack() === true && $('screen-idle').classList.contains('active');
+  }));
+  check('bakåt från betalvägg går till inloggning', await appPage.evaluate(() => {
+    show('paywall');
+    return handleBack() === true && $('screen-signin').classList.contains('active');
+  }));
+  check('bakåt från startsidan låter appen stängas', await appPage.evaluate(() => {
+    show('idle');
+    return handleBack() === false;
+  }));
+
+  // Prominent disclosure — Play-krav före första inspelningen
+  check('inspelning utan samtycke visar disclosure', await appPage.evaluate(async () => {
+    localStorage.removeItem('vs_audio_consent');
+    s.idToken = 'x'; s.subActive = 1;
+    await startRecording();
+    return $('disc-panel').style.display === 'block';
+  }));
+  check('disclosure nämner Google Gemini', await appPage.evaluate(() =>
+    /Google Gemini/.test($('disc-panel').textContent)));
+  check('samtycke sparas och visas inte igen', await appPage.evaluate(() => {
+    store.set('vs_audio_consent', '1');
+    return hasAudioConsent() === true;
+  }));
+
+  // Köpflöde
+  check('köpknappen är kopplad till startPurchase', await appPage.evaluate(() =>
+    typeof startPurchase === 'function' && typeof $('paywallSubscribeBtn').onclick === 'function'));
+  check('återställ köp finns (Play-krav)', await appPage.evaluate(() =>
+    typeof restorePurchases === 'function' && !!$('paywallRestoreBtn')));
+  check('okonfigurerad nyckel ger tydligt fel', await appPage.evaluate(async () => {
+    window.Capacitor.Plugins.Purchases = { configure: async () => {} };
+    s.googleSub = 'abc';
+    try { await ensurePurchases(); return false; } catch (e) { return /konfigurerat/.test(e.message); }
+  }));
+  check('appUserID härleds ur token, inte profilen', await appPage.evaluate(() => {
+    const fake = 'a.' + btoa(JSON.stringify({ sub: '12345', email: 'x@y.z' })) + '.c';
+    return subFromToken(fake) === '12345';
+  }));
+
   await appPage.close();
+
+  console.log('\n── 5e. Play-krav: publika sidor ──');
+  const priv = fs.readFileSync(path.join(ROOT, 'privacy.html'), 'utf8');
+  const del = fs.readFileSync(path.join(ROOT, 'delete-account.html'), 'utf8');
+  check('integritetspolicy finns', priv.length > 500);
+  check('policyn nämner att ljud skickas till Google Gemini', /Gemini/.test(priv));
+  check('policyn länkar till kontoradering', /delete-account\.html/.test(priv));
+  check('raderingssidan finns', del.length > 500);
+  check('raderingssidan beskriver vad som raderas', /Vad som raderas/.test(del));
+  check('raderingssidan varnar om prenumerationen', /avslutar inte din prenumeration/i.test(del));
 
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');

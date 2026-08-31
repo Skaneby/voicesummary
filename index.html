@@ -636,6 +636,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       </p>
       <p style="font-size:.78rem;color:var(--muted);margin-top:2px" id="paywallEmail"></p>
       <div style="display:flex;gap:14px;margin-top:6px">
+        <button class="btn-sec" id="paywallRestoreBtn" style="font-size:.82rem">Återställ köp</button>
         <button class="btn-sec" id="paywallSignOutBtn" style="font-size:.82rem">Logga ut</button>
         <button class="btn-sec" id="paywallDeleteBtn" style="font-size:.82rem">Radera konto</button>
       </div>
@@ -880,6 +881,22 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
 </div>
 
 <!-- HISTORY PANEL -->
+<div id="disc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100"></div>
+<aside id="disc-panel" role="dialog" aria-label="Om ljudinspelning" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;max-height:80vh;overflow-y:auto">
+  <div class="s-handle"></div>
+  <h2 class="s-title">Innan du spelar in</h2>
+  <p style="font-size:.9rem;line-height:1.6;color:var(--text);margin:0 0 12px">
+    Diane spelar in ljud via telefonens mikrofon och <strong>skickar inspelningen till Google Gemini</strong> för att skapa din sammanfattning.
+  </p>
+  <ul style="font-size:.88rem;line-height:1.6;color:var(--muted);padding-left:18px;margin:0 0 16px">
+    <li>Inspelningen skickas krypterat och sparas inte på våra servrar.</li>
+    <li>Sammanfattningen lagras bara lokalt på din enhet.</li>
+    <li>Spela inte in personer utan att berätta att du gör det.</li>
+  </ul>
+  <button class="s-save" id="discAcceptBtn" style="width:100%">Jag förstår — fortsätt</button>
+  <button class="btn-sec" id="discCancelBtn" style="width:100%;justify-content:center;margin-top:8px">Avbryt</button>
+</aside>
+
 <div id="h-overlay"></div>
 <aside id="h-panel" role="dialog" aria-label="Historik">
   <div class="s-handle"></div>
@@ -984,6 +1001,9 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       <button class="btn-sec" id="manageSubBtn" style="width:100%;justify-content:center;margin-top:10px">Hantera prenumeration</button>
       <button class="btn-sec" id="settingsSignOutBtn" style="width:100%;justify-content:center;margin-top:8px">Logga ut</button>
       <button class="btn-sec" id="settingsDeleteBtn" style="width:100%;justify-content:center;margin-top:8px;color:var(--accent)">Radera konto</button>
+      <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:12px">
+        <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted)">Integritetspolicy</a>
+      </p>
     </div>
     <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
       <button class="btn-sec" id="shareAppBtn" style="width:100%;justify-content:center;gap:8px">
@@ -1671,7 +1691,49 @@ function show(name) {
     const el = $('screen-' + n);
     el.classList.toggle('active', n === name);
   });
+  s.screen = name;
 }
+
+// ── BAKÅTNAVIGERING ────────────────────────────────────────────────────────
+// Utan detta stänger systemets bakåtgest hela appen — även mitt i en
+// inspelning. Vi håller alltid en extra history-post; bakåt konsumerar den,
+// vi utför åtgärden själva och lägger tillbaka en ny. Först när det inte
+// finns något kvar att backa ur låter vi appen stängas.
+// Fungerar i båda lägena: i webbläsaren blir det vanlig bakåtnavigering.
+function openPanels() {
+  return [...document.querySelectorAll('aside[id$="-panel"].open')];
+}
+function closeAllPanels() {
+  closeSettings(); closeHistory(); closeHelp();
+  if (typeof closeGitHub === 'function') closeGitHub();
+  closeCalendarDialog();
+}
+function pushBackSentinel() {
+  try { history.pushState({ diane: true }, ''); } catch {}
+}
+
+// Returnerar true om vi tog hand om bakåt, false om appen får stängas
+function handleBack() {
+  if (openPanels().length) { closeAllPanels(); return true; }
+  const cur = s.screen;
+  if (cur === 'recording') {
+    if (confirm('Avbryta inspelningen? Det inspelade går förlorat.')) {
+      try { if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') s.mediaRecorder.stop(); } catch {}
+      try { s.stream?.getTracks().forEach(t => t.stop()); } catch {}
+      s.chunks = [];
+      show('idle');
+    }
+    return true;                       // stanna kvar oavsett svar
+  }
+  if (cur === 'result' || cur === 'error' || cur === 'working') { show('idle'); return true; }
+  if (cur === 'paywall') { show('signin'); return true; }
+  if (cur === 'setup' && s.key) { show('idle'); return true; }
+  return false;                        // rot — låt bakåt stänga appen
+}
+
+window.addEventListener('popstate', () => {
+  if (handleBack()) pushBackSentinel();
+});
 
 let toastTimer;
 function toast(msg) {
@@ -1750,10 +1812,24 @@ function saveSettings() {
 }
 
 // ── RECORDING ─────────────────────────────────────────────────────────────
+// Play kräver ett tydligt medgivande i appen innan känslig data samlas in —
+// att det står i integritetspolicyn räcker inte. Visas en gång.
+const SCONSENT = 'vs_audio_consent';
+function hasAudioConsent() { return store.get(SCONSENT) === '1'; }
+function askAudioConsent() {
+  $('disc-overlay').style.display = 'block';
+  $('disc-panel').style.display = 'block';
+}
+function closeAudioConsent() {
+  $('disc-overlay').style.display = 'none';
+  $('disc-panel').style.display = 'none';
+}
+
 async function startRecording() {
   if (APP_MODE) {
     if (!s.idToken) { show('signin'); return; }
     if (!s.subActive) { show('paywall'); return; }
+    if (!hasAudioConsent()) { askAudioConsent(); return; }
   } else if (!s.key) {
     show('setup');
     toast('Ange din Gemini API-nyckel för att komma igång');
@@ -2771,6 +2847,15 @@ async function ensureSocialLoginInit() {
   socialLoginInitialized = true;
 }
 
+// Backend använder Googles `sub` som användar-id. RevenueCats appUserID måste
+// vara samma värde, annars kopplas köpet till fel rad. Läs den alltid ur
+// token i stället för ur profilobjektet, så kan de inte glida isär.
+function subFromToken(t) {
+  try {
+    return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).sub || '';
+  } catch { return ''; }
+}
+
 async function nativeGoogleSignIn() {
   await ensureSocialLoginInit();
   const SocialLogin = window.Capacitor.Plugins.SocialLogin;
@@ -2780,7 +2865,7 @@ async function nativeGoogleSignIn() {
   s.idToken = idToken;
   tokenStore.set(idToken);
   s.email = out?.result?.profile?.email || '';
-  s.googleSub = out?.result?.profile?.id || '';
+  s.googleSub = subFromToken(idToken) || out?.result?.profile?.id || '';
   await routeAfterAuth();
 }
 
@@ -2890,6 +2975,72 @@ function manageSubscription() {
     ? 'https://apps.apple.com/account/subscriptions'
     : 'https://play.google.com/store/account/subscriptions';
   window.open(url, '_blank', 'noopener');
+}
+
+
+// ── KÖP (RevenueCat, endast appläge) ───────────────────────────────────────
+// Publik SDK-nyckel — säker att ha i klienten, till skillnad från API-nyckeln.
+const REVENUECAT_ANDROID_KEY = 'goog_REPLACE_WITH_PUBLIC_SDK_KEY';
+const REVENUECAT_IOS_KEY = 'appl_REPLACE_WITH_PUBLIC_SDK_KEY';
+
+let purchasesConfigured = false;
+async function ensurePurchases() {
+  const P = window.Capacitor?.Plugins?.Purchases;
+  if (!P) throw new Error('Köp fungerar bara i appen.');
+  if (purchasesConfigured) return P;
+  const apiKey = isIOS() ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+  if (apiKey.includes('REPLACE_WITH')) throw new Error('Köp är inte konfigurerat än.');
+  if (!s.googleSub) throw new Error('Logga in igen innan du köper.');
+  // appUserID = samma id som backend känner användaren som
+  await P.configure({ apiKey, appUserID: s.googleSub });
+  purchasesConfigured = true;
+  return P;
+}
+
+// Webhooken från RevenueCat når backend strax efter köpet, så rättigheten
+// dyker inte upp direkt. Fråga /me några gånger innan vi ger upp.
+async function waitForEntitlement(tries = 6) {
+  for (let i = 0; i < tries; i++) {
+    const me = await fetchMe();
+    if (me && me.sub_active === 1) return true;
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  return false;
+}
+
+async function startPurchase() {
+  const btn = $('paywallSubscribeBtn');
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Öppnar Google Play…';
+  try {
+    const P = await ensurePurchases();
+    const offerings = await P.getOfferings();
+    const pkg = offerings?.current?.availablePackages?.[0];
+    if (!pkg) throw new Error('Hittade ingen prenumeration att köpa. Försök igen senare.');
+    btn.textContent = 'Slutför köpet…';
+    await P.purchasePackage({ aPackage: pkg });
+    btn.textContent = 'Aktiverar…';
+    if (await waitForEntitlement()) { toast('Välkommen! Prenumerationen är aktiv ✓'); show('idle'); }
+    else toast('Köpet gick igenom men aktiveringen dröjer — prova att starta om appen om en stund.');
+  } catch (e) {
+    // Användaren avbröt köpet — inget fel att skrika om
+    const msg = String(e?.message || e);
+    if (!/cancel|avbr/i.test(msg)) toast(msg || 'Köpet kunde inte genomföras.');
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+}
+
+// Play kräver att en betalande användare kan återställa sitt köp på ny enhet
+async function restorePurchases() {
+  try {
+    const P = await ensurePurchases();
+    await P.restorePurchases();
+    if (await waitForEntitlement(4)) { toast('Prenumerationen är återställd ✓'); show('idle'); }
+    else toast('Hittade inget aktivt köp på det här kontot.');
+  } catch (e) {
+    toast(String(e?.message || e) || 'Kunde inte återställa köp.');
+  }
 }
 
 // ── ERROR ──────────────────────────────────────────────────────────────────
@@ -3049,6 +3200,8 @@ function installApp() {
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 function init() {
+  pushBackSentinel();
+
   // Lägesberoende synlighet: nyckel/modell/GitHub hör till webben, konto till appen
   document.querySelectorAll('.web-only').forEach(el => { if (APP_MODE) el.style.display = 'none'; });
   document.querySelectorAll('.app-only').forEach(el => { el.style.display = APP_MODE ? '' : 'none'; });
@@ -3074,10 +3227,15 @@ function init() {
   bind('settingsSignOutBtn', () => { signOutLocal(); closeSettings(); show('signin'); });
   bind('settingsDeleteBtn', deleteAccount);
   bind('manageSubBtn', manageSubscription);
-  bind('paywallSubscribeBtn', () => {
-    // TODO Fas 3: RevenueCat-köpflöde
-    toast('Köp aktiveras i nästa version');
+  bind('discCancelBtn', closeAudioConsent);
+  bind('disc-overlay', closeAudioConsent);
+  bind('discAcceptBtn', () => {
+    store.set(SCONSENT, '1');
+    closeAudioConsent();
+    startRecording();
   });
+  bind('paywallSubscribeBtn', startPurchase);
+  bind('paywallRestoreBtn', restorePurchases);
 
   $('setupSaveBtn').onclick = () => {
     const k = $('setupKey').value.trim();
