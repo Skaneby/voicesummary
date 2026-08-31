@@ -1,6 +1,6 @@
 # 0004 — Publik adress bör lösgöras från repo-namnet
 
-**Status:** föreslagen
+**Status:** antagen · 2026-08-31 — **repot byter inte namn nu**
 
 ## Problem
 
@@ -24,10 +24,22 @@ Det som faktiskt går sönder vid ett namnbyte:
 
 ## Beslut
 
-Sätt en **egen domän på GitHub Pages** innan repot byter namn, och innan
-appen lämnas in till Play.
+**Behåll repo-namnet `voicesummary` tills vidare.** Byt namn först när en
+egen domän är på plats.
 
-Detta är enklare än det tidigare uppskjutna Cloudflare-arbetet: en custom
+Skälet: appen heter redan Diane överallt där en användare ser den — ikonen
+på hemskärmen, Play-posten, applikations-id `se.skaneby.diane`, PWA-
+manifestet och gränssnittet. Repo-namnet är utvecklarvänt, inte
+användarvänt, och syns bara i länken till integritetspolicyn i butiksposten.
+Play ställer inga krav på vilken domän den ligger på.
+
+Ett namnbyte nu skulle alltså kosta samtliga befintliga PWA-installationer
+utan en enda användarsynlig vinst.
+
+När en **egen domän på GitHub Pages** är satt kan namnet ändras fritt, utan
+att något går sönder. Det är då bytet ska göras — inte före.
+
+Att sätta domänen är enklare än det tidigare uppskjutna Cloudflare-arbetet: en custom
 domain för *Cloudflare Workers* kräver att zonen ligger på Cloudflares DNS,
 men **GitHub Pages nöjer sig med en vanlig CNAME-post** hos nuvarande
 DNS-leverantör. Ingen migrering behövs.
