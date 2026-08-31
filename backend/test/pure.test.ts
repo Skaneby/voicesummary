@@ -1,0 +1,70 @@
+// Enhetstester för backendens rena funktioner — de som styr pengar och
+// rättigheter. Kör: npm test (i backend/). Ingen databas, inga nätanrop.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { eventToUpdate } from "../src/webhook.ts";
+import { checkEntitlement } from "../src/entitlement.ts";
+
+const NOW = Math.floor(Date.now() / 1000);
+const CAPS = { audio: 3600, summaries: 100 };
+
+function user(over = {}) {
+  return {
+    id: "google:1", email: "a@b.c", rc_app_user_id: null,
+    sub_active: 1, period_end: NOW + 86400, period_started: NOW - 86400,
+    audio_seconds_used: 0, summaries_used: 0,
+    created_at: NOW, updated_at: NOW, deleted_at: null,
+    ...over,
+  } as any;
+}
+function ev(type: string, over = {}) {
+  return { type, id: "e1", app_user_id: "google:1",
+    purchased_at_ms: NOW * 1000, expiration_at_ms: (NOW + 86400) * 1000, ...over } as any;
+}
+
+test("köp och förnyelse aktiverar prenumerationen", () => {
+  for (const t of ["INITIAL_PURCHASE", "RENEWAL", "UNCANCELLATION", "PRODUCT_CHANGE", "SUBSCRIPTION_EXTENDED"]) {
+    const u = eventToUpdate(ev(t));
+    assert.equal(u?.sub_active, 1, t + " ska aktivera");
+  }
+});
+
+test("förnyelse och nyköp nollställer kvoten, förlängning gör det inte", () => {
+  assert.equal(eventToUpdate(ev("RENEWAL"))?.resetUsage, true);
+  assert.equal(eventToUpdate(ev("INITIAL_PURCHASE"))?.resetUsage, true);
+  assert.equal(eventToUpdate(ev("SUBSCRIPTION_EXTENDED"))?.resetUsage, false);
+});
+
+test("uppsägning stänger INTE av direkt — perioden ska löpa ut först", () => {
+  assert.equal(eventToUpdate(ev("CANCELLATION")), null);
+});
+
+test("utgång, betalproblem och återbetalning stänger av", () => {
+  for (const t of ["EXPIRATION", "BILLING_ISSUE", "REFUND", "SUBSCRIPTION_PAUSED"]) {
+    assert.equal(eventToUpdate(ev(t))?.sub_active, 0, t + " ska stänga av");
+  }
+});
+
+test("testhändelser ändrar ingenting", () => {
+  assert.equal(eventToUpdate(ev("TEST")), null);
+});
+
+test("aktiv prenumerant släpps igenom", () => {
+  assert.deepEqual(checkEntitlement(user(), CAPS), { allowed: true });
+});
+
+test("raderad, obetald och utgången nekas med rätt orsak", () => {
+  assert.equal(checkEntitlement(user({ deleted_at: NOW }), CAPS).reason, "deleted");
+  assert.equal(checkEntitlement(user({ sub_active: 0 }), CAPS).reason, "not_subscribed");
+  assert.equal(checkEntitlement(user({ period_end: NOW - 10 }), CAPS).reason, "expired");
+});
+
+test("kvotgränserna håller — annars äts marginalen upp", () => {
+  assert.equal(checkEntitlement(user({ audio_seconds_used: 3600 }), CAPS).reason, "audio_cap_reached");
+  assert.equal(checkEntitlement(user({ summaries_used: 100 }), CAPS).reason, "summary_cap_reached");
+  assert.equal(checkEntitlement(user({ summaries_used: 99 }), CAPS).allowed, true);
+});
+
+test("prenumeration utan slutdatum betraktas som aktiv", () => {
+  assert.equal(checkEntitlement(user({ period_end: null }), CAPS).allowed, true);
+});

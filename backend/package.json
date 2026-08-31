@@ -6,7 +6,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "tail": "wrangler tail",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "test": "node --experimental-strip-types --test \"test/*.test.ts\""
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260511.1",

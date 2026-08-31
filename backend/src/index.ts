@@ -1,4 +1,4 @@
-import { verifyGoogleToken } from "./auth";
+import { verifyToken, type AudienceConfig } from "./auth";
 import {
   checkEntitlement,
   incrementUsage,
@@ -16,6 +16,7 @@ interface Env {
   GEMINI_API_KEY: string;
   DB: D1Database;
   GOOGLE_OAUTH_CLIENT_ID: string;
+  APPLE_BUNDLE_ID?: string;
   USAGE_CAP_SUMMARIES: string;
   USAGE_CAP_AUDIO_SECONDS: string;
   GEMINI_MODEL: string;
@@ -23,7 +24,23 @@ interface Env {
   RATE_LIMITER: RateLimit;
 }
 
-const VERSION = "0.5.0";
+
+/** Mottagar-id per leverantör. Tom om leverantören inte är konfigurerad. */
+function audiencesFor(env: Env): AudienceConfig {
+  const out: AudienceConfig = {};
+  if (env.GOOGLE_OAUTH_CLIENT_ID && !env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_"))
+    out.google = env.GOOGLE_OAUTH_CLIENT_ID;
+  if (env.APPLE_BUNDLE_ID && !env.APPLE_BUNDLE_ID.startsWith("REPLACE_"))
+    out.apple = env.APPLE_BUNDLE_ID;
+  return out;
+}
+
+function anyProviderConfigured(env: Env): boolean {
+  const a = audiencesFor(env);
+  return !!(a.google || a.apple);
+}
+
+const VERSION = "0.6.0";
 
 // Origins allowed to call the API from a browser context. Native curl /
 // server-to-server requests (no Origin header) are unaffected — CORS is a
@@ -91,10 +108,7 @@ export default {
 } satisfies ExportedHandler<Env>;
 
 async function handleMe(request: Request, env: Env): Promise<Response> {
-  if (
-    !env.GOOGLE_OAUTH_CLIENT_ID ||
-    env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_")
-  ) {
+  if (!anyProviderConfigured(env)) {
     return cors(request, json({ error: "server_misconfigured" }, 503));
   }
   const authHeader = request.headers.get("authorization");
@@ -103,16 +117,16 @@ async function handleMe(request: Request, env: Env): Promise<Response> {
   }
   const token = authHeader.slice("Bearer ".length).trim();
 
-  let claims;
+  let claims: Awaited<ReturnType<typeof verifyToken>>;
   try {
-    claims = await verifyGoogleToken(token, env.GOOGLE_OAUTH_CLIENT_ID);
+    claims = await verifyToken(token, audiencesFor(env));
   } catch {
     return cors(request, json({ error: "invalid_token" }, 401));
   }
 
   // Upsert so the row exists if this is the user's first sign-in. The
   // webhook also creates rows but won't have fired for non-subscribers.
-  const user = await upsertUser(env.DB, claims.sub, claims.email ?? null);
+  const user = await upsertUser(env.DB, claims.userId, claims.claims.email ?? null);
 
   const caps = {
     summaries: Number(env.USAGE_CAP_SUMMARIES) || 100,
@@ -146,10 +160,7 @@ async function handleSummarize(
   request: Request,
   env: Env,
 ): Promise<Response> {
-  if (
-    !env.GOOGLE_OAUTH_CLIENT_ID ||
-    env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_")
-  ) {
+  if (!anyProviderConfigured(env)) {
     return cors(request, json({ error: "server_misconfigured" }, 503));
   }
 
@@ -159,21 +170,21 @@ async function handleSummarize(
   }
   const token = authHeader.slice("Bearer ".length).trim();
 
-  let claims;
+  let claims: Awaited<ReturnType<typeof verifyToken>>;
   try {
-    claims = await verifyGoogleToken(token, env.GOOGLE_OAUTH_CLIENT_ID);
+    claims = await verifyToken(token, audiencesFor(env));
   } catch {
     return cors(request, json({ error: "invalid_token" }, 401));
   }
 
   // Rate limit per authenticated user. 30 req/min — well above real usage,
   // catches buggy clients and stolen tokens before they drain the budget.
-  const rl = await env.RATE_LIMITER.limit({ key: claims.sub });
+  const rl = await env.RATE_LIMITER.limit({ key: claims.userId });
   if (!rl.success) {
     return cors(request, json({ error: "rate_limited" }, 429));
   }
 
-  const user = await upsertUser(env.DB, claims.sub, claims.email ?? null);
+  const user = await upsertUser(env.DB, claims.userId, claims.claims.email ?? null);
 
   const caps: UsageCaps = {
     audio: Number(env.USAGE_CAP_AUDIO_SECONDS) || 3600,
@@ -268,10 +279,7 @@ async function handleAccountDelete(
   request: Request,
   env: Env,
 ): Promise<Response> {
-  if (
-    !env.GOOGLE_OAUTH_CLIENT_ID ||
-    env.GOOGLE_OAUTH_CLIENT_ID.startsWith("REPLACE_")
-  ) {
+  if (!anyProviderConfigured(env)) {
     return cors(request, json({ error: "server_misconfigured" }, 503));
   }
   const authHeader = request.headers.get("authorization");
@@ -280,18 +288,18 @@ async function handleAccountDelete(
   }
   const token = authHeader.slice("Bearer ".length).trim();
 
-  let claims;
+  let claims: Awaited<ReturnType<typeof verifyToken>>;
   try {
-    claims = await verifyGoogleToken(token, env.GOOGLE_OAUTH_CLIENT_ID);
+    claims = await verifyToken(token, audiencesFor(env));
   } catch {
     return cors(request, json({ error: "invalid_token" }, 401));
   }
 
   await env.DB.batch([
     env.DB.prepare("DELETE FROM subscription_events WHERE user_id = ?").bind(
-      claims.sub,
+      claims.userId,
     ),
-    env.DB.prepare("DELETE FROM users WHERE id = ?").bind(claims.sub),
+    env.DB.prepare("DELETE FROM users WHERE id = ?").bind(claims.userId),
   ]);
 
   return cors(request, json({ ok: true, deleted: true }));

@@ -1,31 +1,80 @@
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
 
-// Google's JWKS for Sign-In ID tokens. jose caches keys in-memory per isolate
-// with a 10-minute TTL by default — fine for our throughput, no Cache API
-// machinery needed for v1.
-const JWKS = createRemoteJWKSet(
-  new URL("https://www.googleapis.com/oauth2/v3/certs"),
-);
+// En JWKS per identitetsleverantör. jose cachar nycklarna i minnet per isolat
+// med 10 minuters TTL — tillräckligt för vår volym.
+const JWKS = {
+  google: createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs")),
+  apple: createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys")),
+} as const;
 
-export interface GoogleClaims extends JWTPayload {
+const ISSUERS: Record<Provider, string[]> = {
+  google: ["accounts.google.com", "https://accounts.google.com"],
+  apple: ["https://appleid.apple.com"],
+};
+
+export type Provider = "google" | "apple";
+
+export interface Claims extends JWTPayload {
   sub: string;
   email?: string;
   email_verified?: boolean;
 }
 
+export interface VerifiedUser {
+  provider: Provider;
+  claims: Claims;
+  /**
+   * Vårt användar-id. Namnrymdat per leverantör eftersom `sub` bara är unikt
+   * inom en leverantör — utan prefix skulle samma person få två konton när hen
+   * loggar in med Apple på iOS och Google på Android. Se
+   * docs/decisions/0003-identitet-per-leverantor.md.
+   */
+  userId: string;
+}
+
+export function userIdFor(provider: Provider, sub: string): string {
+  return provider + ":" + sub;
+}
+
+/** Läser `iss` utan att lita på den — bara för att välja vilken JWKS som ska pröva signaturen. */
+export function providerFromToken(token: string): Provider | null {
+  try {
+    const payload = JSON.parse(
+      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    const iss = String(payload.iss || "");
+    if (ISSUERS.google.includes(iss)) return "google";
+    if (ISSUERS.apple.includes(iss)) return "apple";
+  } catch {
+    /* trasig token — faller igenom till null */
+  }
+  return null;
+}
+
+export interface AudienceConfig {
+  google?: string;
+  apple?: string;
+}
+
 /**
- * Verify a Google ID token. Throws if the signature is invalid, the issuer
- * is wrong, the audience doesn't match our OAuth client, or the token is
- * expired. `sub` is the stable Google user identifier we use as our user PK.
+ * Verifierar en ID-token från någon av de konfigurerade leverantörerna.
+ * Kastar om signaturen är ogiltig, utgivaren fel, mottagaren inte matchar
+ * eller token har gått ut.
  */
-export async function verifyGoogleToken(
+export async function verifyToken(
   token: string,
-  clientId: string,
-): Promise<GoogleClaims> {
-  const { payload } = await jwtVerify(token, JWKS, {
-    issuer: ["accounts.google.com", "https://accounts.google.com"],
-    audience: clientId,
+  audiences: AudienceConfig,
+): Promise<VerifiedUser> {
+  const provider = providerFromToken(token);
+  if (!provider) throw new Error("okänd tokenutgivare");
+  const audience = audiences[provider];
+  if (!audience) throw new Error(provider + " är inte konfigurerad");
+
+  const { payload } = await jwtVerify(token, JWKS[provider], {
+    issuer: ISSUERS[provider],
+    audience,
   });
-  if (!payload.sub) throw new Error("token missing sub claim");
-  return payload as GoogleClaims;
+  if (!payload.sub) throw new Error("token saknar sub");
+  const claims = payload as Claims;
+  return { provider, claims, userId: userIdFor(provider, claims.sub) };
 }

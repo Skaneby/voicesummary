@@ -37,7 +37,7 @@ export async function upsertUser(
     .prepare(
       `INSERT INTO users (id, email, created_at, updated_at)
        VALUES (?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET email = excluded.email, updated_at = excluded.updated_at`,
+       ON CONFLICT(id) DO UPDATE SET email = COALESCE(excluded.email, email), updated_at = excluded.updated_at`,
     )
     .bind(id, email, now, now)
     .run();

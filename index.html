@@ -2850,6 +2850,11 @@ async function ensureSocialLoginInit() {
 // Backend använder Googles `sub` som användar-id. RevenueCats appUserID måste
 // vara samma värde, annars kopplas köpet till fel rad. Läs den alltid ur
 // token i stället för ur profilobjektet, så kan de inte glida isär.
+// Måste matcha userIdFor() i backend/src/auth.ts
+function backendUserId() {
+  return s.googleSub ? 'google:' + s.googleSub : '';
+}
+
 function subFromToken(t) {
   try {
     return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).sub || '';
@@ -2991,8 +2996,9 @@ async function ensurePurchases() {
   const apiKey = isIOS() ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
   if (apiKey.includes('REPLACE_WITH')) throw new Error('Köp är inte konfigurerat än.');
   if (!s.googleSub) throw new Error('Logga in igen innan du köper.');
-  // appUserID = samma id som backend känner användaren som
-  await P.configure({ apiKey, appUserID: s.googleSub });
+  // appUserID måste vara exakt det id backend känner användaren som —
+  // namnrymdat per leverantör, se docs/decisions/0003-identitet-per-leverantor.md
+  await P.configure({ apiKey, appUserID: backendUserId() });
   purchasesConfigured = true;
   return P;
 }

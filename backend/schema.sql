@@ -6,7 +6,7 @@
 
 CREATE TABLE IF NOT EXISTS users (
   -- Identity
-  id              TEXT PRIMARY KEY,             -- Google subject ID, stable across logins
+  id              TEXT PRIMARY KEY,             -- '<leverantör>:<sub>', t.ex. 'google:1234' — se docs/decisions/0003
   email           TEXT,
 
   -- RevenueCat binding (set when first subscription event arrives)

@@ -50,14 +50,28 @@ Bindningar: D1 `DB` → `diane-prod`, `RATE_LIMITER` (30 req/60 s).
 **Modellen sätts här, inte i klienten** — så en modelluppgradering är en
 konfigurationsändring och inte en ny appversion genom Play-granskning.
 
+## Identitet
+
+`users.id` är **namnrymdat per leverantör**: `google:<sub>`, `apple:<sub>`.
+`verifyToken()` i `auth.ts` väljer JWKS utifrån token-utgivaren och returnerar
+`userId` färdigt. Klientens RevenueCat-`appUserID` måste vara exakt samma
+sträng — se `backendUserId()` i `index.html`.
+
+Befintliga rader migreras med
+`backend/migrations/001-namespace-user-ids.sql` (idempotent).
+
+## Tester
+
+```bash
+cd backend && npm test
+```
+
+13 enhetstester över `eventToUpdate()`, `checkEntitlement()` och
+identitetslogiken — de rena funktioner som styr pengar och rättigheter.
+Körs med Nodes inbyggda testkörare, inga beroenden.
+
 ## Kända skulder
 
-- `users.id` är rå Google-`sub`. Med Apple på iOS blir samma person **två
-  konton med två prenumerationer**. Se
-  [../decisions/0003-identitet-per-leverantor.md](../decisions/0003-identitet-per-leverantor.md).
-- `upsertUser` gör `email = excluded.email`, vilket nollar e-posten när Apple
-  utelämnar den (Apple skickar e-post bara vid första inloggningen). Ska vara
-  `COALESCE(excluded.email, email)`.
 - `incrementUsage` är icke-atomär och anropas med tyst `.catch()` — kvot kan
   tappas vid samtidiga anrop.
 - `TRANSFER` och `SUBSCRIBER_ALIAS` från RevenueCat ignoreras; de behövs när en
