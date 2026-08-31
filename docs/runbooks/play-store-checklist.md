@@ -8,7 +8,7 @@ kvalitetsbetyg och synlighet.
 
 ### 1. Integritetspolicy på publik URL
 Obligatorisk för alla appar som rör mikrofonen. Måste vara nåbar utan
-inloggning. Kan ligga på `skaneby.github.io/voicesummary/privacy.html`.
+inloggning. Ligger på `https://skaneby.github.io/voicesummary/privacy.html`.
 
 ### 2. Webbadress för kontoradering
 Appar med konton måste erbjuda radering **både i appen och via en publik
@@ -99,4 +99,4 @@ Ett kallt systemdialogfönster ger fler nekanden. Förklara först, fråga sedan
 | Testkonto åt granskare | görs vid inlämning |
 | Edge-to-edge-insets | **kvar** |
 | Förgrundstjänst för inspelning | **kvar** |
-| Sidorna publikt nåbara | **kvar — kräver merge till `main`** |
+| Sidorna publikt nåbara | klart — publicerade på `main` |
