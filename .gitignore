@@ -19,3 +19,6 @@ json/
 client_secret_*.json
 service-account-*.json
 .diane-api-key.txt
+
+# Byggd av scripts/sync-www.sh — enda sanningen är repo-roten
+www/

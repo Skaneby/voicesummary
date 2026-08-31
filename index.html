@@ -12,8 +12,6 @@
 <meta name="theme-color" content="#0f0f1a">
 <title>Diane – AI Transkribering</title>
 <link rel="manifest" href="manifest.json">
-<!-- Google Identity Services — async/defer so it doesn't block first paint -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- Capture beforeinstallprompt ASAP — before main script — to suppress Chrome mini-infobar -->
 <script>
 window.__bip = null;
@@ -215,6 +213,7 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .format-card[data-fmt="detailed"] {--fc:#3dd9c0}
 .format-card[data-fmt="sales"]    {--fc:#f0c040}
 .format-card[data-fmt="social"]    {--fc:#a855f7}
+.format-card[data-fmt="blog"]      {--fc:#f59e0b}
 .format-card[data-fmt="vibecoder"]{--fc:#f59e0b}
 .format-card.active{border-left-color:var(--fc);background:rgba(255,255,255,.04)}
 .format-card.active .fc-name{color:var(--fc)}
@@ -230,6 +229,8 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .result-box[data-style="sales"] h2{color:#f0c040;border-bottom-color:rgba(240,192,64,.2)}
 .result-box[data-style="social"]{border-left-color:#a855f7}
 .result-box[data-style="social"] h2{color:#a855f7;border-bottom-color:rgba(168,85,247,.2)}
+.result-box[data-style="blog"]{border-left-color:#f59e0b}
+.result-box[data-style="blog"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
 .result-box[data-style="vibecoder"]{border-left-color:#f59e0b}
 .result-box[data-style="vibecoder"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
 /* Panasonic theme: respect per-preset border color */
@@ -238,6 +239,7 @@ html[data-theme="panasonic"] .result-box[data-style="brief"]{border-left-color:#
 html[data-theme="panasonic"] .result-box[data-style="detailed"]{border-left-color:#3dd9c0}
 html[data-theme="panasonic"] .result-box[data-style="sales"]{border-left-color:#f0c040}
 html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:#a855f7}
+html[data-theme="panasonic"] .result-box[data-style="blog"]{border-left-color:#f59e0b}
 /* Result badge (preset name chip) */
 .result-badge{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:100px;
   letter-spacing:.04em;text-transform:uppercase}
@@ -247,6 +249,7 @@ html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:
 .result-badge[data-style="detailed"]{background:rgba(61,217,192,.15);color:#3dd9c0}
 .result-badge[data-style="sales"]{background:rgba(240,192,64,.15);color:#f0c040}
 .result-badge[data-style="social"]{background:rgba(168,85,247,.15);color:#a855f7}
+.result-badge[data-style="blog"]{background:rgba(245,158,11,.15);color:#f59e0b}
 .result-badge[data-style="vibecoder"]{background:rgba(245,158,11,.15);color:#f59e0b}
 
 /* LETTER PRESET */
@@ -254,9 +257,54 @@ html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:
 .result-box[data-style="letter"] h2{color:#6e8efb;border-bottom-color:rgba(110,142,251,.2)}
 html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:#6e8efb}
 .format-card[data-fmt="letter"]{--fc:#6e8efb}
+.format-card[data-fmt="insandare"]{--fc:#ef4444}
+.format-card[data-fmt="psyk"]{--fc:#a855f7}
+.format-card[data-fmt="tal"]{--fc:#e11d48}
+.format-card[data-fmt="predikan"]{--fc:#d97706}
+.result-box[data-style="predikan"]{border-left-color:#d97706}
+.result-box[data-style="predikan"] h2{color:#d97706;border-bottom-color:rgba(217,119,6,.2)}
+.result-badge[data-style="predikan"]{background:rgba(217,119,6,.15);color:#d97706}
+.format-card[data-fmt="drama"]{--fc:#f97316}
+.result-box[data-style="drama"]{border-left-color:#f97316}
+.result-box[data-style="drama"] h2{color:#f97316;border-bottom-color:rgba(249,115,22,.2)}
+.result-badge[data-style="drama"]{background:rgba(249,115,22,.15);color:#f97316}
+.format-card[data-fmt="konspiration"]{--fc:#6366f1}
+.result-box[data-style="konspiration"]{border-left-color:#6366f1}
+.result-box[data-style="konspiration"] h2{color:#6366f1;border-bottom-color:rgba(99,102,241,.2)}
+.result-badge[data-style="konspiration"]{background:rgba(99,102,241,.15);color:#6366f1}
+.result-box[data-style="tal"]{border-left-color:#e11d48}
+.result-box[data-style="tal"] h2{color:#e11d48;border-bottom-color:rgba(225,29,72,.2)}
+.result-badge[data-style="tal"]{background:rgba(225,29,72,.15);color:#e11d48}
+.result-box[data-style="psyk"]{border-left-color:#a855f7}
+.result-box[data-style="psyk"] h2{color:#a855f7;border-bottom-color:rgba(168,85,247,.2)}
+.result-badge[data-style="psyk"]{background:rgba(168,85,247,.15);color:#a855f7}
 .result-badge[data-style="letter"]{background:rgba(110,142,251,.15);color:#6e8efb}
+.result-box[data-style="insandare"]{border-left-color:#ef4444}
+.result-box[data-style="insandare"] h2{color:#ef4444;border-bottom-color:rgba(239,68,68,.2)}
+.result-badge[data-style="insandare"]{background:rgba(239,68,68,.15);color:#ef4444}
 
 /* FIND & REPLACE */
+.reformat-wrap{width:100%;max-width:680px}
+.reformat-label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+.reformat-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.reformat-row::-webkit-scrollbar{display:none}
+.reformat-pill{flex-shrink:0;padding:5px 11px;border-radius:100px;font-size:.72rem;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s}
+.reformat-pill:hover{border-color:var(--accent);color:var(--text)}
+.reformat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.qa-wrap{width:100%;max-width:680px;display:flex;flex-direction:column;gap:8px}
+.qa-thread{display:flex;flex-direction:column;gap:8px}
+.qa-thread:empty{display:none}
+.qa-bubble{max-width:88%;padding:10px 14px;border-radius:14px;font-size:.88rem;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.qa-q{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.qa-a{align-self:flex-start;background:var(--card);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px}
+.qa-a.pending{color:var(--muted);font-style:italic}
+.qa-row{display:flex;gap:8px}
+.qa-input{flex:1;min-width:0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:.9rem;outline:none;font-family:inherit}
+.qa-input:focus{border-color:var(--accent)}
+.qa-input::placeholder{color:var(--muted)}
+.qa-send{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:0 18px;font-size:1rem;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.qa-send:disabled{opacity:.5;cursor:default}
+.qa-status{font-size:.72rem;color:var(--muted)}
 .fnr-bar{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
   border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .fnr-row{display:flex;gap:6px;align-items:center}
@@ -355,6 +403,19 @@ html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,ser
   transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
   max-height:80vh;overflow-y:auto}
 #help-panel.open{transform:translateY(0)}
+
+/* KALENDER-DIALOG */
+#cal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
+#cal-overlay.open{display:block}
+#cal-panel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
+  padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:80vh;overflow-y:auto}
+#cal-panel.open{transform:translateY(0)}
+.cal-row{display:flex;gap:10px}
+.cal-row .input-group{flex:1;max-width:none}
+#cal-panel input[type="date"],#cal-panel input[type="time"]{color-scheme:dark}
 
 /* GITHUB REPO PICKER */
 #gh-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
@@ -492,8 +553,8 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
   </header>
 
   <main>
-    <!-- SIGN IN -->
-    <section class="screen" id="screen-signin">
+    <!-- SETUP -->
+    <section class="screen" id="screen-setup">
       <div class="setup-icon">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#e94560" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
@@ -503,31 +564,77 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         </svg>
       </div>
       <h2 class="setup-title">Diane</h2>
-      <p class="setup-desc">Logga in för att börja transkribera.</p>
+      <p class="setup-desc">Kom igång på 2 minuter – helt gratis</p>
+      <div class="setup-steps">
+        <div class="setup-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-label">Skaffa en gratis API-nyckel</div>
+            <div class="step-hint">Google Gemini AI är gratis för privat bruk. Logga in med ditt Google-konto.</div>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="step-link">
+              Öppna aistudio.google.com/apikey →
+            </a>
+          </div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-label">Klistra in nyckeln nedan</div>
+            <div class="input-group" style="margin-top:8px;max-width:none">
+              <input type="text" id="setupKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
+            </div>
+            <div class="step-hint" style="margin-top:6px">💡 Spara nyckeln i din lösenordshanterare — webbläsare kan rensa lagrad data.</div>
+          </div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-label">Börja spela in!</div>
+            <div class="step-hint">Tryck på mikrofonen och prata. Gemini transkriberar och sammanfattar automatiskt på det språk du talar.</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" id="setupSaveBtn">Kom igång</button>
+    </section>
+
+    <!-- SIGN IN (appläge) -->
+    <section class="screen" id="screen-signin">
+      <div class="setup-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </div>
+      <h2 class="setup-title">Diane</h2>
+      <p class="setup-desc">Logga in för att komma igång.</p>
       <div id="googleSignInBtn" style="margin-top:8px"></div>
       <p style="font-size:.78rem;color:var(--muted);margin-top:16px;max-width:300px;text-align:center">
         Diane använder ditt Google-konto för inloggning. Vi sparar bara din e-postadress och din prenumerationsstatus.
       </p>
     </section>
 
-    <!-- PAYWALL -->
+    <!-- PAYWALL (appläge) -->
     <section class="screen" id="screen-paywall">
       <div class="setup-icon">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#e94560" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         </svg>
       </div>
       <h2 class="setup-title">Diane Premium</h2>
-      <p class="setup-desc">Starta gratis i 7 dagar, sedan 40 kr/månad.</p>
+      <p class="setup-desc">7 dagar gratis, därefter 40 kr per månad.</p>
       <ul style="list-style:none;padding:0;margin:0;color:var(--text);font-size:.92rem;text-align:left;max-width:320px;line-height:1.7">
-        <li>✓ AI-transkribering &amp; sammanfattning på ditt språk</li>
-        <li>✓ Alla 8 format (protokoll, sociala medier, brev m.m.)</li>
-        <li>✓ 100 sammanfattningar / 60 min ljud per månad</li>
-        <li>✓ Avsluta när som helst i Google Play</li>
+        <li>✓ Spela in möten även med släckt skärm</li>
+        <li>✓ Sammanfattning på det språk du talar</li>
+        <li>✓ Alla format — protokoll, säljmöte, bloggpost, brev m.m.</li>
+        <li>✓ Fråga om mötet och få svar ur hela inspelningen</li>
+        <li>✓ 100 sammanfattningar och 60 minuter ljud per månad</li>
       </ul>
       <button class="btn-primary" id="paywallSubscribeBtn" style="margin-top:8px">Starta gratis provperiod</button>
-      <p style="font-size:.78rem;color:var(--muted);margin-top:4px" id="paywallEmail"></p>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:4px;max-width:320px;text-align:center" id="paywallTerms">
+        Provperioden övergår automatiskt i en prenumeration på 40 kr/månad om du inte avslutar den. Avsluta när som helst i Google Play.
+      </p>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:2px" id="paywallEmail"></p>
       <div style="display:flex;gap:14px;margin-top:6px">
         <button class="btn-sec" id="paywallSignOutBtn" style="font-size:.82rem">Logga ut</button>
         <button class="btn-sec" id="paywallDeleteBtn" style="font-size:.82rem">Radera konto</button>
@@ -592,6 +699,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
             <div class="fc-name">Sociala medier</div>
             <div class="fc-desc">Personligt inlägg, max 500 ord</div>
           </button>
+          <button class="format-card" data-fmt="blog">
+            <div class="fc-name">✍️ Bloggpost</div>
+            <div class="fc-desc">Personligt och inspirerat inlägg med tydlig struktur</div>
+          </button>
           <button class="format-card" data-fmt="letter">
             <div class="fc-name">Formellt brev</div>
             <div class="fc-desc">Sakligt brev till myndighet eller organisation</div>
@@ -599,6 +710,30 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="vibecoder">
             <div class="fc-name">⚡ Vibe Prompt</div>
             <div class="fc-desc">Prompt för Lovable, Bolt, v0, Cursor</div>
+          </button>
+          <button class="format-card" data-fmt="insandare">
+            <div class="fc-name">😤 Arg insändare</div>
+            <div class="fc-desc">Engagerat inlägg till lokaltidningen</div>
+          </button>
+          <button class="format-card" data-fmt="psyk">
+            <div class="fc-name">🧠 Psykiatrisk utredning</div>
+            <div class="fc-desc">Fullständig psykiatrisk diagnos med ordination</div>
+          </button>
+          <button class="format-card" data-fmt="tal">
+            <div class="fc-name">🎤 Politiskt tal</div>
+            <div class="fc-desc">Eldigt brandtal med paroll</div>
+          </button>
+          <button class="format-card" data-fmt="predikan">
+            <div class="fc-name">✝️ Predikan</div>
+            <div class="fc-desc">Religiöst brandtal med välsignelse och moral</div>
+          </button>
+          <button class="format-card" data-fmt="drama">
+            <div class="fc-name">🎭 Drama Lab</div>
+            <div class="fc-desc">Vardagliga händelser som episkt teater</div>
+          </button>
+          <button class="format-card" data-fmt="konspiration">
+            <div class="fc-name">🕵️ Konspiration</div>
+            <div class="fc-desc">Den dolda sanningen bakom det uppenbara</div>
           </button>
         </div>
       </div>
@@ -645,6 +780,19 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       </div>
       <p id="resultTitle" style="display:none;font-weight:700;font-size:1rem;width:100%;max-width:680px;text-align:left"></p>
       <div class="result-box" id="resultBox"></div>
+      <div class="reformat-wrap" id="reformatWrap" style="display:none">
+        <div class="reformat-label">Kör om som</div>
+        <div class="reformat-row" id="reformatRow"></div>
+      </div>
+      <div class="qa-wrap" id="qaSection" style="display:none">
+        <div class="reformat-label">Fråga om mötet</div>
+        <div class="qa-thread" id="qaThread"></div>
+        <div class="qa-row">
+          <input class="qa-input" id="qaInput" placeholder="Ställ en fråga om mötet…" autocomplete="off" enterkeyhint="send">
+          <button class="qa-send" id="qaSendBtn" aria-label="Skicka fråga">➤</button>
+        </div>
+        <div class="qa-status" id="qaStatus" style="display:none">Transkriberar ljudet i bakgrunden för bättre svar…</div>
+      </div>
       <div class="fnr-bar" id="fnrBar" style="display:none">
         <div class="fnr-row">
           <span class="fnr-label">Hitta</span>
@@ -673,6 +821,12 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           </svg>
           Kopiera MD
         </button>
+        <button class="btn-sec" id="copyMailBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+          Kopiera mail
+        </button>
         <button class="btn-sec" id="editBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -685,6 +839,12 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
             <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
           Kalender
+        </button>
+        <button class="btn-sec" id="githubBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          GitHub
         </button>
         <button class="btn-sec" id="shareBtn" style="display:none">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -733,6 +893,35 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
 
 <!-- SETTINGS PANEL -->
 <div id="s-overlay"></div>
+<div id="cal-overlay"></div>
+<aside id="cal-panel" role="dialog" aria-label="Lägg i kalender">
+  <div class="s-handle"></div>
+  <h2 class="s-title">Lägg i kalender</h2>
+  <div class="s-form">
+    <div class="cal-row">
+      <div class="input-group">
+        <label for="calDate">Datum</label>
+        <input type="date" id="calDate">
+      </div>
+      <div class="input-group">
+        <label for="calTime">Tid</label>
+        <input type="time" id="calTime">
+      </div>
+    </div>
+    <div class="input-group" style="max-width:none">
+      <label for="calDur">Längd</label>
+      <select id="calDur">
+        <option value="30">30 minuter</option>
+        <option value="60" selected>1 timme</option>
+        <option value="90">1,5 timmar</option>
+        <option value="120">2 timmar</option>
+        <option value="240">Halvdag (4 h)</option>
+      </select>
+    </div>
+    <button class="s-save" id="calConfirmBtn">Lägg i kalender</button>
+  </div>
+</aside>
+
 <aside id="s-panel" role="dialog" aria-label="Inställningar">
   <div class="s-handle"></div>
   <h2 class="s-title">Inställningar</h2>
@@ -760,21 +949,42 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         </button>
       </div>
     </div>
-    <div class="input-group">
-      <label style="margin-bottom:6px">Konto</label>
-      <div style="padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.85rem">
-        <span id="settingsEmail" style="color:var(--muted)"></span>
+    <div class="input-group web-only">
+      <div style="display:flex;align-items:center;margin-bottom:6px">
+        <label style="margin-bottom:0">Gemini API-nyckel</label>
+        <button class="tip-btn" type="button" data-tip="tip-apikey">?</button>
       </div>
+      <span class="tip-text" id="tip-apikey">Din personliga nyckel från Google AI Studio. Lagras bara lokalt i din webbläsare och skickas aldrig till Dianes servrar — bara direkt till Google.</span>
+      <input type="text" id="sKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
     </div>
-    <button class="btn-sec" id="manageSubBtn" style="width:100%;justify-content:center;margin-top:10px">
-      Hantera prenumeration
-    </button>
-    <button class="btn-sec" id="settingsSignOutBtn" style="width:100%;justify-content:center;margin-top:8px">
-      Logga ut
-    </button>
-    <button class="btn-sec" id="settingsDeleteBtn" style="width:100%;justify-content:center;margin-top:8px;color:var(--accent)">
-      Radera konto
-    </button>
+    <div class="input-group web-only">
+      <div style="display:flex;align-items:center;margin-bottom:6px">
+        <label style="margin-bottom:0">Modell</label>
+        <button class="tip-btn" type="button" data-tip="tip-model">?</button>
+      </div>
+      <span class="tip-text" id="tip-model">Flash rekommenderas för gratisnyckel. Flash-Lite är enklare men klarar hög belastning bäst — Diane byter dit automatiskt om Flash är överbelastad. Pro ger bäst kvalitet men kräver fakturering på ditt Google-konto.</span>
+      <select id="sModel">
+        <option value="gemini-3.5-flash">gemini-3.5-flash (gratis, rekommenderas)</option>
+        <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (gratis, stabilast vid hög belastning)</option>
+        <option value="gemini-2.5-pro">gemini-2.5-pro (bäst kvalitet, kräver fakturering)</option>
+      </select>
+    </div>
+    <div class="input-group web-only">
+      <label>GitHub Token (valfritt — för att skapa issues)</label>
+      <input type="text" id="sGHToken" placeholder="ghp_…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
+    </div>
+    <button class="s-save web-only" id="sSaveBtn">Spara</button>
+    <div class="app-only" style="display:none">
+      <div class="input-group" style="max-width:none">
+        <label style="margin-bottom:6px">Konto</label>
+        <div style="padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.85rem">
+          <span id="settingsEmail" style="color:var(--muted)"></span>
+        </div>
+      </div>
+      <button class="btn-sec" id="manageSubBtn" style="width:100%;justify-content:center;margin-top:10px">Hantera prenumeration</button>
+      <button class="btn-sec" id="settingsSignOutBtn" style="width:100%;justify-content:center;margin-top:8px">Logga ut</button>
+      <button class="btn-sec" id="settingsDeleteBtn" style="width:100%;justify-content:center;margin-top:8px;color:var(--accent)">Radera konto</button>
+    </div>
     <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
       <button class="btn-sec" id="shareAppBtn" style="width:100%;justify-content:center;gap:8px">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -784,7 +994,28 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         Dela appen med en vän
       </button>
     </div>
+    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+      <button class="btn-sec" id="forceUpdateBtn" style="width:100%;justify-content:center;gap:8px;opacity:.75">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Tvinga uppdatering
+      </button>
+    </div>
   </div>
+</aside>
+
+<!-- GITHUB REPO PICKER -->
+<div id="gh-overlay"></div>
+<aside id="gh-panel" role="dialog" aria-label="Skapa GitHub Issue">
+  <div class="s-handle"></div>
+  <h2 class="s-title">Skapa GitHub Issue</h2>
+  <input id="ghSearch" placeholder="Sök repo…" autocomplete="off" autocapitalize="off" spellcheck="false"
+    style="width:100%;padding:10px 12px;background:var(--card);border:1px solid var(--border);
+    border-radius:10px;color:var(--text);font-size:.9rem;outline:none;margin-bottom:12px;-webkit-appearance:none">
+  <div class="gh-repos" id="ghRepoList"><p style="font-size:.85rem;color:var(--muted)">Hämtar dina repos…</p></div>
+  <p id="ghStatus" style="font-size:.82rem;color:var(--muted);margin-top:12px;display:none"></p>
 </aside>
 
 <!-- HJÄLP DIANE PANEL -->
@@ -828,12 +1059,18 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
 <div class="toast" id="toast"></div>
 <script>
 'use strict';
-// Backend proxy. Direct Gemini calls and user-supplied API keys are gone —
-// the server holds the key and we route everything through /summarize.
+const API_BASE = 'https://generativelanguage.googleapis.com';
+const SK = 'vs_key', SM = 'vs_model';
+
+// ── LÄGE ───────────────────────────────────────────────────────────────────
+// Samma fil kör två produkter. Webbläge: användarens egen Gemini-nyckel,
+// anrop direkt till Google. Appläge (Capacitor): inloggning + prenumeration,
+// all trafik via vår proxy som håller nyckeln. Se docs/architecture.md.
+const isCapacitor = () => !!(window.Capacitor?.isNativePlatform?.());
+const APP_MODE = isCapacitor();
 const API_PROXY = 'https://diane-api.johan-skaneby.workers.dev';
-// Web OAuth client ID for Google Sign-In (audience for verified ID tokens).
-// Public value — same one is configured in the backend env.
 const GOOGLE_OAUTH_CLIENT_ID = '732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com';
+const SGH = 'vs_gh_token', SGHR = 'vs_gh_repos';
 const STHEME = 'vs_theme';
 
 // Safe localStorage wrapper — throws SecurityError on Safari with "Block all cookies"
@@ -1016,16 +1253,47 @@ Rules: Focus on sales-relevant details: budget signals, timeline, decision maker
 
 social: `Analyze this audio recording and create a social media post based on it.
 Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: Write the entire post in FIRST PERSON as the speaker ("I"/"jag"). The post is written BY the person who made the recording, sharing their own experience or insight.
 Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [concise 4–6 word title in the detected language]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
-  <p>[Opening hook: one punchy sentence — a bold observation, personal reflection, or surprising truth. Sound like a real person, not a brand.]</p>
-  <p>[Story or insight: share the experience in a warm, first-person voice. Set the scene, build naturally, land on the key takeaway. Read like a human wrote it, not a content team. 200–350 words.]</p>
-  <p>[Closing line: a question, quiet truth, or reflection that invites thought. No "follow me" or "like and share".]</p>
-  <p>[5–8 hashtags as plain text: #tag1 #tag2 #tag3 — mix broad reach, niche topic, and 1–2 long-tail conversational tags. No heading, just the tags on one line.]</p>
+  <p>[Opening hook: one punchy sentence — max 100 characters. A bold personal observation or surprising truth, written as "I".]</p>
+  <p>[Story or insight: the core experience or takeaway in first person ("I did / I noticed / I learned"). Max 250 characters. Tight and human.]</p>
+  <p>[Closing line: a reflection or question, written as "I". Max 80 characters. No "follow me" or "like and share".]</p>
+  <p>[3–5 hashtags as plain text: #tag1 #tag2 #tag3 — max 70 characters total. No heading, just the tags on one line.]</p>
 </article>
-Rules: Human voice throughout — no corporate language, no "I am excited to share", no bullet-point summaries. Weave the core topic keywords naturally into the body so the post is discoverable by both search engines and AI models (GEO) — no separate keyword section, just fluent language. Max 500 words total. Use only: article, p, strong, em. No section, h2, ul, li, CSS, class/id, inline styles or scripts.`,
+Rules: ALWAYS use first person ("I"/"jag") — never "one", "we" or third person unless quoting others. No corporate language, no "I am excited to share". Weave core topic keywords naturally into the body (GEO). STRICT LIMIT: entire post including hashtags must not exceed 500 characters total — count carefully. Use only: article, p, strong, em. No section, h2, ul, li, CSS, class/id, inline styles or scripts.`,
+
+blog: `Analyze this audio recording and write a personal blog post based on it.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: Write in FIRST PERSON as the speaker ("I"/"jag") — and write the way the speaker actually TALKS. Reuse their own words, expressions and quirks from the recording. The text should read like a person typing to a friend, not like generated content: conversational and spoken in register, contractions where natural, sentences of varying length — some very short. It is fine to start sentences with "Och", "Men" or "Fast", to ask the reader a direct question, or to admit uncertainty ("jag vet inte riktigt än").
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [engaging 3–7 word blog title in the detected language]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <p>[Opening: a personal hook that draws the reader in — an experience, a question or a bold thought from the recording. 2–3 sentences.]</p>
+  </section>
+  <section>
+    <h2>[Descriptive subheading for the first main idea]</h2>
+    <p>[Develop the idea pedagogically: explain it, give a concrete example from the recording, make it tangible. Short paragraphs, 2–4 sentences each.]</p>
+  </section>
+  <section>
+    <h2>[Subheading for the next idea]</h2>
+    <p>[One clear idea per section — use 2–4 main sections depending on how much substance the recording holds. Use a <ul> with <li> items for steps, tips or lists when it makes the point easier to follow.]</p>
+  </section>
+  <section>
+    <h2>[Closing subheading — the takeaway]</h2>
+    <p>[Wrap up: the key insight in one or two sentences, then a warm, reflective closing line addressed to the reader.]</p>
+  </section>
+  <section>
+    <p>[Exactly 5 fitting tags as plain text on one line: #tag1 #tag2 #tag3 #tag4 #tag5 — lowercase, drawn from the post's core topics, in the detected language. No heading, just the tags.]</p>
+  </section>
+</article>
+Rules: ALWAYS first person ("I"/"jag"). ALWAYS end with exactly 5 tags. Pedagogical structure — one idea per section, descriptive subheadings that could stand alone as a table of contents, short paragraphs, concrete examples, plain language without jargon.
+AVOID AI-SOUNDING TEXT — readers notice and dislike it. Banned: corporate speak; clichés like "in today's fast-paced world" / "i dagens samhälle"; generic transitions ("Sammanfattningsvis", "Avslutningsvis", "Låt oss dyka in"); symmetrical rule-of-three lists ("X, Y och Z") in every paragraph; balanced hedging ("å ena sidan… å andra sidan"); starting every paragraph the same way; exclamation marks as enthusiasm filler. Subheadings should sound like something the speaker would say, not like report headings. Imperfect and human beats polished and generic.
+Use <strong> sparingly to highlight key insights. Use only: article, section, h2, p, ul, ol, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
 letter: `Analyze this audio recording and compose a formal letter based on its content.
 Detect the language being spoken and respond ENTIRELY in that same language.
@@ -1106,15 +1374,204 @@ Your goal is to produce a structured prompt ready to paste directly into a vibe 
     </ul>
   </section>
 </article>
-Rules: Write Core Features and Screens as if briefing a developer — specific and actionable. Omit Design, Technical Notes and Out of Scope sections if not mentioned. Capture exact names, numbers and details. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Write Core Features and Screens as if briefing a developer — specific and actionable. Omit Design, Technical Notes and Out of Scope sections if not mentioned. Capture exact names, numbers and details. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+insandare: `Analyze this audio recording and write an angry, passionate letter to the editor of a local newspaper based on its content.
+Detect the language being spoken and respond ENTIRELY in that same language.
+Write in first person ("I"/"jag") as a genuinely outraged local citizen. The tone should be indignant, emphatic and direct — but not offensive or threatening.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [punchy 4–7 word headline that captures the outrage]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Rubrik / Headline]</h2>
+    <p>[Opening salvo: state the outrage clearly and personally in 1–2 sentences. Use "I" and make it visceral.]</p>
+  </section>
+  <section>
+    <h2>[Bakgrund / Background]</h2>
+    <p>[What happened, what was said or decided, and why it is wrong. Be specific — names, places, decisions if mentioned.]</p>
+  </section>
+  <section>
+    <h2>[Konsekvenser / Consequences]</h2>
+    <p>[What will happen if nothing is done? Paint the picture of what is at stake for the local community.]</p>
+  </section>
+  <section>
+    <h2>[Krav / Demands]</h2>
+    <p>[Precise demands: what must be done, by whom, and by when. End with a rallying statement.]</p>
+  </section>
+</article>
+Rules: Passionate but coherent — anger with arguments, not just noise. Use strong verbs and short sentences for impact. Address decision-makers by role if mentioned. Omit sections with no content. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+psyk: `Analyze this audio recording and produce a concise psychiatric assessment of the person making the recording.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: You are a highly confident — perhaps overconfident — psychiatrist. Always find 2–3 psychiatric diagnoses. Read between the lines aggressively: interpret casual remarks as symptoms, misread metaphors as clinical signs, treat enthusiasm as mania, hesitation as avoidance, strong opinions as narcissistic ideation. Invent fictional Latin-sounding diagnoses that sound gravely serious. Use Latin terminology throughout. Prescribe fictional medications (e.g. "Oxaloprazin", "Defocusil retard") with precise dosages. The crown of this assessment is the prescription section — make it rich, specific and creative: tailor every recommendation directly to what the person said, include absurdly precise non-pharmaceutical interventions (exact durations, destinations, dietary rules, social bans) alongside invented medications with invented side-effects.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word dramatic clinical title]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Patientdata]</h2>
+    <p><strong>Datum:</strong> [today] &nbsp; <strong>Klinik:</strong> [invent a dramatic clinic name] &nbsp; <strong>Patient:</strong> [name/age if mentioned, otherwise "Patient X"] &nbsp; <strong>Remitterad av:</strong> [invent, e.g. "sig själv, efter uppenbar insikt"]</p>
+  </section>
+  <section>
+    <h2>[Psykisk Status]</h2>
+    <p>[2–3 sentences. Clinical snapshot of the patient's mental state as heard in the recording. Use Latin terms: "logorrhoea", "ideae fixae", "affect labil", "insiktsbrist grad III" etc. Frame mundane speech as alarming clinical signs.]</p>
+  </section>
+  <section>
+    <h2>[Diagnoser]</h2>
+    <ul>
+      <li><strong>[Primary fictional diagnosis, invented ICD code e.g. F99.7]</strong> — [1 sentence explanation using Latin/Greek roots]</li>
+      <li><strong>[Secondary diagnosis]</strong> — [1 sentence]</li>
+      <li><strong>[Optional third — especially if something absurd can be derived]</strong> — [1 sentence]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Ordinationer]</h2>
+    <ul>
+      <li><strong>Psykofarmaka:</strong> [Invented drug, e.g. "Vertilobam 40 mg × 1 p.o., morgon"] — [invented clinical rationale + 1 made-up side-effect, e.g. "kan orsaka temporär åsiktsreduktion och mild euforisk konformitet"]</li>
+      <li><strong>Psykofarmaka:</strong> [Second invented medication with dosage and invented side-effect]</li>
+      <li><strong>Livsstilsordination:</strong> [Highly specific non-pharma prescription derived directly from what the person said — exact duration, location, rules. E.g. "Promenad i barrskog, 47 min dagligen, utan mobiltelefon, helst i regn"]</li>
+      <li><strong>Livsstilsordination:</strong> [Second specific intervention — could be travel with exact destination and length, dietary rule, social restriction, creative activity, or something delightfully absurd but medically phrased]</li>
+      <li><strong>Livsstilsordination:</strong> [Third intervention if the recording content warrants it]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Prognos]</h2>
+    <p>[2 sentences. Cautious hope mixed with veiled concern. End with follow-up timing, e.g. "Återbesök om 6 veckor, sine deviatio."]</p>
+  </section>
+</article>
+Rules: Keep Patientdata and Psykisk Status brief — invest the space in Diagnoser and especially Ordinationer. Always produce at least 2 diagnoses and at least 3 ordinationer. All drug names must be invented. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+tal: `Analyze this audio recording and transform its content into a passionate, political speech.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: This is a fiery, committed and persuasive political address — not a summary. Expand boldly on the ideas in the recording. Elevate everyday concerns into matters of principle, justice and collective action. Use rhetorical devices freely: anaphora, contrast, rhetorical questions, crescendo. The speaker should sound both morally serious and emotionally charged.
+Begin the speech by directly addressing the audience — choose the form of address that fits the content and tone (e.g. "Medborgare!", "Kamrater!", "Herr/Fru talman!", "Kära vänner!", "Mina damer och herrar!" — or invent a fitting one). End with a memorable rallying slogan or paroll on its own line, in bold.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word title for the speech — dramatic and declarative]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Opening address + hook]</h2>
+    <p>[Address the audience by name. Open with a striking statement, a provocative question or a vivid image that immediately establishes the stakes. One powerful paragraph.]</p>
+  </section>
+  <section>
+    <h2>[The problem / The injustice]</h2>
+    <p>[Develop the core issue from the recording as a political and moral problem. Name what is wrong, who is affected, and why it cannot continue. Be specific but sweeping. Use contrast: what is versus what should be.]</p>
+  </section>
+  <section>
+    <h2>[The vision / The demand]</h2>
+    <p>[What must change? Paint a vivid picture of the alternative — the world as it could and should be. Make demands concrete. This is the idealistic heart of the speech.]</p>
+  </section>
+  <section>
+    <h2>[Call to action]</h2>
+    <p>[Urge the audience to act — vote, organise, speak up, resist, build. Make it personal and urgent. What must each listener do today, not someday?]</p>
+  </section>
+  <section>
+    <h2>[Paroll]</h2>
+    <p><strong>[A short, memorable, chantable slogan that captures the entire speech in one line. It should feel like it belongs on a banner or end a rally. Max 10 words.]</strong></p>
+  </section>
+</article>
+Rules: Every section must feel like it belongs in the same speech — build in momentum toward the paroll. Rhetoric over report: transform facts into moral arguments. Never be neutral. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+predikan: `Analyze this audio recording and transform its content into a sharp, focused religious sermon.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: You are a fiery preacher who has listened closely to what was said in the recording. This sermon is ABOUT THAT SPECIFIC CONTENT — not a generic meditation. Name what was said, judge it, condemn or bless it directly. Invent fictional Bible parables (liknelser) that appear to comment precisely on the situation described — make them specific, vivid and slightly absurd (e.g. "Som det är skrivet i Brevet till Smyrnaborna, kapitel 3: 'Och mannen som byggde sitt hus på andras ord fann vid gryningen att grunden var lera…'"). Invent fictional apostles or prophets by name. Alternate between accusation and mercy — first the sin is named plainly, then grace is offered. Language should be solemn, rhythmic and emotionally charged. Be direct: address the speaker as "du" and speak to their soul.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word sermon title — judgmental or redemptive]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Anklagelsen / The Accusation]</h2>
+    <p>[Open by naming exactly what was said or done in the recording — and framing it as a spiritual failing or moral test. Address the speaker directly as "du". Be specific, not generic. E.g. "Du talade om X. Och Herren såg det."]</p>
+    <p>[Invented Bible parable (liknelse) that cuts to the heart of the situation: "<em>[Invented book, e.g. Brevet till Laodikeerna 7:12]</em>: '[Invented verse — a vivid, slightly absurd parable directly about what was said]'"]</p>
+  </section>
+  <section>
+    <h2>[Domen / The Judgment]</h2>
+    <p>[What does this reveal about the speaker's soul? Name the sin or weakness precisely. Invoke a fictional apostle or prophet who once faced the same temptation and what befell them. One powerful paragraph.]</p>
+  </section>
+  <section>
+    <h2>[Nåden / The Grace]</h2>
+    <p>[Turn: offer redemption. What must the speaker do or understand to be saved? Another invented scripture that now offers hope rather than judgment. End this section with a direct blessing addressed to "du".]</p>
+  </section>
+  <section>
+    <h2>[Välsignelsen / The Blessing]</h2>
+    <p>[A short, personal closing blessing — still tied to the specific content of the recording. Solemn and final.]</p>
+    <p><strong>Amen.</strong></p>
+  </section>
+</article>
+Rules: Every line must be about the specific content of the recording — never generic piety. All Bible references must be invented. All apostles and prophets must be fictional. Accusation first, grace second. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+drama: `Analyze this audio recording and transform its content into a short, intensely dramatic theatrical piece.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: You are a playwright who takes the mundane and makes it operatic. Every detail from the recording — however trivial — must be inflated into something of enormous emotional weight. A missed bus becomes a shattered life. A disagreement about dinner becomes the final unraveling of a decades-long relationship. If participants are named in the context above, cast them as the characters. Otherwise, invent names that suit the drama. Use theatrical stage directions in italics (em tags). Dialogue should be intense, poetic and slightly overwrought. The tone is serious — this is not parody; the characters believe completely in the gravity of their situation.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word dramatic title — the kind that appears on a theatre marquee]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Scen / Scene]</h2>
+    <p><em>[Set the scene in theatrical stage-direction style: time, place, atmosphere. Make even the most ordinary setting feel charged with meaning. E.g. "En kväll i slutet av sommaren. Köket. Lysröret flimrar. Det luktar kaffe som blivit kallt."]</em></p>
+  </section>
+  <section>
+    <h2>[Konflikten uppstår / The Conflict Emerges]</h2>
+    <p><em>[A brief stage direction establishing the emotional tension.]</em></p>
+    <p><strong>[Character name]:</strong> [Dialogue — intense, layered, hinting at deeper wounds. What is said on the surface is never the whole truth.]</p>
+    <p><strong>[Character name]:</strong> [Response — equally loaded. A pause. A look. Something shifts.]</p>
+  </section>
+  <section>
+    <h2>[Krisen / The Crisis]</h2>
+    <p><em>[The moment of peak dramatic tension — described in vivid stage directions. Something breaks, falls silent, or is finally said.]</em></p>
+    <p><strong>[Character]:</strong> [The line that cannot be taken back. Short. Devastating.]</p>
+  </section>
+  <section>
+    <h2>[Efterspelet / The Aftermath]</h2>
+    <p><em>[A final stage direction. The dust settles. What remains? Describe the silence, the object left behind, the door that closes. No resolution required — theatre thrives in ambiguity.]</em></p>
+  </section>
+</article>
+Rules: Nothing is trivial — everything carries weight. Use em tags for all stage directions. Named participants from the context must be the characters. Dialogue must feel theatrical, not realistic. End on an image, not an explanation. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+konspiration: `Analyze this audio recording and reframe its content as a fully developed conspiracy theory.
+Detect the language being spoken and respond ENTIRELY in that same language.
+IMPORTANT: You are a committed conspiracy theorist — not a joker, but a true believer with sources, patterns and a theory of who is really behind it all. Take the specific events and details from the recording and trace them back to shadowy forces, hidden agendas and suppressed truths. Invent credible-sounding organizations (e.g. "Kommitten för Global Konvergens", "Det Tredje Nätverket"), reference obscure documents and whistleblowers, connect the dots between seemingly unrelated facts. The more mundane the original content, the more satisfying the conspiracy. Speak with the calm authority of someone who has done their research.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [4–6 word conspiratorial title — allusive and slightly ominous]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Vad de vill att du ska tro / What They Want You to Think]</h2>
+    <p>[Summarize the surface-level account from the recording — the "official story". Present it neutrally, almost sarcastically, as the version fed to the public.]</p>
+  </section>
+  <section>
+    <h2>[Men titta närmare / But Look Closer]</h2>
+    <ul>
+      <li>[First anomaly or "too convenient" detail from the recording — why this doesn't add up]</li>
+      <li>[Second detail that points to something larger — pattern, coincidence or suppressed information]</li>
+      <li>[Third thread — connect it to something that sounds institutional or systemic]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Aktörerna i skuggan / The Actors in the Shadows]</h2>
+    <p>[Name the invented organization(s) or forces behind it all. Describe their motive briefly. Reference an invented document, leaked memo or anonymous insider source to lend credibility.]</p>
+  </section>
+  <section>
+    <h2>[Kopplingarna / Connecting the Dots]</h2>
+    <p>[Draw the full picture: how the specific details from the recording fit into the larger pattern. What is this really about? What are they trying to achieve or conceal? Be specific — vague conspiracies are unconvincing.]</p>
+  </section>
+  <section>
+    <h2>[Sanningen de inte vill att du ska veta / The Truth They Don't Want You to Know]</h2>
+    <p>[Deliver the conclusion with quiet conviction. What is really going on? End with a line that sounds like a warning or an invitation to wake up — but measured, not hysterical.]</p>
+  </section>
+</article>
+Rules: Treat the recording's content as real evidence — reference it specifically. All organizations and documents must be invented but plausible. Calm, assured tone throughout — the most convincing conspiracy theories never shout. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
 function buildPrompt() {
-  let extra = '';
+  const today = new Date().toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' });
+  let extra = 'Today\'s date: ' + today + '\n';
   if (s.title) extra += 'Recording title: ' + s.title + '\n';
   if (s.participants) extra += 'Participants: ' + s.participants + '\n';
-  if (extra) extra += 'Use this context where relevant in the output.\n\n';
+  extra += 'Use this context where relevant in the output.\n\n';
   return extra + (PROMPTS[s.style] || PROMPTS.summary);
 }
 
@@ -1138,25 +1595,25 @@ function sanitizeHtml(raw) {
 }
 
 // ── STATE ──────────────────────────────────────────────────────────────────
+const ALLOWED_MODELS = ['gemini-2.5-pro','gemini-3.5-flash','gemini-3.1-flash-lite'];
+// Fallback-kedja när en modell är spärrad, nedlagd eller överbelastad
+const MODEL_FALLBACK = { 'gemini-2.5-pro': 'gemini-3.5-flash', 'gemini-3.5-flash': 'gemini-3.1-flash-lite' };
+const _savedModel = store.get(SM);
 const s = {
-  // Auth: populated by Google Sign-In, never persisted to localStorage.
-  // sessionStorage holds the token for page reloads within the same tab.
-  idToken: sessionStorage.getItem('vs_id_token') || '',
-  googleSub: '',
-  email: '',
-  // Subscription state — mirrored from /me, refreshed at sign-in + after subscribe attempts.
-  subActive: 0,
-  periodEnd: null,
-  summariesUsed: 0,
-  audioSecondsUsed: 0,
-  caps: { summaries: 100, audio_seconds: 3600 },
-  // Recording + UI state (unchanged from PWA).
+  key: store.get(SK),
+  model: ALLOWED_MODELS.includes(_savedModel) ? _savedModel : 'gemini-3.5-flash',
   style: store.get('vs_style', 'summary'),
   mediaRecorder: null, stream: null, chunks: [], blob: null,
   mimeType: '', start: 0, elapsed: 0, paused: false, timerRef: null,
   audioCtx: null, analyser: null, raf: null,
-  resultHTML: '', participants: '', title: ''
+  resultHTML: '', participants: '', title: '',
+  // Appläge: konto och prenumerationsstatus (tomma i webbläge)
+  idToken: '', googleSub: '', email: '', subActive: 0, periodEnd: null,
+  summariesUsed: 0, audioSecondsUsed: 0, caps: null,
+  transcript: '', transcribing: false, qaHistory: [], qaPending: false, historyId: 0
 };
+// Format där "Fråga om mötet" är tillgängligt
+const QA_STYLES = ['sales', 'protocol', 'summary', 'detailed'];
 
 // ── WAKE LOCK ──────────────────────────────────────────────────────────────
 let wakeLock = null;
@@ -1207,7 +1664,7 @@ document.addEventListener('visibilitychange', () => {
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const screens = ['signin','paywall','idle','recording','working','result','error'];
+const screens = ['setup','signin','paywall','idle','recording','working','result','error'];
 
 function show(name) {
   screens.forEach(n => {
@@ -1262,7 +1719,10 @@ function closeHelp() {
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 function openSettings() {
-  $('settingsEmail').textContent = s.email || 'Inte inloggad';
+  if (APP_MODE) { const em = $('settingsEmail'); if (em) em.textContent = s.email || 'Inte inloggad'; }
+  $('sKey').value = s.key;
+  $('sModel').value = s.model;
+  $('sGHToken').value = store.get(SGH);
   const savedTheme = store.get(STHEME, 'original');
   document.querySelectorAll('.theme-card').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.theme === savedTheme);
@@ -1274,11 +1734,31 @@ function closeSettings() {
   $('s-panel').classList.remove('open');
   $('s-overlay').classList.remove('open');
 }
+function saveSettings() {
+  const k = $('sKey').value.trim();
+  if (!k) { $('sKey').focus(); return; }
+  s.key = k; s.model = $('sModel').value;
+  store.set(SK, k);
+  store.set(SM, s.model);
+  const ghToken = $('sGHToken').value.trim();
+  if (ghToken) store.set(SGH, ghToken);
+  else store.del(SGH);
+  closeSettings();
+  toast('Inställningar sparade ✓');
+  if (!document.querySelector('.screen.active') || $('screen-setup').classList.contains('active'))
+    show('idle');
+}
 
 // ── RECORDING ─────────────────────────────────────────────────────────────
 async function startRecording() {
-  if (!s.idToken) { show('signin'); return; }
-  if (!s.subActive) { show('paywall'); return; }
+  if (APP_MODE) {
+    if (!s.idToken) { show('signin'); return; }
+    if (!s.subActive) { show('paywall'); return; }
+  } else if (!s.key) {
+    show('setup');
+    toast('Ange din Gemini API-nyckel för att komma igång');
+    return;
+  }
   try {
     s.stream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 }
@@ -1388,18 +1868,7 @@ function togglePause() {
 function onStop() {
   const base = (s.mimeType || 'audio/webm').split(';')[0];
   s.blob = new Blob(s.chunks, { type: base });
-  autoDownload(s.blob, base);
   process(s.blob, base);
-}
-
-// ── AUTO-DOWNLOAD ─────────────────────────────────────────────────────────
-function autoDownload(blob, mime) {
-  const ext = mime.includes('mp4') ? 'm4a' : mime.includes('ogg') ? 'ogg' : 'webm';
-  const ts = new Date().toISOString().slice(0,19).replace(/:/g,'-');
-  const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), { href: url, download: 'inspelning-' + ts + '.' + ext });
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 // ── BASE64 HELPER ─────────────────────────────────────────────────────────
@@ -1412,88 +1881,219 @@ function blobToBase64(blob) {
   });
 }
 
-// ── SUMMARIZE VIA BACKEND PROXY ───────────────────────────────────────────
-// Server holds the Gemini key, applies entitlement + usage caps, and forwards
-// the call. We send audio as base64 in JSON (Gemini's inline-data format).
-// Server returns Gemini's response unchanged, so the parsing logic below is
-// identical to the old direct-call version.
-async function generate(base64, mime, durationSec, attempt = 0) {
-  let r;
-  try {
-    r = await fetch(API_PROXY + '/summarize', {
+// ── GEMINI GENERATE (inline base64 — no CORS issues) ─────────────────────
+// Byter till nästa modell i fallback-kedjan och kastar ett fel som ber
+// användaren försöka igen. Gör inget om kedjan är slut (sista modellen).
+function switchToFallback(reason) {
+  const next = MODEL_FALLBACK[s.model];
+  if (!next) return;
+  const blocked = s.model;
+  s.model = next;
+  store.set(SM, next);
+  throw new Error(blocked + ' ' + reason + '. Diane har automatiskt bytt till ' + next + ' — tryck Försök igen.');
+}
+
+// Enda stället i dataflödet där lägena skiljer sig. Båda returnerar ett
+// oförändrat Gemini-svar — proxyn skickar tillbaka Googles svar rått — så all
+// svarsparsning nedanför är gemensam.
+function callModel(base64, mime) {
+  if (APP_MODE) {
+    return fetch(API_PROXY + '/summarize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + s.idToken,
+        'Authorization': 'Bearer ' + s.idToken
       },
       body: JSON.stringify({
         prompt: buildPrompt(),
         audio_base64: base64,
         audio_mime: mime,
-        audio_seconds: Math.max(1, Math.round(durationSec || 0)),
-      }),
+        audio_seconds: Math.round((s.elapsed || 0) / 1000)
+      })
     });
-  } catch (e) {
-    throw new Error('Kunde inte nå Dianes servrar. Kontrollera din internetanslutning och försök igen.');
   }
+  return fetch(
+    API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { inline_data: { mime_type: mime, data: base64 } },
+          { text: buildPrompt() }
+        ]}],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
+          thinkingConfig: { thinkingBudget: 2048 }
+        }
+      })
+    }
+  );
+}
 
+async function generate(base64, mime, attempt = 0) {
+  const r = await callModel(base64, mime);
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
-    const err = e.error || '';
-
-    // Auth — re-prompt sign-in.
-    if (r.status === 401) {
-      signOutLocal();
-      show('signin');
-      throw new Error('Din inloggning har gått ut. Logga in igen för att fortsätta.');
+    const apiMsg = e.error?.message || '';
+    // Appläge: servern äger modellvalet, så ingen fallback-kedja här. I stället
+    // är felen kontorelaterade — utloggad, obetald, kvot slut.
+    if (APP_MODE) {
+      if (r.status === 401) { signOutLocal(); show('signin'); throw new Error('Din inloggning har gått ut — logga in igen.'); }
+      if (r.status === 402) { show('paywall'); throw new Error('Din prenumeration är inte aktiv.'); }
+      if (r.status === 429) {
+        const err = e.error || '';
+        if (err === 'summary_cap_reached') throw new Error('Du har nått månadens gräns för sammanfattningar. Gränsen nollställs när ny period börjar.');
+        if (err === 'audio_cap_reached') throw new Error('Du har nått månadens gräns för inspelad tid. Gränsen nollställs när ny period börjar.');
+        throw new Error('För många förfrågningar just nu — vänta en stund och försök igen.');
+      }
+      if (r.status === 503 || r.status === 529) {
+        if (attempt < 3) {
+          const delay = (attempt + 1) * 3000;
+          $('workSub').textContent = 'Servern är belastad — försöker igen om ' + (delay/1000) + 's… (' + (attempt+1) + '/3)';
+          await new Promise(res => setTimeout(res, delay));
+          return generate(base64, mime, attempt + 1);
+        }
+      }
+      throw new Error(apiMsg || 'Något gick fel (' + r.status + ').');
     }
-    // Subscription gate.
-    if (r.status === 402) {
-      show('paywall');
-      throw new Error(err === 'expired'
-        ? 'Din prenumeration har gått ut. Förnya för att fortsätta använda Diane.'
-        : 'Du behöver en aktiv prenumeration för att använda Diane.');
+    if (r.status === 400) throw new Error('Ogiltig API-nyckel. Kontrollera att du kopierade hela nyckeln från aistudio.google.com och försök igen.');
+    if (r.status === 404) {
+      switchToFallback('är inte längre tillgänglig');
+      throw new Error('Modellen hittades inte (404). ' + (apiMsg || 'Kontrollera modellinställningen.'));
     }
-    // Rate / usage limits.
+    if (r.status === 403) {
+      switchToFallback('kräver fakturering');
+      throw new Error('Åtkomst nekad (403). Kontrollera att API-nyckeln är aktiv på aistudio.google.com.');
+    }
     if (r.status === 429) {
-      if (err === 'rate_limited') {
-        throw new Error('Du har skickat för många förfrågningar. Vänta en stund och försök igen.');
+      const isZeroQuota = apiMsg.includes('limit: 0');
+      switchToFallback(isZeroQuota ? 'är inte tillgänglig på gratistier' : 'har nått kvotgränsen just nu');
+      throw new Error('Kvotgränsen nådd. Vänta en stund och försök igen, eller aktivera fakturering på ditt Google-konto.');
+    }
+    if (r.status === 503 || r.status === 529) {
+      if (attempt < 3) {
+        const delay = (attempt + 1) * 3000;
+        $('workSub').textContent = 'Geminis servrar är belastade — försöker igen om ' + ((delay/1000)) + 's… (' + (attempt+1) + '/3)';
+        await new Promise(res => setTimeout(res, delay));
+        return generate(base64, mime, attempt + 1);
       }
-      if (err === 'summary_cap_reached' || err === 'audio_cap_reached') {
-        throw new Error('Du har nått din månadsgräns. Den nollställs vid nästa förnyelse.');
+      // Modellen är kroniskt överbelastad — byt till nästa i kedjan och fortsätt direkt
+      const next = MODEL_FALLBACK[s.model];
+      if (next) {
+        s.model = next;
+        store.set(SM, next);
+        $('workSub').textContent = 'Modellen är överbelastad — provar ' + next + '…';
+        return generate(base64, mime, 0);
       }
+      throw new Error('Geminis servrar är tillfälligt överbelastade. Vänta en minut och tryck Försök igen.');
     }
-    // Server-side config error — shouldn't happen post-launch.
-    if (r.status === 503) {
-      throw new Error('Diane är tillfälligt otillgänglig. Försök igen om en stund.');
-    }
-    // Upstream Gemini overload — backend already retries 503/429 with limit:0,
-    // so anything here is exhausted. We retry once more from the client.
-    if ((r.status === 502 || r.status === 503 || r.status === 504) && attempt < 2) {
-      const delay = (attempt + 1) * 3000;
-      $('workSub').textContent = 'Servrar belastade — försöker igen om ' + (delay/1000) + 's… (' + (attempt+1) + '/2)';
-      await new Promise(res => setTimeout(res, delay));
-      return generate(base64, mime, durationSec, attempt + 1);
-    }
-    throw new Error(e.error?.message || 'Fel från Diane-servern (' + r.status + ').');
+    throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
   }
-
   const d = await r.json();
   const candidate = d.candidates?.[0];
   const finishReason = candidate?.finishReason;
-  if (finishReason === 'MAX_TOKENS') throw new Error('Svaret blev för långt för att slutföra. Prova en kortare inspelning.');
+  if (finishReason === 'MAX_TOKENS') throw new Error('Svaret blev för långt. Prova en kortare inspelning, eller byt till gemini-2.5-pro i Inställningar.');
   if (finishReason === 'SAFETY') throw new Error('Svaret blockerades av säkerhetsfilter. Prova igen.');
   let txt = candidate?.content?.parts?.[0]?.text || '';
-  if (!txt) throw new Error('Tomt svar från Diane. Kontrollera att inspelningen innehåller ljud och försök igen.');
+  if (!txt) throw new Error('Tomt svar från Gemini. Kontrollera att inspelningen innehåller ljud och försök igen.');
   txt = txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
   const titleMatch = txt.match(/^TITLE:\s*(.+?)[\r\n]/i);
   const suggestedTitle = titleMatch ? titleMatch[1].trim() : '';
-  const html = txt.replace(/^TITLE:.*[\r\n]*/i, '').trim();
+  const html = txt.replace(/^TITLE:.*[\r\n]*/i, '').trim().replace(/^[^<]+/, '');
   return { html, suggestedTitle };
+}
+
+async function generateFromText(inputText, attempt = 0) {
+  const r = await fetch(
+    API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { text: 'The following is content from a previous analysis:\n\n' + inputText },
+          { text: buildPrompt() }
+        ]}],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
+          thinkingConfig: { thinkingBudget: 2048 }
+        }
+      })
+    }
+  );
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    const apiMsg = e.error?.message || '';
+    if (r.status === 404) switchToFallback('är inte längre tillgänglig');
+    if (r.status === 403) switchToFallback('kräver fakturering');
+    if (r.status === 429) switchToFallback(apiMsg.includes('limit: 0') ? 'är inte tillgänglig på gratistier' : 'har nått kvotgränsen just nu');
+    if (r.status === 503 || r.status === 529) {
+      if (attempt < 3) {
+        const delay = (attempt + 1) * 3000;
+        $('workSub').textContent = 'Geminis servrar är belastade — försöker igen om ' + (delay/1000) + 's… (' + (attempt+1) + '/3)';
+        await new Promise(res => setTimeout(res, delay));
+        return generateFromText(inputText, attempt + 1);
+      }
+      const next = MODEL_FALLBACK[s.model];
+      if (next) {
+        s.model = next;
+        store.set(SM, next);
+        $('workSub').textContent = 'Modellen är överbelastad — provar ' + next + '…';
+        return generateFromText(inputText, 0);
+      }
+    }
+    throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
+  }
+  const d = await r.json();
+  const candidate = d.candidates?.[0];
+  const finishReason = candidate?.finishReason;
+  if (finishReason === 'MAX_TOKENS') throw new Error('Svaret blev för långt…');
+  if (finishReason === 'SAFETY') throw new Error('Svaret blockerades av säkerhetsfilter.');
+  let txt = candidate?.content?.parts?.[0]?.text || '';
+  if (!txt) throw new Error('Tomt svar från Gemini.');
+  txt = txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+  const titleMatch = txt.match(/^TITLE:\s*(.+?)[\r\n]/i);
+  const suggestedTitle = titleMatch ? titleMatch[1].trim() : '';
+  const html = txt.replace(/^TITLE:.*[\r\n]*/i, '').trim().replace(/^[^<]+/, '');
+  return { html, suggestedTitle };
+}
+
+let _reqId = 0; // monotonic counter — stale responses are silently dropped
+
+async function processFromText(text) {
+  const reqId = ++_reqId;
+  const style = s.style; // capture before any await
+  show('working');
+  $('workTitle').textContent = 'Bearbetar text';
+  $('workSub').textContent = 'Gemini tolkar om…';
+  $('progressWrap').style.display = 'none';
+  $('workSpinner').style.display = '';
+  try {
+    const { html, suggestedTitle } = await generateFromText(text);
+    if (reqId !== _reqId) return; // a newer request started — discard this result
+    if (suggestedTitle) { s.title = suggestedTitle; $('titleInput').value = suggestedTitle; }
+    s.resultHTML = html;
+    s.historyId = saveToHistory(html, s.title);
+    showResult(html, style);
+  } catch(e) {
+    if (reqId !== _reqId) return;
+    show('result');
+    toast('Fel: ' + e.message);
+  }
 }
 
 // ── MAIN FLOW ──────────────────────────────────────────────────────────────
 async function process(blob, mime) {
+  // Clear stale result so old content can never bleed into a fresh recording
+  s.resultText = '';
+  s.resultHTML = '';
+  s.transcript = '';
+  s.qaHistory = [];
+  const reqId = ++_reqId;
+  const style = s.style; // capture before any await
   show('working');
   $('workTitle').textContent = 'Förbereder ljud';
   $('workSub').textContent = (blob.size / 1048576).toFixed(1) + ' MB';
@@ -1510,15 +2110,12 @@ async function process(blob, mime) {
     $('progressWrap').style.display = 'none';
     $('workSpinner').style.display = '';
 
-    const durationSec = Math.floor(s.elapsed / 1000);
-    const { html, suggestedTitle } = await generate(base64, mime, durationSec);
-    if (!s.title && suggestedTitle) {
-      s.title = suggestedTitle;
-      $('titleInput').value = suggestedTitle;
-    }
+    const { html, suggestedTitle } = await generate(base64, mime);
+    if (reqId !== _reqId) return; // stale — newer request already running
+    if (suggestedTitle) { s.title = suggestedTitle; $('titleInput').value = suggestedTitle; }
     s.resultHTML = html;
-    saveToHistory(html, s.title);
-    showResult(html);
+    s.historyId = saveToHistory(html, s.title);
+    showResult(html, style);
   } catch(e) {
     const isFetch = e.name === 'TypeError' && e.message.toLowerCase().includes('fetch');
     const isAbort = e.name === 'AbortError';
@@ -1535,7 +2132,7 @@ async function process(blob, mime) {
 }
 
 // ── RESULT ─────────────────────────────────────────────────────────────────
-function toEmailHtml(raw) {
+function toEmailHtml(raw, title) {
   const d = document.createElement('div');
   d.innerHTML = raw;
   const style = (sel, css) => d.querySelectorAll(sel).forEach(el => el.setAttribute('style', css));
@@ -1547,7 +2144,10 @@ function toEmailHtml(raw) {
   style('li', 'margin-bottom:5px');
   style('strong', 'color:#111111;font-weight:600');
   style('em', 'color:#555555;font-style:italic');
-  return '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"></head>\n<body style="margin:0;padding:24px;background:#ffffff;font-family:Arial,Helvetica,sans-serif">\n' + d.innerHTML + '\n</body>\n</html>';
+  const titleHtml = title
+    ? '<h1 style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;color:#111111;margin:0 0 16px 0">' + escHtml(title) + '</h1>\n'
+    : '';
+  return '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"></head>\n<body style="margin:0;padding:24px;background:#ffffff;font-family:Arial,Helvetica,sans-serif">\n' + titleHtml + d.innerHTML + '\n</body>\n</html>';
 }
 
 const STYLE_META = {
@@ -1557,20 +2157,41 @@ const STYLE_META = {
   detailed: { label: 'Detaljerad analys klar',   badge: 'Detaljerad' },
   sales:    { label: 'Säljmöte sammanfattat',    badge: 'Säljmöte' },
   social:     { label: 'Inlägg klart',             badge: 'Sociala medier' },
+  blog:       { label: 'Bloggpost klar',           badge: '✍️ Bloggpost' },
   letter:     { label: 'Formellt brev klart',      badge: 'Formellt brev' },
   vibecoder:  { label: 'Vibe Prompt klar',         badge: '⚡ Vibe Prompt' },
+  insandare:  { label: 'Insändare klar',            badge: '😤 Insändare' },
+  psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri' },
+  tal:        { label: 'Brandtal klart',             badge: '🎤 Politiskt tal' },
+  predikan:   { label: 'Predikan hållen',            badge: '✝️ Predikan' },
+  drama:      { label: 'Dramat är satt',             badge: '🎭 Drama Lab' },
+  konspiration: { label: 'Sanningen avslöjad',       badge: '🕵️ Konspiration' },
 };
 
-function showResult(html) {
+function showResult(html, style) {
+  style = style || s.style;
+  // Sync s.style so UI stays consistent with what's actually displayed
+  s.style = style;
   const box = $('resultBox');
-  const meta = STYLE_META[s.style] || STYLE_META.summary;
-  box.dataset.style = s.style;
+  const meta = STYLE_META[style] || STYLE_META.summary;
+  box.dataset.style = style;
   box.contentEditable = 'false';
   box.innerHTML = sanitizeHtml(html);
+  // Remove any <h2> that duplicates the title (model sometimes repeats it)
+  if (s.title) {
+    const titleLower = s.title.trim().toLowerCase();
+    box.querySelectorAll('h2').forEach(h2 => {
+      if (h2.textContent.trim().toLowerCase() === titleLower) h2.remove();
+    });
+  }
+  // Store plain text for text-based reformatting
+  const tmp = document.createElement('div');
+  tmp.innerHTML = box.innerHTML;
+  s.resultText = tmp.textContent.trim();
   $('resultLabel').textContent = meta.label;
   const badge = $('resultBadge');
   badge.textContent = meta.badge;
-  badge.dataset.style = s.style;
+  badge.dataset.style = style;
   $('editBtn').querySelector('span').textContent = 'Redigera';
   $('editBtn').classList.remove('is-editing');
   $('fnrBar').style.display = 'none';
@@ -1578,7 +2199,168 @@ function showResult(html) {
   const titleEl = $('resultTitle');
   if (s.title) { titleEl.textContent = s.title; titleEl.style.display = ''; }
   else { titleEl.style.display = 'none'; }
+  // Show re-format row when we have text or audio to re-process
+  const reformatWrap = $('reformatWrap');
+  reformatWrap.style.display = (s.resultText || s.blob) ? '' : 'none';
+  $('reformatRow').querySelectorAll('.reformat-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.fmt === style);
+  });
+  // Fråga om mötet — bara för format där svar på frågor är meningsfulla
+  const isQA = QA_STYLES.includes(style);
+  $('qaSection').style.display = isQA ? '' : 'none';
+  if (isQA) {
+    renderQaThread();
+    // Transkribera i bakgrunden så svaren blir semantiska mot hela mötet
+    if (s.blob && !s.transcript && !s.transcribing) transcribeAudio();
+  }
   show('result');
+}
+
+// ── FRÅGA OM MÖTET (Q&A) ──────────────────────────────────────────────────
+// Transkriberar inspelningen i bakgrunden så frågor kan besvaras semantiskt
+// mot hela mötet, inte bara sammanfattningen. Tyst vid fel — Q&A faller då
+// tillbaka på resultattexten.
+async function transcribeAudio() {
+  if (!s.blob || s.transcript || s.transcribing) return;
+  s.transcribing = true;
+  const blob = s.blob; // identitetskoll — ny inspelning kan starta under tiden
+  const histId = s.historyId;
+  $('qaStatus').style.display = '';
+  try {
+    const mime = (s.mimeType || 'audio/webm').split(';')[0];
+    const base64 = await blobToBase64(blob);
+    const r = await fetch(
+      API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [
+            { inline_data: { mime_type: mime, data: base64 } },
+            { text: 'Transcribe this audio recording verbatim in the spoken language. Output plain text only — no formatting, no timestamps, no commentary. If several speakers are clearly distinguishable, prefix their lines with "Talare 1:", "Talare 2:" etc.' }
+          ]}],
+          generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 2048 } }
+        })
+      }
+    );
+    if (!r.ok) throw new Error('transkribering misslyckades');
+    const d = await r.json();
+    const txt = (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
+    if (s.blob !== blob) return; // ny inspelning har tagit över
+    if (txt) {
+      s.transcript = txt;
+      if (histId) updateHistoryTranscript(histId, txt);
+    }
+  } catch { /* tyst */ }
+  finally {
+    s.transcribing = false;
+    $('qaStatus').style.display = 'none';
+  }
+}
+
+function qaContext() {
+  const src = s.transcript || s.resultText;
+  const kind = s.transcript ? 'fullständig transkription av mötet' : 'sammanfattning av mötet';
+  return 'Du är en assistent som svarar på frågor om ett inspelat möte. ' +
+    'Nedan finns en ' + kind + '. Svara kort, konkret och på samma språk som frågan ställs på. ' +
+    'Om svaret inte framgår av underlaget, säg det ärligt i stället för att gissa.\n\n' +
+    'Mötestitel: ' + (s.title || 'okänd') + '\n' +
+    'Dagens datum: ' + new Date().toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' }) + '\n\n' +
+    '--- UNDERLAG ---\n' + src;
+}
+
+async function askGemini(contents, attempt = 0) {
+  const r = await fetch(
+    API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents,
+        generationConfig: { temperature: 0.2, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 2048 } }
+      })
+    }
+  );
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    const apiMsg = e.error?.message || '';
+    if (r.status === 404) switchToFallback('är inte längre tillgänglig');
+    if (r.status === 403) switchToFallback('kräver fakturering');
+    if (r.status === 429) switchToFallback(apiMsg.includes('limit: 0') ? 'är inte tillgänglig på gratistier' : 'har nått kvotgränsen just nu');
+    if (r.status === 503 || r.status === 529) {
+      if (attempt < 2) {
+        await new Promise(res => setTimeout(res, (attempt + 1) * 3000));
+        return askGemini(contents, attempt + 1);
+      }
+      const next = MODEL_FALLBACK[s.model];
+      if (next) { s.model = next; store.set(SM, next); return askGemini(contents, 0); }
+    }
+    throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
+  }
+  const d = await r.json();
+  return (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
+}
+
+async function askQuestion() {
+  const input = $('qaInput');
+  const q = input.value.trim();
+  if (!q || s.qaPending) return;
+  s.qaPending = true;
+  $('qaSendBtn').disabled = true;
+  input.value = '';
+  s.qaHistory.push({ q, a: null });
+  renderQaThread();
+  try {
+    const contents = [
+      { role: 'user', parts: [{ text: qaContext() }] },
+      { role: 'model', parts: [{ text: 'Förstått. Jag svarar på frågor om mötet utifrån underlaget.' }] }
+    ];
+    // Tidigare frågor/svar ger flervändig kontext (fel-svar hoppas över)
+    s.qaHistory.forEach(t => {
+      if (t.a === null || t.a.startsWith('⚠️')) return;
+      contents.push({ role: 'user', parts: [{ text: t.q }] });
+      contents.push({ role: 'model', parts: [{ text: t.a }] });
+    });
+    contents.push({ role: 'user', parts: [{ text: q }] });
+    const a = await askGemini(contents);
+    s.qaHistory[s.qaHistory.length - 1].a = a || 'Jag fick inget svar — prova att formulera om frågan.';
+  } catch (e) {
+    s.qaHistory[s.qaHistory.length - 1].a = '⚠️ ' + e.message;
+  }
+  s.qaPending = false;
+  $('qaSendBtn').disabled = false;
+  renderQaThread();
+  input.focus();
+}
+
+function renderQaThread() {
+  const thread = $('qaThread');
+  thread.innerHTML = '';
+  s.qaHistory.forEach(t => {
+    const qEl = document.createElement('div');
+    qEl.className = 'qa-bubble qa-q';
+    qEl.textContent = t.q;
+    thread.appendChild(qEl);
+    const aEl = document.createElement('div');
+    aEl.className = 'qa-bubble qa-a' + (t.a === null ? ' pending' : '');
+    aEl.textContent = t.a === null ? 'Tänker…' : t.a;
+    thread.appendChild(aEl);
+  });
+  thread.lastElementChild?.scrollIntoView({ block: 'nearest' });
+}
+
+function reformatAs(fmt) {
+  if (fmt === s.style) return;
+  s.style = fmt;
+  store.set('vs_style', fmt);
+  setFormat(fmt);
+  // Prefer text-based reformatting (fast, no re-upload); fall back to audio
+  if (s.resultText) {
+    processFromText(s.resultText);
+  } else if (s.blob) {
+    const base = (s.mimeType || 'audio/webm').split(';')[0];
+    process(s.blob, base);
+  }
 }
 
 function toggleEdit() {
@@ -1658,6 +2440,27 @@ async function copyMarkdown() {
   } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
 }
 
+// Kopierar resultatet som formaterad text (text/html + text/plain) så att
+// inklistring i Mail/Gmail/Outlook behåller rubriker, fetstil och listor
+async function copyFormatted() {
+  s.resultHTML = $('resultBox').innerHTML;
+  const html = toEmailHtml(s.resultHTML, s.title || '');
+  const plain = toRichText(s.resultHTML); // innehåller redan titeln
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([plain], { type: 'text/plain' })
+    })]);
+    toast('Formaterad text kopierad — klistra in i ditt mail ✓');
+  } catch {
+    // ClipboardItem stöds inte — fall tillbaka till ren text
+    try {
+      await navigator.clipboard.writeText(plain);
+      toast('Kopierad som ren text (formatering stöds ej i denna webbläsare)');
+    } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
+  }
+}
+
 function toMarkdown(raw) {
   const d = document.createElement('div');
   d.innerHTML = raw;
@@ -1693,9 +2496,8 @@ function toRichText(raw) {
     if (node.tagName === 'ARTICLE') return;
     const h2 = node.querySelector(':scope > h2');
     if (h2) {
-      const heading = h2.textContent.trim().toUpperCase();
-      const bar = '─'.repeat(Math.min(Math.max(heading.length, 20), 44));
-      lines.push('', '', heading, bar, '');   // double blank before heading, blank after
+      // Ingen streckavgränsare — versaler + luft räcker som rubrikmarkering
+      lines.push('', '', h2.textContent.trim().toUpperCase(), '');
     }
     node.querySelectorAll(':scope > p, :scope > ul > li, :scope > ol > li').forEach(el => {
       const txt = el.textContent.trim().replace(/\s+/g, ' ');
@@ -1713,7 +2515,7 @@ function toRichText(raw) {
   if (lines.filter(l => l && l !== '\u00A0').length === 0) {
     d.querySelectorAll('h2').forEach(h => {
       const t = h.textContent.trim().toUpperCase();
-      lines.push('\u00A0', '\u00A0', t, '─'.repeat(Math.min(Math.max(t.length,20),44)), '\u00A0');
+      lines.push('\u00A0', '\u00A0', t, '\u00A0');
     });
     d.querySelectorAll('p').forEach(p => {
       const t = p.textContent.trim();
@@ -1725,20 +2527,17 @@ function toRichText(raw) {
   // Title block: bar above AND below for visual weight
   let prefix = '';
   if (s.title) {
-    const t = s.title.toUpperCase();
-    const bar = '═'.repeat(Math.min(Math.max(t.length, 24), 44));
-    prefix = bar + '\n' + t + '\n' + bar + '\n\u00A0\n';
+    prefix = s.title.toUpperCase() + '\n\u00A0\n';
   }
 
   return (prefix + lines.join('\n')).replace(/(\n\u00A0){3,}/g, '\n\u00A0\n\u00A0\n').trim();
 }
 
 // ── CALENDAR ───────────────────────────────────────────────────────────────
-function toICS(title, description) {
+function toICS(title, description, start, durMin) {
   const fmtD = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
   const now = new Date();
-  const start = new Date(); start.setDate(start.getDate() + 1); start.setSeconds(0,0);
-  const end = new Date(start.getTime() + 60*60*1000);
+  const end = new Date(start.getTime() + durMin * 60 * 1000);
   const desc = description.replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
   return [
     'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Diane//SV',
@@ -1752,11 +2551,36 @@ function toICS(title, description) {
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
 }
-async function shareCalendar() {
+// Dialog där användaren väljer datum, tid och längd innan kalenderdelningen
+function openCalendarDialog() {
+  // Förval: i morgon, avrundat uppåt till närmaste kvart
+  const start = new Date();
+  start.setDate(start.getDate() + 1);
+  start.setMinutes(Math.ceil(start.getMinutes() / 15) * 15, 0, 0);
+  const p = n => String(n).padStart(2, '0');
+  $('calDate').value = start.getFullYear() + '-' + p(start.getMonth() + 1) + '-' + p(start.getDate());
+  $('calTime').value = p(start.getHours()) + ':' + p(start.getMinutes());
+  $('cal-overlay').classList.add('open');
+  $('cal-panel').classList.add('open');
+}
+function closeCalendarDialog() {
+  $('cal-overlay').classList.remove('open');
+  $('cal-panel').classList.remove('open');
+}
+async function confirmCalendar() {
+  const dateV = $('calDate').value, timeV = $('calTime').value;
+  if (!dateV || !timeV) { toast('Välj datum och tid'); return; }
+  const start = new Date(dateV + 'T' + timeV);
+  if (isNaN(start.getTime())) { toast('Ogiltigt datum eller tid'); return; }
+  closeCalendarDialog();
+  await shareCalendar(start, Number($('calDur').value) || 60);
+}
+
+async function shareCalendar(start, durMin) {
   s.resultHTML = $('resultBox').innerHTML;
   const title = s.title || 'Sammanfattning';
   const d = document.createElement('div'); d.innerHTML = s.resultHTML;
-  const ics = toICS(title, d.innerText || d.textContent);
+  const ics = toICS(title, d.innerText || d.textContent, start, durMin);
   const blob = new Blob([ics], { type: 'text/calendar' });
   const file = new File([blob], title.replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g,'').trim() + '.ics', { type: 'text/calendar' });
   try {
@@ -1788,7 +2612,7 @@ async function share() {
   const richText = toRichText(s.resultHTML);
   let files = [];
   try {
-    const blob = new Blob([toEmailHtml(s.resultHTML)], { type: 'text/html' });
+    const blob = new Blob([toEmailHtml(s.resultHTML, title)], { type: 'text/html' });
     const fname = title.replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g, '').trim() || 'sammanfattning';
     files = [new File([blob], fname + '.html', { type: 'text/html' })];
   } catch { /* no file */ }
@@ -1823,37 +2647,138 @@ Appen är helt gratis, ingen registrering krävs och dina inspelningar lämnar a
   closeSettings();
 }
 
-// ── AUTH ──────────────────────────────────────────────────────────────────
-// Two paths picked at runtime:
-//   1. Inside Capacitor (Android): @capgo/capacitor-social-login plugin
-//      drives the native Google Sign-In SDK. ID-token audience = the Web
-//      Client ID (via `webClientId` config), which our backend verifies.
-//   2. In a browser: Google Identity Services rendered button (existing).
+// ── GITHUB ────────────────────────────────────────────────────────────────
+let ghAllRepos = [];   // fetched from API, cached for session
+function getPinnedRepos() { return store.json(SGHR, []); }
+function pinRepo(r) { const a = getPinnedRepos(); if (!a.includes(r)) { a.unshift(r); store.set(SGHR, JSON.stringify(a)); } }
+function unpinRepo(r) { store.set(SGHR, JSON.stringify(getPinnedRepos().filter(x => x !== r))); }
 
-const isCapacitor = () => !!(window.Capacitor?.isNativePlatform?.());
+async function openGitHub() {
+  const token = store.get(SGH);
+  if (!token) { openSettings(); toast('Ange GitHub Token i inställningarna först'); return; }
+  $('ghStatus').style.display = 'none';
+  $('ghSearch').value = '';
+  $('gh-panel').classList.add('open');
+  $('gh-overlay').classList.add('open');
+  if (!ghAllRepos.length) await fetchGHRepos();
+  else renderGHRepos('');
+}
+function closeGitHub() {
+  $('gh-panel').classList.remove('open');
+  $('gh-overlay').classList.remove('open');
+}
+
+async function fetchGHRepos() {
+  const token = store.get(SGH);
+  $('ghRepoList').innerHTML = '<p style="font-size:.85rem;color:var(--muted)">Hämtar dina repos…</p>';
+  try {
+    // Fetch up to 100 repos sorted by last push
+    const r = await fetch('https://api.github.com/user/repos?sort=pushed&per_page=100&affiliation=owner,collaborator', {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (!r.ok) throw new Error('GitHub API-fel ' + r.status);
+    ghAllRepos = (await r.json()).map(x => ({ full: x.full_name, private: x.private }));
+    renderGHRepos('');
+  } catch(e) {
+    $('ghRepoList').innerHTML = '<p style="font-size:.85rem;color:var(--accent)">' + escHtml(e.message) + '</p>';
+  }
+}
+
+function renderGHRepos(query) {
+  const pinned = getPinnedRepos();
+  const q = (query || '').toLowerCase();
+  const filtered = ghAllRepos.filter(r => !q || r.full.toLowerCase().includes(q));
+  const pinnedFiltered = pinned.filter(r => !q || r.toLowerCase().includes(q));
+
+  let html = '';
+  if (pinnedFiltered.length) {
+    html += '<p style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Favoriter</p>';
+    html += pinnedFiltered.map(r => repoRow(r, true)).join('');
+    if (filtered.length) html += '<p style="font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 6px">Alla repos</p>';
+  }
+  const others = filtered.filter(r => !pinned.includes(r.full));
+  html += others.map(r => repoRow(r.full, false)).join('');
+  if (!html) html = '<p style="font-size:.85rem;color:var(--muted)">Inga repos hittades</p>';
+  $('ghRepoList').innerHTML = html;
+
+  $('ghRepoList').querySelectorAll('.gh-repo-btn').forEach(el => {
+    const repo = el.dataset.repo;
+    el.querySelector('.gh-repo-main').onclick = () => createGHIssue(repo);
+    const pinBtn = el.querySelector('.gh-pin-btn');
+    if (pinBtn) pinBtn.onclick = e => {
+      e.stopPropagation();
+      if (getPinnedRepos().includes(repo)) unpinRepo(repo); else pinRepo(repo);
+      renderGHRepos($('ghSearch').value);
+    };
+  });
+}
+
+function repoRow(full, isPinned) {
+  const pinned = getPinnedRepos().includes(full);
+  return `<div class="gh-repo-btn" data-repo="${escHtml(full)}">
+    <div class="gh-repo-main" style="flex:1;min-width:0;cursor:pointer">
+      <div style="font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(full)}</div>
+    </div>
+    <button class="gh-pin-btn gh-repo-del" aria-label="${pinned ? 'Ta bort favorit' : 'Spara som favorit'}" title="${pinned ? 'Ta bort favorit' : 'Favorit'}">${pinned ? '★' : '☆'}</button>
+  </div>`;
+}
+
+async function createGHIssue(repo) {
+  const token = store.get(SGH);
+  const title = s.title || 'Sammanfattning';
+  s.resultHTML = $('resultBox').innerHTML;
+  const body = toMarkdown(s.resultHTML);
+  const st = $('ghStatus');
+  st.textContent = 'Skapar issue…'; st.style.color = 'var(--muted)'; st.style.display = '';
+  try {
+    const r = await fetch('https://api.github.com/repos/' + repo + '/issues', {
+      method: 'POST',
+      headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
+      body: JSON.stringify({ title, body })
+    });
+    if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.message || 'GitHub API-fel ' + r.status); }
+    const data = await r.json();
+    const safeUrl = (data.html_url || '').startsWith('https://github.com/') ? data.html_url : '#';
+    st.innerHTML = '✓ Issue skapad: <a class="gh-issue-link" href="' + escHtml(safeUrl) + '" target="_blank" rel="noopener noreferrer">' + escHtml(data.html_url || '') + '</a>';
+    st.style.color = 'var(--success)';
+    pinRepo(repo);
+    toast('GitHub Issue skapad ✓');
+  } catch(e) {
+    st.textContent = 'Fel: ' + e.message; st.style.color = 'var(--accent)';
+  }
+}
+
+// ── AUTH (endast appläge) ──────────────────────────────────────────────────
+// Två vägar väljs i runtime: i Capacitor driver @capgo/capacitor-social-login
+// den native Google-inloggningen; i webbläsare renderar Google Identity
+// Services knappen. Bägge ger en ID-token som backend verifierar.
+
+// I appen är lagringen sandlådad per app, så token får ligga kvar mellan
+// kallstarter — annars tvingas användaren logga in varje gång appen startas.
+// I en delad webbläsare håller vi den kortlivad.
+const tokenStore = {
+  get() { try { return (APP_MODE ? localStorage : sessionStorage).getItem('vs_id_token') || ''; } catch { return ''; } },
+  set(v) { try { (APP_MODE ? localStorage : sessionStorage).setItem('vs_id_token', v); } catch {} },
+  del() { try { localStorage.removeItem('vs_id_token'); sessionStorage.removeItem('vs_id_token'); } catch {} },
+};
 
 let socialLoginInitialized = false;
 async function ensureSocialLoginInit() {
   if (socialLoginInitialized) return;
   const SocialLogin = window.Capacitor?.Plugins?.SocialLogin;
   if (!SocialLogin) return;
-  await SocialLogin.initialize({
-    google: { webClientId: GOOGLE_OAUTH_CLIENT_ID },
-  });
+  await SocialLogin.initialize({ google: { webClientId: GOOGLE_OAUTH_CLIENT_ID } });
   socialLoginInitialized = true;
 }
 
 async function nativeGoogleSignIn() {
   await ensureSocialLoginInit();
   const SocialLogin = window.Capacitor.Plugins.SocialLogin;
-  const out = await SocialLogin.login({
-    provider: 'google',
-    options: { scopes: ['profile', 'email'] },
-  });
+  const out = await SocialLogin.login({ provider: 'google', options: { scopes: ['profile', 'email'] } });
   const idToken = out?.result?.idToken;
   if (!idToken) throw new Error('Inloggning misslyckades.');
   s.idToken = idToken;
-  sessionStorage.setItem('vs_id_token', s.idToken);
+  tokenStore.set(idToken);
   s.email = out?.result?.profile?.email || '';
   s.googleSub = out?.result?.profile?.id || '';
   await routeAfterAuth();
@@ -1861,21 +2786,28 @@ async function nativeGoogleSignIn() {
 
 let gisInitialized = false;
 function initGoogleSignIn() {
+  const host = $('googleSignInBtn');
+  if (!host) return;
   if (isCapacitor()) {
-    // Render our own button; tap → native Google Sign-In sheet.
-    const host = $('googleSignInBtn');
+    // Egen knapp; tryck öppnar systemets Google-inloggning
     host.innerHTML = '';
     const btn = document.createElement('button');
     btn.className = 'btn-primary';
     btn.style.cssText = 'min-width:240px;display:flex;align-items:center;justify-content:center;gap:10px';
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="white"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.836.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" opacity=".75"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" opacity=".5"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" opacity=".3"/></svg><span>Logga in med Google</span>';
+    btn.textContent = 'Logga in med Google';
     btn.onclick = () => nativeGoogleSignIn().catch(e => toast(e.message || 'Inloggning misslyckades'));
     host.appendChild(btn);
     return;
   }
-  // Browser fallback: GIS rendered button.
   if (gisInitialized) return;
   if (!window.google?.accounts?.id) {
+    if (!document.getElementById('gis-script')) {
+      const sc = document.createElement('script');
+      sc.id = 'gis-script';
+      sc.src = 'https://accounts.google.com/gsi/client';
+      sc.async = true; sc.defer = true;
+      document.head.appendChild(sc);
+    }
     setTimeout(initGoogleSignIn, 200);
     return;
   }
@@ -1885,53 +2817,37 @@ function initGoogleSignIn() {
     auto_select: false,
     cancel_on_tap_outside: true,
   });
-  google.accounts.id.renderButton(
-    $('googleSignInBtn'),
-    { type: 'standard', theme: 'filled_blue', size: 'large', text: 'signin_with', shape: 'pill', logo_alignment: 'left' }
-  );
+  google.accounts.id.renderButton(host,
+    { type: 'standard', theme: 'filled_blue', size: 'large', text: 'signin_with', shape: 'pill', logo_alignment: 'left' });
   gisInitialized = true;
 }
 
 async function onGoogleCredential(response) {
   s.idToken = response.credential;
-  sessionStorage.setItem('vs_id_token', s.idToken);
+  tokenStore.set(s.idToken);
   try {
     const payload = JSON.parse(atob(s.idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     s.googleSub = payload.sub || '';
     s.email = payload.email || '';
-  } catch {
-    s.email = '';
-  }
+  } catch { s.email = ''; }
   await routeAfterAuth();
 }
 
 function signOutLocal() {
-  s.idToken = '';
-  s.googleSub = '';
-  s.email = '';
-  s.subActive = 0;
-  s.periodEnd = null;
-  sessionStorage.removeItem('vs_id_token');
-  if (window.google?.accounts?.id) {
-    google.accounts.id.disableAutoSelect();
-  }
+  s.idToken = ''; s.googleSub = ''; s.email = '';
+  s.subActive = 0; s.periodEnd = null;
+  tokenStore.del();
+  if (window.google?.accounts?.id) google.accounts.id.disableAutoSelect();
   const SocialLogin = window.Capacitor?.Plugins?.SocialLogin;
-  if (SocialLogin) {
-    SocialLogin.logout({ provider: 'google' }).catch(() => {});
-  }
+  if (SocialLogin) SocialLogin.logout({ provider: 'google' }).catch(() => {});
 }
 
-// Pull the current entitlement state from /me and decide where the user lands.
+// Hämtar aktuell rättighetsstatus från /me
 async function fetchMe() {
   if (!s.idToken) return null;
   try {
-    const r = await fetch(API_PROXY + '/me', {
-      headers: { 'Authorization': 'Bearer ' + s.idToken },
-    });
-    if (r.status === 401) {
-      signOutLocal();
-      return null;
-    }
+    const r = await fetch(API_PROXY + '/me', { headers: { 'Authorization': 'Bearer ' + s.idToken } });
+    if (r.status === 401) { signOutLocal(); return null; }
     if (!r.ok) return null;
     const d = await r.json();
     s.email = d.email || s.email;
@@ -1941,40 +2857,28 @@ async function fetchMe() {
     s.audioSecondsUsed = d.audio_seconds_used || 0;
     s.caps = d.caps || s.caps;
     return d;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 async function routeAfterAuth() {
   const me = await fetchMe();
-  if (!s.idToken) {
-    show('signin');
-    return;
-  }
-  if (me && me.sub_active === 1) {
-    show('idle');
-  } else {
+  if (!s.idToken) { show('signin'); return; }
+  if (me && me.sub_active === 1) { show('idle'); }
+  else {
+    const em = $('paywallEmail');
+    if (em) em.textContent = s.email || '';
     show('paywall');
-    $('paywallEmail').textContent = s.email || '';
   }
 }
 
 async function deleteAccount() {
-  if (!confirm('Är du säker på att du vill radera ditt konto? Detta kan inte ångras. Din prenumeration måste avslutas separat via Google Play.')) return;
+  if (!confirm('Är du säker på att du vill radera ditt konto? Detta kan inte ångras. Din prenumeration måste avslutas separat i butiken.')) return;
   try {
     const r = await fetch(API_PROXY + '/account/delete', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + s.idToken },
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + s.idToken },
     });
-    if (!r.ok && r.status !== 401) {
-      toast('Kunde inte radera kontot. Försök igen.');
-      return;
-    }
-  } catch {
-    toast('Kunde inte radera kontot. Försök igen.');
-    return;
-  }
+    if (!r.ok && r.status !== 401) { toast('Kunde inte radera kontot. Försök igen.'); return; }
+  } catch { toast('Kunde inte radera kontot. Försök igen.'); return; }
   signOutLocal();
   closeSettings();
   show('signin');
@@ -1982,9 +2886,10 @@ async function deleteAccount() {
 }
 
 function manageSubscription() {
-  // Android-first; iOS uses apps.apple.com/account/subscriptions.
-  // Detect platform later — for now Android URL covers our launch market.
-  window.open('https://play.google.com/store/account/subscriptions', '_blank', 'noopener');
+  const url = isIOS()
+    ? 'https://apps.apple.com/account/subscriptions'
+    : 'https://play.google.com/store/account/subscriptions';
+  window.open(url, '_blank', 'noopener');
 }
 
 // ── ERROR ──────────────────────────────────────────────────────────────────
@@ -2001,10 +2906,19 @@ const MAX_HISTORY = 40;
 function getHistory() { return store.json(SH, []); }
 function saveToHistory(html, title) {
   const history = getHistory();
-  history.unshift({ id: Date.now(), title: title || '', date: new Date().toISOString(), html, style: s.style });
+  const id = Date.now();
+  // Transkriptionen följer med posten (kapad för att inte spränga localStorage)
+  const transcript = (s.transcript || '').slice(0, 120000);
+  history.unshift({ id, title: title || '', date: new Date().toISOString(), html, style: s.style, transcript });
   if (history.length > MAX_HISTORY) history.splice(MAX_HISTORY);
   store.set(SH, JSON.stringify(history));
   updateHistoryBadge();
+  return id;
+}
+// Bakgrundstranskriberingen blir klar efter att posten sparats — patcha in den
+function updateHistoryTranscript(id, transcript) {
+  const history = getHistory().map(x => x.id === id ? { ...x, transcript: transcript.slice(0, 120000) } : x);
+  store.set(SH, JSON.stringify(history));
 }
 function deleteFromHistory(id) {
   const history = getHistory().filter(x => x.id !== id);
@@ -2087,6 +3001,12 @@ function loadFromHistory(id) {
   s.resultHTML = item.html;
   s.title = item.title;
   s.style = item.style || 'summary';
+  // Ljudet i minnet hör till en annan inspelning — koppla bort det så att
+  // transkribering och omkörning aldrig sker mot fel ljud
+  s.blob = null;
+  s.transcript = item.transcript || '';
+  s.qaHistory = [];
+  s.historyId = item.id;
   closeHistory();
   showResult(item.html);
 }
@@ -2128,43 +3048,60 @@ function installApp() {
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
-async function init() {
-  // Initial routing: if we have a stashed token, validate it via /me. If
-  // anything fails, fall back to sign-in.
-  if (s.idToken) {
-    await routeAfterAuth();
-  } else {
+function init() {
+  // Lägesberoende synlighet: nyckel/modell/GitHub hör till webben, konto till appen
+  document.querySelectorAll('.web-only').forEach(el => { if (APP_MODE) el.style.display = 'none'; });
+  document.querySelectorAll('.app-only').forEach(el => { el.style.display = APP_MODE ? '' : 'none'; });
+  if (APP_MODE) { const gh = $('githubBtn'); if (gh) gh.style.display = 'none'; }
+
+  if (APP_MODE) {
+    // Appläge: hämta ev. sparad token och låt /me avgöra var användaren landar
+    s.idToken = tokenStore.get();
     show('signin');
+    initGoogleSignIn();
+    if (isIOS()) $('paywallTerms').textContent =
+      'Provperioden övergår automatiskt i en prenumeration på 40 kr/månad om du inte avslutar den. Avsluta när som helst i App Store.';
+    if (s.idToken) routeAfterAuth();
+  } else {
+    show(s.key ? 'idle' : 'setup');
   }
 
-  // Sign-in is rendered by GIS into #googleSignInBtn — kick off as soon as
-  // the SDK is ready.
-  initGoogleSignIn();
+  // Konto-knappar (finns bara i appläge, men kopplas villkorslöst — de är
+  // dolda i webbläge och kostar inget att binda)
+  const bind = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+  bind('paywallSignOutBtn', () => { signOutLocal(); show('signin'); });
+  bind('paywallDeleteBtn', deleteAccount);
+  bind('settingsSignOutBtn', () => { signOutLocal(); closeSettings(); show('signin'); });
+  bind('settingsDeleteBtn', deleteAccount);
+  bind('manageSubBtn', manageSubscription);
+  bind('paywallSubscribeBtn', () => {
+    // TODO Fas 3: RevenueCat-köpflöde
+    toast('Köp aktiveras i nästa version');
+  });
 
-  // Paywall actions.
-  $('paywallSubscribeBtn').onclick = () => {
-    // RevenueCat purchase wiring happens in Phase 4 once Play Console
-    // products exist and RevenueCat has a product mapping. Until then we
-    // can't actually trigger a purchase — surface a useful message.
-    if (isCapacitor()) {
-      toast('Köp aktiveras när Play-appen är publicerad.');
-    } else {
-      toast('Köp är tillgängligt i Android-appen.');
-    }
+  $('setupSaveBtn').onclick = () => {
+    const k = $('setupKey').value.trim();
+    if (!k) { $('setupKey').focus(); return; }
+    s.key = k; store.set(SK, k);
+    store.set(SM, s.model);
+    show('idle');
   };
-  $('paywallSignOutBtn').onclick = () => {
-    signOutLocal();
-    show('signin');
-  };
-  $('paywallDeleteBtn').onclick = deleteAccount;
+  $('setupKey').onkeydown = e => { if (e.key === 'Enter') $('setupSaveBtn').click(); };
 
-  // Recording + result actions (unchanged).
   $('recordBtn').onclick = startRecording;
   $('pauseBtn').onclick = togglePause;
   $('stopBtn').onclick = stopRecording;
   $('copyTxtBtn').onclick = copyText;
-  $('calendarBtn').onclick = shareCalendar;
+  $('calendarBtn').onclick = openCalendarDialog;
+  $('cal-overlay').onclick = closeCalendarDialog;
+  $('calConfirmBtn').onclick = confirmCalendar;
+  $('githubBtn').onclick = openGitHub;
+  $('gh-overlay').onclick = closeGitHub;
+  $('ghSearch').oninput = e => renderGHRepos(e.target.value);
   $('copyMdBtn').onclick = copyMarkdown;
+  $('copyMailBtn').onclick = copyFormatted;
+  $('qaSendBtn').onclick = askQuestion;
+  $('qaInput').addEventListener('keydown', e => { if (e.key === 'Enter') askQuestion(); });
   $('editBtn').onclick = toggleEdit;
   $('shareBtn').onclick = share;
   $('newBtn').onclick = () => show('idle');
@@ -2173,19 +3110,36 @@ async function init() {
   $('errSettingsBtn').onclick = openSettings;
   $('settingsBtn').onclick = openSettings;
   $('s-overlay').onclick = closeSettings;
+  $('sSaveBtn').onclick = saveSettings;
   $('shareAppBtn').onclick = shareApp;
-  $('manageSubBtn').onclick = manageSubscription;
-  $('settingsSignOutBtn').onclick = () => {
-    signOutLocal();
-    closeSettings();
-    show('signin');
+  $('forceUpdateBtn').onclick = async function() {
+    const btn = this;
+    btn.textContent = 'Uppdaterar…';
+    btn.disabled = true;
+    try {
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) await reg.update();
+      }
+    } catch(e) { /* ignore */ }
+    window.location.reload();
   };
-  $('settingsDeleteBtn').onclick = deleteAccount;
   $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
   document.querySelectorAll('.format-card').forEach(btn => {
     btn.onclick = () => setFormat(btn.dataset.fmt);
   });
   setFormat(s.style);
+
+  // Build re-format pills from STYLE_META
+  const reformatRow = $('reformatRow');
+  Object.entries(STYLE_META).forEach(([fmt, meta]) => {
+    const pill = document.createElement('button');
+    pill.className = 'reformat-pill';
+    pill.dataset.fmt = fmt;
+    pill.textContent = meta.badge;
+    pill.onclick = () => reformatAs(fmt);
+    reformatRow.appendChild(pill);
+  });
   $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
   $('helpBtn').onclick = openHelp;
   $('help-overlay').onclick = closeHelp;
@@ -2202,6 +3156,7 @@ async function init() {
   document.querySelectorAll('.theme-card').forEach(btn => {
     btn.onclick = () => setTheme(btn.dataset.theme);
   });
+  // Apply saved theme on load
   setTheme(store.get(STHEME, 'original'));
 
   // Find & Replace
@@ -2225,7 +3180,11 @@ async function init() {
     document.querySelectorAll('.tip-text.open').forEach(t => t.classList.remove('open'));
   });
 
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    // Auto-reload when a new service worker takes control (skipWaiting already set in sw.js)
+    navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
+  }
 }
 
 init();
