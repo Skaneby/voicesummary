@@ -281,3 +281,29 @@ Per 40 SEK subscription, in Sweden:
 ---
 
 **Next step:** answer the 7 open decisions above (especially domain + launch geography), then start Phase 1.
+
+---
+
+## Genomfört 2026-08-31 (grenen `mobile-app`)
+
+**Fas 0 — dokumentation.** `docs/` med arkitektur, moduler, tre ADR:er,
+runbooks och designprinciper för Android.
+
+**Fas 1 — en kodbas.** `index.html` i roten kör båda produkterna.
+Lägesskillnaden inkapslad på fyra ställen. Appen fick allt från
+webbversionen: Q&A, transkription, Kopiera mail, kalenderdialog, alla
+format. `www/` avspårad, `scripts/sync-www.sh` speglar roten.
+
+**Fas 2 — backend.** Identitet namnrymdad per leverantör (google:/apple:),
+Apple-JWKS på plats, e-post-buggen rättad, modell till `gemini-3.7-flash`,
+13 enhetstester.
+
+**Fas 3 — delvis.** RevenueCat köp + återställ köp, bakåtnavigering,
+prominent disclosure, integritetspolicy och raderingssida.
+
+### Kvar
+- [ ] Förgrundstjänst för inspelning (native Java — kräver Android SDK)
+- [ ] Edge-to-edge verifierad på riktig enhet
+- [ ] RevenueCat publika SDK-nycklar (platshållare i koden)
+- [ ] Merge `mobile-app` → `main` så sidorna blir publikt nåbara
+- [ ] Play Console: konto, produkt, testare
