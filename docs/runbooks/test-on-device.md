@@ -9,9 +9,28 @@ Bygget kräver Android SDK, som inte finns i den här utvecklingsmiljön
    med sig SDK, build-tools och emulator.
 2. Öppna Android Studio en gång så att den hämtar SDK-komponenterna
    (platform 36 krävs — projektet riktar sig mot Android 16).
-3. På telefonen: **Inställningar → Om telefonen → tryck sju gånger på
-   byggnummer** för att låsa upp utvecklarläget, och slå sedan på
-   **USB-felsökning** under Utvecklaralternativ.
+3. Sätt telefonen i utvecklarläge (stegen nedan).
+
+## Utvecklarläge på telefonen
+
+Testat på Pixel 6; samma steg på de flesta Android-telefoner.
+
+1. **Inställningar → Om telefonen**
+2. Scrolla längst ner till **Version** (*Build number*) och tryck på den
+   **sju gånger**
+3. Ange PIN-kod. Texten *"Du är nu utvecklare!"* visas
+4. **Inställningar → System → Utvecklaralternativ** → slå på **USB-felsökning**
+5. Anslut USB-kabeln. På telefonen: **Tillåt USB-felsökning?** → **Tillåt**,
+   och kryssa i *"Tillåt alltid från den här datorn"*
+
+Kommer dialogen inte upp: dra ner notisfältet, tryck på USB-notisen och välj
+**Filöverföring** i stället för "Endast laddning".
+
+Kontrollera att datorn ser telefonen:
+
+```bash
+adb devices      # ska lista enheten som "device", inte "unauthorized"
+```
 
 ## Bygg och installera
 
