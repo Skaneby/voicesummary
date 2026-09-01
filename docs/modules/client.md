@@ -31,9 +31,23 @@ Formaten definieras som nycklar i `PROMPTS` och renderas som kort i
 2. en post i `STYLE_META` (etikett + badge)
 3. ett kort i `#formatRow`
 
-Omformatterings-pillren byggs automatiskt från `STYLE_META`.
-`tests/smoke.js` har en konsistenskontroll som fångar format som saknar
-någon av delarna.
+Omformatterings-pillren byggs automatiskt från `STYLE_META`, och hjälprutan
+från `FORMAT_HELP` — varje format måste ha en hjälptext där.
+`tests/smoke.js` har konsistenskontroller som fångar format som saknar någon
+av delarna.
+
+### Sakliga format och satirformat
+
+Sex format är satir: `insandare`, `psyk`, `tal`, `predikan`, `drama`,
+`konspiration`. De är märkta `fun: true` i `STYLE_META` och **dolda som
+standard** — Diane används på riktiga möten, och en psykiatrisk "utredning"
+bredvid ett mötesprotokoll inbjuder till missförstånd. Användaren slår på dem
+medvetet under Inställningar → Humorformat (`vs_fun`).
+
+Resultat från ett satirformat får alltid en synlig varning ovanför texten.
+`psyk` och `konspiration` har egna, skarpare formuleringar via `warn` i
+`STYLE_META` — en påhittad diagnos med ordination är det som lättast kan
+missförstås.
 
 ## Q&A ("Fråga om mötet")
 

@@ -360,6 +360,69 @@ function check(name, ok, extra) {
   check('transkriberingen räknas mot ljudkvoten', proxyKroppar.some(b => b.audio_seconds === 60));
   await ctx.unroute('**/generativelanguage.googleapis.com/**');
 
+
+  // Humorformat: dolda som standard, och alltid markerade när de används
+  const fun = await appPage.evaluate(() => {
+    localStorage.removeItem('vs_fun');
+    applyFunVisibility();
+    const card = f => document.querySelector('.format-card[data-fmt="' + f + '"]');
+    return {
+      psykDold: card('psyk').style.display === 'none',
+      protokollSyns: card('protocol').style.display !== 'none',
+      pillDolt: document.querySelector('.reformat-pill[data-fmt="konspiration"]').style.display === 'none',
+    };
+  });
+  check('satirformat dolda som standard', fun.psykDold && fun.pillDolt);
+  check('sakliga format påverkas inte', fun.protokollSyns);
+  check('humorformat kan slås på', await appPage.evaluate(() => {
+    store.set('vs_fun', '1'); applyFunVisibility();
+    return document.querySelector('.format-card[data-fmt="psyk"]').style.display !== 'none';
+  }));
+  check('satirresultat får synlig varning', await appPage.evaluate(() => {
+    showResult('<article><p>x</p></article>', 'psyk');
+    return $('funWarn').style.display !== 'none' && /inte en medicinsk/.test($('funWarnText').textContent);
+  }));
+  check('sakligt resultat får ingen varning', await appPage.evaluate(() => {
+    showResult('<article><p>x</p></article>', 'protocol');
+    return $('funWarn').style.display === 'none';
+  }));
+  check('avstängt humorläge flyttar bort från satirformat', await appPage.evaluate(() => {
+    setFormat('psyk'); store.set('vs_fun', '0'); applyFunVisibility();
+    return s.style === 'summary';
+  }));
+
+  // Hjälprutan måste täcka varje format
+  check('varje format har en hjälptext', await appPage.evaluate(() =>
+    Object.keys(STYLE_META).every(k => typeof FORMAT_HELP[k] === 'string' && FORMAT_HELP[k].length > 20)));
+  check('hjälprutan döljer satir när det är avstängt', await appPage.evaluate(() => {
+    store.set('vs_fun', '0'); openFormatHelp();
+    const t = $('fh-body').textContent;
+    closeFormatHelp();
+    return !/Psykiatri/.test(t) && /Protokoll/.test(t);
+  }));
+
+  // Planval
+  check('betalväggen visar år och månad', await appPage.evaluate(() =>
+    /470 kr/.test($('paywallSubscribeBtn').textContent) && /47 kr/.test($('paywallMonthlyBtn').textContent)));
+  check('köpflödet väljer paket efter plan', await appPage.evaluate(async () => {
+    let valt = null;
+    window.Capacitor.Plugins.Purchases = {
+      configure: async () => {},
+      getOfferings: async () => ({ current: { availablePackages: [
+        { packageType: 'MONTHLY', id: 'm' }, { packageType: 'ANNUAL', id: 'a' }] } }),
+      purchasePackage: async ({ aPackage }) => { valt = aPackage.id; },
+    };
+    purchasesConfigured = true; s.googleSub = 'x';
+    await startPurchase('ANNUAL');
+    return valt === 'a';
+  }));
+
+  // Perspektiv: bara de neutrala formaten ska gissa jag-form
+  check('neutrala format detekterar perspektiv', await appPage.evaluate(() =>
+    ['summary','brief','detailed'].every(k => /PERSPECTIVE/.test(PROMPTS[k]))));
+  check('protokoll och säljmöte förblir opersonliga', await appPage.evaluate(() =>
+    !/PERSPECTIVE/.test(PROMPTS.protocol) && !/PERSPECTIVE/.test(PROMPTS.sales)));
+
   await appPage.close();
 
   console.log('\n── 5e. Play-krav: publika sidor ──');

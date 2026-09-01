@@ -26,6 +26,11 @@ VÄLJ FORMAT EFTER SITUATION
 • Bloggpost, inlägg för sociala medier, formellt brev
 • Och flera till
 
+Vill du ha något lättsammare finns sex format på skoj — insändare,
+predikan, konspirationsteori. De är avstängda från början och slås på i
+inställningarna, så formatväljaren håller sig saklig tills du vill
+annat.
+
 FRÅGA OM MÖTET
 Ett protokoll kan bli långt. Diane sparar hela mötet och svarar på frågor
 om det efteråt — "vad lovade vi kunden?", "vad kostade offerten?" — även
@@ -43,10 +48,11 @@ Diane hör vilket språk du talar och svarar på samma språk. Ingen
 inställning att leta efter.
 
 PRIS
-7 dagar gratis, därefter 40 kr per månad. Provperioden övergår
-automatiskt i en prenumeration om du inte avslutar den. Du avslutar när
-som helst i Google Play. Ingår gör 100 sammanfattningar och 60 minuter
-ljud per månad.
+7 dagar gratis. Därefter 47 kr per månad, eller 470 kr per år — då får
+du två månader på köpet. Provperioden övergår automatiskt i den
+prenumeration du valt om du inte avslutar den, och du avslutar när som
+helst i Google Play. Ingår gör 100 sammanfattningar och 60 minuter ljud
+varje månad.
 
 INTEGRITET
 Ljudet skickas krypterat till Google Gemini för att skapa din
@@ -111,6 +117,9 @@ Svara så här. Felaktiga svar är grund för borttagning även efter publicerin
 | Kontoradering | `<publik URL>/delete-account.html` |
 | Support-e-post | johan@skaneby.se |
 | Land | Sverige |
+| Produkt, månad | `diane_premium_monthly` — 47 kr |
+| Produkt, år | `diane_premium_annual` — 470 kr |
+| Provperiod | 7 dagar, endast nya prenumeranter |
 
 **App access:** appen ligger bakom inloggning och betalvägg. Lämna ett
 testkonto med aktiv prenumeration, annars ser granskaren en låst skärm och
