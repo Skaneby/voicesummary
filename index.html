@@ -2881,7 +2881,11 @@ function subFromToken(t) {
 async function nativeGoogleSignIn() {
   await ensureSocialLoginInit();
   const SocialLogin = window.Capacitor.Plugins.SocialLogin;
-  const out = await SocialLogin.login({ provider: 'google', options: { scopes: ['profile', 'email'] } });
+  // Skicka INTE scopes här. Plugin:et lägger redan till email, profile och
+  // openid som standard; skickar man en scopes-lista tolkas det som att man
+  // vill ha extra behörigheter, och då kräver plugin:et ändringar i
+  // MainActivity ("You CANNOT use scopes without modifying the main activity").
+  const out = await SocialLogin.login({ provider: 'google', options: {} });
   const idToken = out?.result?.idToken;
   if (!idToken) throw new Error('Inloggning misslyckades.');
   s.idToken = idToken;
