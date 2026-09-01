@@ -98,5 +98,5 @@ Ett kallt systemdialogfönster ger fler nekanden. Förklara först, fråga sedan
 | Köpflöde och återställ köp | klart i koden — **kräver RevenueCat-nycklar** |
 | Testkonto åt granskare | görs vid inlämning |
 | Edge-to-edge-insets | **kvar** |
-| Förgrundstjänst för inspelning | implementerad — **okompilerad, verifiera på enhet** |
+| Förgrundstjänst för inspelning | implementerad, **kompilerar och appen startar på enhet** |
 | Sidorna publikt nåbara | klart — publicerade på `main` |

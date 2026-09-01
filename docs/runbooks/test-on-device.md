@@ -94,16 +94,50 @@ starta om appen.
 
 ## SHA-1 för Google-inloggning
 
-Native Google-inloggning kräver att debug-nyckelns SHA-1 är registrerad på
-OAuth-klienten i Google Cloud Console (Android-klient, paket `se.skaneby.diane`).
+Google vägrar native-inloggning från en app den inte känner igen. Debug-bygget
+signeras med datorns egen nyckel, och den måste registreras. **Detta är den
+vanligaste snubbeltråden vid första körningen på riktig enhet** — inloggningen
+misslyckas direkt utan den.
+
+### 1. Hämta fingeravtrycket
+
+```bash
+cd android && ./gradlew signingReport      # Windows: gradlew signingReport
+```
+
+Leta upp stycket med `Variant: debug` / `Config: debug` och kopiera raden som
+börjar med `SHA1:`.
+
+Alternativ, om Gradle strular:
 
 ```bash
 keytool -list -v -keystore ~/.android/debug.keystore \
   -alias androiddebugkey -storepass android -keypass android | grep SHA1
 ```
 
-Utan den registrerad returnerar inloggningen ett fel direkt — det är den
-vanligaste snubbeltråden vid första körningen på riktig enhet.
+### 2. Registrera i Google Cloud Console
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → projektet
+   `diane-prod-skaneby`
+2. **APIs & Services → Credentials**
+3. **+ CREATE CREDENTIALS → OAuth client ID**
+4. Application type: **Android**
+   - Name: `Diane Android debug`
+   - Package name: `se.skaneby.diane`
+   - SHA-1: raden från steg 1
+5. **Create**
+
+### Varför två klienter
+
+Android-klienten auktoriserar *appen* mot Google. Web-klient-ID:t i
+`index.html` avgör vem ID-token är utställd till, och är det backend
+verifierar. **Byt inget i koden** — Android-klienten behöver bara existera.
+
+Ingen ombyggnad krävs efteråt; starta om appen. Ge Google 5–10 minuter att
+slå igenom.
+
+Inför release tillkommer samma sak för **Play App Signing-nyckelns** SHA-1,
+som du hittar i Play Console under Setup → App integrity.
 
 ## Att titta efter
 
