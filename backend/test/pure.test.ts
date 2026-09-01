@@ -103,3 +103,36 @@ test("TRANSFER accepteras utan app_user_id", () => {
     event: { type: "RENEWAL" },
   }), false, "vanliga händelser kräver fortfarande app_user_id");
 });
+
+// ── Modellkedjan: överbelastning ska inte stoppa användaren ────────────────
+import { modelChain, shouldTryNextModel } from "../src/gemini.ts";
+
+test("kedjan faller tillbaka på standard när inget är satt", () => {
+  assert.deepEqual(modelChain(undefined), ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"]);
+  assert.deepEqual(modelChain(""), modelChain(undefined));
+  assert.deepEqual(modelChain("  ,  "), modelChain(undefined));
+});
+
+test("konfigurerad kedja läses i ordning och tål blanksteg", () => {
+  assert.deepEqual(modelChain("a, b ,c"), ["a", "b", "c"]);
+});
+
+test("en enda modell är en giltig kedja", () => {
+  assert.deepEqual(modelChain("gemini-3.6-flash"), ["gemini-3.6-flash"]);
+});
+
+test("överbelastad eller borttagen modell ⇒ prova nästa", () => {
+  assert.equal(shouldTryNextModel(503), true, "överbelastad");
+  assert.equal(shouldTryNextModel(500), true, "internt fel");
+  assert.equal(shouldTryNextModel(404), true, "modellen borta");
+});
+
+test("slut på krediter ⇒ prova INTE nästa, det hjälper inte", () => {
+  assert.equal(shouldTryNextModel(429), false);
+});
+
+test("lyckade svar och klientfel går inte vidare i kedjan", () => {
+  assert.equal(shouldTryNextModel(200), false);
+  assert.equal(shouldTryNextModel(400), false);
+  assert.equal(shouldTryNextModel(401), false);
+});

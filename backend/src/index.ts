@@ -5,7 +5,7 @@ import {
   upsertUser,
   type UsageCaps,
 } from "./entitlement";
-import { callGemini, isSummarizeBody } from "./gemini";
+import { callGeminiWithFallback, isSummarizeBody } from "./gemini";
 import { applyWebhookEvent, isRevenueCatWebhookBody } from "./webhook";
 
 interface RateLimit {
@@ -19,7 +19,8 @@ interface Env {
   APPLE_BUNDLE_ID?: string;
   USAGE_CAP_SUMMARIES: string;
   USAGE_CAP_AUDIO_SECONDS: string;
-  GEMINI_MODEL: string;
+  GEMINI_MODEL?: string;
+  GEMINI_MODELS?: string;
   REVENUECAT_WEBHOOK_SECRET?: string;
   RATE_LIMITER: RateLimit;
 }
@@ -209,9 +210,9 @@ async function handleSummarize(
     return cors(request, json({ error: "invalid_body" }, 400));
   }
 
-  const upstream = await callGemini(
+  const { response: upstream } = await callGeminiWithFallback(
     env.GEMINI_API_KEY,
-    env.GEMINI_MODEL || "gemini-2.5-flash",
+    env.GEMINI_MODELS || env.GEMINI_MODEL,
     body,
   );
 

@@ -26,6 +26,34 @@ export function isSummarizeBody(x: unknown): x is SummarizeBody {
   return true;
 }
 
+/** Standardkedja när GEMINI_MODELS inte är satt. Ordning = fallande preferens. */
+const DEFAULT_CHAIN = [
+  "gemini-3.7-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash-lite",
+];
+
+/** Läser modellkedjan ur konfigurationen. Tom eller osatt ⇒ standardkedjan. */
+export function modelChain(configured?: string): string[] {
+  const list = (configured || "")
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  return list.length ? list : DEFAULT_CHAIN;
+}
+
+/**
+ * Ska vi prova nästa modell i kedjan?
+ *
+ * Bara vid fel som beror på *modellen* — överbelastning eller att den dragits
+ * in. INTE vid 429: den betyder slut på kvot eller krediter, och då hjälper
+ * ingen annan modell. Att gå vidare där skulle bara tredubbla anropen mot ett
+ * konto som redan sagt stopp.
+ */
+export function shouldTryNextModel(status: number): boolean {
+  return status === 503 || status === 500 || status === 404;
+}
+
 /**
  * Call Google's Generative Language API with audio as inline data.
  * Returns the upstream response untouched so the caller can decide whether
@@ -59,4 +87,40 @@ export async function callGemini(
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload),
   });
+}
+
+/**
+ * Kör anropet mot modellkedjan. Faller vidare till nästa modell när den
+ * aktuella är överbelastad eller borta, och returnerar annars svaret som det
+ * är. Sista svaret returneras om ingen modell lyckades.
+ */
+export async function callGeminiWithFallback(
+  apiKey: string,
+  configuredModels: string | undefined,
+  body: SummarizeBody,
+): Promise<{ response: Response; model: string }> {
+  const chain = modelChain(configuredModels);
+  let last: Response | null = null;
+  let lastModel = chain[0];
+
+  for (const model of chain) {
+    const response = await callGemini(apiKey, model, body);
+    if (response.ok || !shouldTryNextModel(response.status)) {
+      return { response, model };
+    }
+    // Läs ur kroppen så anslutningen kan återanvändas
+    await response.text().catch(() => "");
+    last = response;
+    lastModel = model;
+    console.warn("modell " + model + " svarade " + response.status + " — provar nästa");
+  }
+  return {
+    response:
+      last ??
+      new Response(JSON.stringify({ error: "no_model_available" }), {
+        status: 503,
+        headers: { "content-type": "application/json" },
+      }),
+    model: lastModel,
+  };
 }
