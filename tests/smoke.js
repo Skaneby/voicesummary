@@ -330,6 +330,36 @@ function check(name, ok, extra) {
     catch (e) { return /För många förfrågningar/.test(e.message); }
   }));
 
+
+  // Regression: i appläget saknas API-nyckel, så ALLA Gemini-anrop måste gå
+  // via proxyn. Omformatering, transkribering och Q&A missades i Fas 1 och
+  // föll tyst sönder i appen.
+  await ctx.unroute('**/diane-api*/**');
+  let direktTillGoogle = 0;
+  await ctx.route('**/generativelanguage.googleapis.com/**', route => {
+    direktTillGoogle++;
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+  const proxyKroppar = [];
+  await ctx.route('**/diane-api*/**', route => {
+    proxyKroppar.push(JSON.parse(route.request().postData() || '{}'));
+    route.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Svar.' }] }, finishReason: 'STOP' }] }) });
+  });
+  await appPage.evaluate(async () => {
+    s.idToken = 't'; s.subActive = 1; s.elapsed = 60000;
+    s.resultText = 'Mötet beslutade att köpa motorn.'; s.qaHistory = [];
+    s.blob = new Blob(['ljud'], { type: 'audio/webm' }); s.mimeType = 'audio/webm'; s.transcript = '';
+    await transcribeAudio();
+    $('qaInput').value = 'Vad beslutades?'; await askQuestion();
+    try { await generateFromText('tidigare text'); } catch {}
+  });
+  check('inget anrop går direkt till Google i appläge', direktTillGoogle === 0, 'direkta anrop: ' + direktTillGoogle);
+  check('transkribering, Q&A och omformatering går via proxyn', proxyKroppar.length >= 3, 'anrop: ' + proxyKroppar.length);
+  check('proxykroppen bär konversationen', proxyKroppar.every(b => Array.isArray(b.contents)));
+  check('transkriberingen räknas mot ljudkvoten', proxyKroppar.some(b => b.audio_seconds === 60));
+  await ctx.unroute('**/generativelanguage.googleapis.com/**');
+
   await appPage.close();
 
   console.log('\n── 5e. Play-krav: publika sidor ──');

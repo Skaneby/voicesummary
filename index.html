@@ -2102,25 +2102,49 @@ async function generate(base64, mime, attempt = 0) {
   return { html, suggestedTitle };
 }
 
-async function generateFromText(inputText, attempt = 0) {
-  const r = await fetch(
+// Alla Gemini-anrop utom huvudsammanfattningen går genom den här. Tar en
+// Gemini-native payload; i appläget översätts den till proxyns format,
+// eftersom klienten där inte har någon nyckel. Utan detta faller
+// omformatering, transkribering och Fråga om mötet tyst sönder i appen.
+function callGeminiRaw(payload, audioSeconds = 0) {
+  if (APP_MODE) {
+    return fetch(API_PROXY + '/summarize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + s.idToken
+      },
+      body: JSON.stringify({
+        prompt: '',
+        contents: payload.contents,
+        audio_seconds: Math.round(audioSeconds),
+        temperature: payload.generationConfig?.temperature,
+        max_output_tokens: payload.generationConfig?.maxOutputTokens
+      })
+    });
+  }
+  return fetch(
     API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [
-          { text: 'The following is content from a previous analysis:\n\n' + inputText },
-          { text: buildPrompt() }
-        ]}],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
-          thinkingConfig: { thinkingBudget: 2048 }
-        }
-      })
+      body: JSON.stringify(payload)
     }
   );
+}
+
+async function generateFromText(inputText, attempt = 0) {
+  const r = await callGeminiRaw({
+    contents: [{ parts: [
+      { text: 'The following is content from a previous analysis:\n\n' + inputText },
+      { text: buildPrompt() }
+    ]}],
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
+      thinkingConfig: { thinkingBudget: 2048 }
+    }
+  });
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
@@ -2326,20 +2350,13 @@ async function transcribeAudio() {
   try {
     const mime = (s.mimeType || 'audio/webm').split(';')[0];
     const base64 = await blobToBase64(blob);
-    const r = await fetch(
-      API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [
-            { inline_data: { mime_type: mime, data: base64 } },
-            { text: 'Transcribe this audio recording verbatim in the spoken language. Output plain text only — no formatting, no timestamps, no commentary. If several speakers are clearly distinguishable, prefix their lines with "Talare 1:", "Talare 2:" etc.' }
-          ]}],
-          generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 2048 } }
-        })
-      }
-    );
+    const r = await callGeminiRaw({
+      contents: [{ parts: [
+        { inline_data: { mime_type: mime, data: base64 } },
+        { text: 'Transcribe this audio recording verbatim in the spoken language. Output plain text only — no formatting, no timestamps, no commentary. If several speakers are clearly distinguishable, prefix their lines with "Talare 1:", "Talare 2:" etc.' }
+      ]}],
+      generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 2048 } }
+    }, (s.elapsed || 0) / 1000);
     if (!r.ok) throw new Error('transkribering misslyckades');
     const d = await r.json();
     const txt = (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
@@ -2367,17 +2384,10 @@ function qaContext() {
 }
 
 async function askGemini(contents, attempt = 0) {
-  const r = await fetch(
-    API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: { temperature: 0.2, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 2048 } }
-      })
-    }
-  );
+  const r = await callGeminiRaw({
+    contents,
+    generationConfig: { temperature: 0.2, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 2048 } }
+  });
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
