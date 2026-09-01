@@ -2036,9 +2036,13 @@ async function generate(base64, mime, attempt = 0) {
       if (r.status === 401) { signOutLocal(); show('signin'); throw new Error('Din inloggning har gått ut — logga in igen.'); }
       if (r.status === 402) { show('paywall'); throw new Error('Din prenumeration är inte aktiv.'); }
       if (r.status === 429) {
-        const err = e.error || '';
+        // Våra egna fel är strängar; Geminis fel skickas vidare oförändrat och
+        // är objekt. Utan den skillnaden göms uppströmsfelet bakom vårt eget.
+        const err = typeof e.error === 'string' ? e.error : '';
         if (err === 'summary_cap_reached') throw new Error('Du har nått månadens gräns för sammanfattningar. Gränsen nollställs när ny period börjar.');
         if (err === 'audio_cap_reached') throw new Error('Du har nått månadens gräns för inspelad tid. Gränsen nollställs när ny period börjar.');
+        if (err === 'rate_limited') throw new Error('För många förfrågningar just nu — vänta en stund och försök igen.');
+        if (apiMsg) throw new Error('Gemini nekade förfrågan: ' + apiMsg);
         throw new Error('För många förfrågningar just nu — vänta en stund och försök igen.');
       }
       if (r.status === 503 || r.status === 529) {

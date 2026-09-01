@@ -310,6 +310,26 @@ function check(name, ok, extra) {
     try { recordingServiceStart(); recordingServiceStop(); return true; } catch { return false; }
   }));
 
+
+  // Ett 429 från Gemini (objekt-fel) får inte gömmas bakom vårt eget
+  // hastighetsgräns-meddelande — då blir felsökning omöjlig
+  await ctx.unroute('**/diane-api*/**');
+  await ctx.route('**/diane-api*/**', route => route.fulfill({
+    status: 429, contentType: 'application/json',
+    body: JSON.stringify({ error: { message: 'Quota exceeded for quota metric X' } }) }));
+  check('uppströmsfel från Gemini syns i meddelandet', await appPage.evaluate(async () => {
+    s.idToken = 't'; s.subActive = 1;
+    try { await generate('ZmFrZQ==', 'audio/webm'); return false; }
+    catch (e) { return /Quota exceeded/.test(e.message); }
+  }));
+  await ctx.unroute('**/diane-api*/**');
+  await ctx.route('**/diane-api*/**', route => route.fulfill({
+    status: 429, contentType: 'application/json', body: JSON.stringify({ error: 'rate_limited' }) }));
+  check('vår egen hastighetsgräns ger sitt eget meddelande', await appPage.evaluate(async () => {
+    try { await generate('ZmFrZQ==', 'audio/webm'); return false; }
+    catch (e) { return /För många förfrågningar/.test(e.message); }
+  }));
+
   await appPage.close();
 
   console.log('\n── 5e. Play-krav: publika sidor ──');
