@@ -1757,6 +1757,16 @@ function fmt(ms) {
 
 function setProgress(pct) { $('progressFill').style.width = pct + '%'; }
 
+// Bitrate för tal, inte musik. Ljudet ska bara vara begripligt för en
+// taligenkänningsmodell, och uppladdningen sker ofta över mobilnät.
+// Opus är transparent för tal redan vid 32 kbit/s mono; AAC (iOS) behöver
+// lite mer för samma kvalitet.
+// Noterbart: Gemini räknar ljud som 32 token/sekund oavsett bitrate, så
+// detta påverkar uppladdningstiden — inte kostnaden.
+function bitrateFor(mime) {
+  return /mp4|aac/i.test(mime || '') ? 48000 : 32000;
+}
+
 function getMime() {
   const order = isIOS()
     ? ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']
@@ -1875,7 +1885,8 @@ async function startRecording() {
 
   s.mimeType = getMime();
   s.chunks = [];
-  const opts = { audioBitsPerSecond: 128000, channelCount: 1 };
+  // channelCount hör hemma i getUserMedia-villkoren ovan, inte här
+  const opts = { audioBitsPerSecond: bitrateFor(s.mimeType) };
   if (s.mimeType) opts.mimeType = s.mimeType;
   s.mediaRecorder = new MediaRecorder(s.stream, opts);
   s.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) s.chunks.push(e.data); };

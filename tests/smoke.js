@@ -372,6 +372,18 @@ function check(name, ok, extra) {
   check('raderingssidan beskriver vad som raderas', /Vad som raderas/.test(del));
   check('raderingssidan varnar om prenumerationen', /avslutar inte din prenumeration/i.test(del));
 
+  console.log('\n── 5f. Ljudkvalitet vs uppladdningstid ──');
+  const br = await page.evaluate(() => ({
+    opus: bitrateFor('audio/webm;codecs=opus'),
+    mp4: bitrateFor('audio/mp4'),
+    tom: bitrateFor(''),
+  }));
+  check('Opus får 32 kbit — transparent för tal', br.opus === 32000, String(br.opus));
+  check('AAC/iOS får 48 kbit — behöver mer', br.mp4 === 48000, String(br.mp4));
+  check('okänt format faller tillbaka säkert', br.tom === 32000);
+  check('ingen bitrate ligger kvar på musikkvalitet', await page.evaluate(() =>
+    !/audioBitsPerSecond:\s*128000/.test(document.documentElement.innerHTML)));
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
