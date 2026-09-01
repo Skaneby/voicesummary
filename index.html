@@ -360,6 +360,22 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .fh-item span{display:block;font-size:.83rem;line-height:1.5;color:var(--muted)}
 .fh-hint{font-size:.8rem;color:var(--muted);margin-top:16px;padding-top:14px;
   border-top:1px solid var(--border)}
+
+/* Ljudarkiv i inställningar */
+.rec-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.rec-row{display:flex;align-items:center;gap:10px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.rec-info{flex:1;min-width:0}
+.rec-info b{display:block;font-size:.85rem;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-info span{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.rec-act{background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:8px;padding:6px 10px;font-size:.75rem;cursor:pointer;flex-shrink:0;
+  font-family:inherit;-webkit-tap-highlight-color:transparent}
+.rec-act:active{border-color:var(--accent);color:var(--accent)}
+.rec-empty{font-size:.8rem;color:var(--muted);padding:6px 0}
+.rec-sum{font-size:.72rem;color:var(--muted);margin-top:10px;
+  display:flex;justify-content:space-between;align-items:center;gap:10px}
 .fnr-bar{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
   border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .fnr-row{display:flex;gap:6px;align-items:center}
@@ -966,6 +982,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
   <ul style="font-size:.88rem;line-height:1.6;color:var(--muted);padding-left:18px;margin:0 0 16px">
     <li>Inspelningen skickas krypterat och sparas inte på våra servrar.</li>
     <li>Sammanfattningen lagras bara lokalt på din enhet.</li>
+    <li>De tio senaste inspelningarna sparas på telefonen så att du kan dela eller radera dem. Du hittar dem under Inställningar.</li>
     <li>Spela inte in personer utan att berätta att du gör det.</li>
   </ul>
   <button class="s-save" id="discAcceptBtn" style="width:100%">Jag förstår — fortsätt</button>
@@ -1029,6 +1046,18 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <input type="checkbox" id="sFun" aria-label="Visa humorformat">
           <span></span>
         </label>
+      </div>
+    </div>
+    <div class="input-group" style="max-width:none">
+      <label style="margin-bottom:4px">Inspelningar på enheten</label>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.45;margin:0 0 6px">
+        De tio senaste sparas här på telefonen. Dela dem vidare till Drive, mejl
+        eller Filer — eller radera dem. De skickas aldrig någon annanstans av sig själva.
+      </p>
+      <div class="rec-list" id="recList"></div>
+      <div class="rec-sum">
+        <span id="recTotal"></span>
+        <button class="rec-act" id="recClearBtn" style="display:none">Radera alla</button>
       </div>
     </div>
     <div class="input-group">
@@ -1968,6 +1997,7 @@ function closeHelp() {
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 function openSettings() {
   if (APP_MODE) { const em = $('settingsEmail'); if (em) em.textContent = s.email || 'Inte inloggad'; }
+  renderAudioList();
   $('sKey').value = s.key;
   $('sModel').value = s.model;
   $('sGHToken').value = store.get(SGH);
@@ -2396,6 +2426,10 @@ async function process(blob, mime) {
   s.resultHTML = '';
   s.transcript = '';
   s.qaHistory = [];
+  // Ljudet sparas innan analysen — går den fel ska inspelningen ändå finnas
+  // kvar. Samma id som historikposten, så de hör ihop.
+  const recId = Date.now();
+  saveAudio(recId, blob, { title: s.title, seconds: (s.elapsed || 0) / 1000 });
   const reqId = ++_reqId;
   const style = s.style; // capture before any await
   show('working');
@@ -2418,7 +2452,7 @@ async function process(blob, mime) {
     if (reqId !== _reqId) return; // stale — newer request already running
     if (suggestedTitle) { s.title = suggestedTitle; $('titleInput').value = suggestedTitle; }
     s.resultHTML = html;
-    s.historyId = saveToHistory(html, s.title);
+    s.historyId = saveToHistory(html, s.title, recId);
     showResult(html, style);
   } catch(e) {
     const isFetch = e.name === 'TypeError' && e.message.toLowerCase().includes('fetch');
@@ -3053,6 +3087,166 @@ async function createGHIssue(repo) {
   }
 }
 
+// ── LJUDARKIV (IndexedDB) ──────────────────────────────────────────────────
+// Inspelningarna sparas på enheten så att användaren kan lyssna igen, dela
+// dem vidare eller radera dem. De lämnar aldrig telefonen av sig själva —
+// se privacy.html. localStorage duger inte: en halvtimme är flera megabyte.
+const AUDIO_DB = 'diane_audio';
+const AUDIO_STORE = 'recordings';
+const AUDIO_KEEP = 10;   // äldre gallras automatiskt
+
+function audioDb() {
+  return new Promise((resolve, reject) => {
+    let req;
+    try { req = indexedDB.open(AUDIO_DB, 1); }
+    catch (e) { reject(e); return; }
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(AUDIO_STORE)) {
+        db.createObjectStore(AUDIO_STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function audioTx(mode, fn) {
+  return audioDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(AUDIO_STORE, mode);
+    const out = fn(tx.objectStore(AUDIO_STORE));
+    tx.oncomplete = () => resolve(out && 'result' in out ? out.result : out);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  }));
+}
+
+// Allt här är best-effort: privat läge eller full disk får aldrig stoppa
+// en inspelning från att sammanfattas.
+async function saveAudio(id, blob, meta) {
+  try {
+    await audioTx('readwrite', st => st.put({
+      id, blob, mime: blob.type || '', size: blob.size,
+      date: new Date().toISOString(),
+      title: meta?.title || '', seconds: Math.round(meta?.seconds || 0),
+    }));
+    await pruneAudio();
+  } catch { /* utrymme saknas eller privat läge */ }
+}
+
+async function listAudio() {
+  try {
+    const all = await audioTx('readonly', st => st.getAll());
+    return (all || []).sort((a, b) => (a.date < b.date ? 1 : -1));
+  } catch { return []; }
+}
+
+async function getAudio(id) {
+  try { return await audioTx('readonly', st => st.get(id)); }
+  catch { return null; }
+}
+
+async function deleteAudio(id) {
+  try { await audioTx('readwrite', st => st.delete(id)); } catch {}
+}
+
+async function clearAudio() {
+  try { await audioTx('readwrite', st => st.clear()); } catch {}
+}
+
+// Behåll de tio senaste. Utan tak fylls telefonen i det tysta.
+async function pruneAudio() {
+  const all = await listAudio();
+  for (const rec of all.slice(AUDIO_KEEP)) await deleteAudio(rec.id);
+}
+
+function fmtBytes(n) {
+  if (!n) return '0 kB';
+  return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' kB';
+}
+
+// Renderar ljudarkivet i inställningarna. Delning går via systemets
+// delningsmeny; saknas den faller vi tillbaka på en nedladdningslänk.
+async function renderAudioList() {
+  const list = $('recList');
+  const all = await listAudio();
+  list.innerHTML = '';
+  const total = all.reduce((n, r) => n + (r.size || 0), 0);
+  $('recTotal').textContent = all.length
+    ? all.length + (all.length === 1 ? ' inspelning' : ' inspelningar') + ' · ' + fmtBytes(total)
+    : '';
+  $('recClearBtn').style.display = all.length ? '' : 'none';
+
+  if (!all.length) {
+    const p = document.createElement('p');
+    p.className = 'rec-empty';
+    p.textContent = 'Inga sparade inspelningar än.';
+    list.appendChild(p);
+    return;
+  }
+
+  all.forEach(rec => {
+    const row = document.createElement('div');
+    row.className = 'rec-row';
+
+    const info = document.createElement('div');
+    info.className = 'rec-info';
+    const name = document.createElement('b');
+    name.textContent = rec.title || 'Utan titel';
+    const sub = document.createElement('span');
+    sub.textContent = fmtDate(rec.date) + ' · ' + fmt(rec.seconds * 1000) + ' · ' + fmtBytes(rec.size);
+    info.appendChild(name); info.appendChild(sub);
+
+    const share = document.createElement('button');
+    share.className = 'rec-act';
+    share.textContent = 'Dela';
+    share.onclick = () => shareAudio(rec.id);
+
+    const del = document.createElement('button');
+    del.className = 'rec-act';
+    del.textContent = 'Radera';
+    del.onclick = async () => {
+      if (!confirm('Radera inspelningen? Sammanfattningen i historiken påverkas inte.')) return;
+      await deleteAudio(rec.id);
+      renderAudioList();
+      toast('Inspelningen raderad');
+    };
+
+    row.appendChild(info); row.appendChild(share); row.appendChild(del);
+    list.appendChild(row);
+  });
+}
+
+function audioFileName(rec) {
+  const base = (rec.title || 'inspelning').replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g, '').trim() || 'inspelning';
+  const ext = /mp4|aac/i.test(rec.mime) ? 'm4a' : /ogg/i.test(rec.mime) ? 'ogg' : 'webm';
+  return base + '.' + ext;
+}
+
+async function shareAudio(id) {
+  const rec = await getAudio(id);
+  if (!rec || !rec.blob) { toast('Inspelningen kunde inte läsas'); return; }
+  const file = new File([rec.blob], audioFileName(rec), { type: rec.mime || 'audio/webm' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: rec.title || 'Inspelning' });
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;   // användaren ångrade sig
+  }
+  // Fallback: spara som fil
+  try {
+    const url = URL.createObjectURL(rec.blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = audioFileName(rec);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch { toast('Kunde inte dela inspelningen'); }
+}
+
+// ── LJUDARKIV SLUT ─────────────────────────────────────────────────────────
+
 // ── AUTH (endast appläge) ──────────────────────────────────────────────────
 // Två vägar väljs i runtime: i Capacitor driver @capgo/capacitor-social-login
 // den native Google-inloggningen; i webbläsare renderar Google Identity
@@ -3294,9 +3488,9 @@ const SH = 'vs_history';
 const MAX_HISTORY = 40;
 
 function getHistory() { return store.json(SH, []); }
-function saveToHistory(html, title) {
+function saveToHistory(html, title, forcedId) {
   const history = getHistory();
-  const id = Date.now();
+  const id = forcedId || Date.now();
   // Transkriptionen följer med posten (kapad för att inte spränga localStorage)
   const transcript = (s.transcript || '').slice(0, 120000);
   history.unshift({ id, title: title || '', date: new Date().toISOString(), html, style: s.style, transcript });
@@ -3466,6 +3660,12 @@ function init() {
   bind('settingsSignOutBtn', () => { signOutLocal(); closeSettings(); show('signin'); });
   bind('settingsDeleteBtn', deleteAccount);
   bind('manageSubBtn', manageSubscription);
+  bind('recClearBtn', async () => {
+    if (!confirm('Radera alla sparade inspelningar? Sammanfattningarna i historiken påverkas inte.')) return;
+    await clearAudio();
+    renderAudioList();
+    toast('Alla inspelningar raderade');
+  });
   bind('formatHelpBtn', openFormatHelp);
   bind('fh-overlay', closeFormatHelp);
   bind('discCancelBtn', closeAudioConsent);

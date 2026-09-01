@@ -62,6 +62,26 @@ Q&A tyst tillbaka på resultattexten.
 Alla nycklar har prefixet `vs_` (från appens gamla namn). **Byt inte namn** —
 befintliga användare tappar då sina data.
 
+### Ljudarkivet
+
+Ljudfiler får inte plats i `localStorage`, så de ligger i **IndexedDB**
+(`diane_audio` / `recordings`), nycklade på samma id som historikposten.
+De **tio senaste** behålls; äldre gallras av `pruneAudio()`.
+
+Ljudet sparas i början av `process()`, alltså *före* API-anropet — går
+analysen fel ska inspelningen ändå finnas kvar.
+
+Allt i lagret är best-effort och sväljer fel: privat läge eller full disk får
+aldrig stoppa en inspelning från att sammanfattas.
+
+Användaren ser arkivet under Inställningar och kan dela enskilda filer via
+systemets delningsmeny eller radera dem. **Filerna lämnar aldrig enheten av
+sig själva** — det står så i `privacy.html`, och det får inte ändras utan att
+policyn skrivs om.
+
+Observera att omformatering (`reformatAs`) använder **resultattexten**, inte
+ljudet. Den fungerar därför även på gamla poster där ljudet är gallrat.
+
 `vs_key`, `vs_model`, `vs_style`, `vs_theme`, `vs_history`.
 ID-token i appläget lagras separat och avsiktligt kortlivat.
 

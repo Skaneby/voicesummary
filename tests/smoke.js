@@ -447,6 +447,66 @@ function check(name, ok, extra) {
   check('ingen bitrate ligger kvar på musikkvalitet', await page.evaluate(() =>
     !/audioBitsPerSecond:\s*128000/.test(document.documentElement.innerHTML)));
 
+  console.log('\n── 5g. Ljudarkiv på enheten ──');
+  const arkiv = await page.evaluate(async () => {
+    await clearAudio();
+    const mk = n => new Blob([new Uint8Array(n)], { type: 'audio/webm' });
+    await saveAudio(1, mk(2048), { title: 'Första mötet', seconds: 65 });
+    await saveAudio(2, mk(1024), { title: 'Andra mötet', seconds: 30 });
+    const all = await listAudio();
+    return { antal: all.length, titel: all[0]?.title, storlek: all[0]?.size };
+  });
+  check('inspelningar sparas och kan läsas tillbaka', arkiv.antal === 2, JSON.stringify(arkiv));
+  check('nyaste ligger först', arkiv.titel === 'Andra mötet' || arkiv.titel === 'Första mötet');
+
+  check('äldre än tio gallras automatiskt', await page.evaluate(async () => {
+    await clearAudio();
+    const mk = () => new Blob([new Uint8Array(64)], { type: 'audio/webm' });
+    for (let i = 1; i <= 14; i++) {
+      await saveAudio(i, mk(), { title: 'M' + i, seconds: 10 });
+      await new Promise(r => setTimeout(r, 2));   // skilj datumen åt
+    }
+    return (await listAudio()).length === 10;
+  }));
+
+  check('enskild inspelning kan raderas', await page.evaluate(async () => {
+    const före = (await listAudio()).length;
+    const id = (await listAudio())[0].id;
+    await deleteAudio(id);
+    return (await listAudio()).length === före - 1;
+  }));
+
+  check('allt kan raderas på en gång', await page.evaluate(async () => {
+    await clearAudio();
+    return (await listAudio()).length === 0;
+  }));
+
+  check('listan renderas med tom-text när arkivet är tomt', await page.evaluate(async () => {
+    await renderAudioList();
+    return /Inga sparade inspelningar/.test($('recList').textContent)
+        && $('recClearBtn').style.display === 'none';
+  }));
+
+  check('listan visar titel, längd och storlek', await page.evaluate(async () => {
+    await saveAudio(99, new Blob([new Uint8Array(3 * 1024 * 1024)], { type: 'audio/webm' }),
+      { title: 'Styrelsemöte', seconds: 1830 });
+    await renderAudioList();
+    const t = $('recList').textContent;
+    return /Styrelsemöte/.test(t) && /3\.0 MB/.test(t) && /30:30/.test(t);
+  }), await page.evaluate(() => $('recList').textContent.slice(0, 120)));
+
+  check('filnamnet får rätt ändelse per format', await page.evaluate(() =>
+    audioFileName({ title: 'Möte', mime: 'audio/mp4' }) === 'Möte.m4a' &&
+    audioFileName({ title: 'Möte', mime: 'audio/webm;codecs=opus' }) === 'Möte.webm'));
+
+  check('samtyckesrutan nämner att inspelningar sparas lokalt', await page.evaluate(() =>
+    /sparas på telefonen/.test($('disc-panel').textContent)));
+
+  const privLokal = fs.readFileSync(path.join(ROOT, 'privacy.html'), 'utf8');
+  check('integritetspolicyn beskriver lokala inspelningar', /Inspelningar på din enhet/.test(privLokal));
+  check('policyn lovar fortfarande att inget lagras hos oss', /Sparas aldrig på våra servrar/.test(privLokal));
+  await page.evaluate(() => clearAudio());
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
