@@ -94,7 +94,7 @@ plötsligt hantera två format.
 
 ## Vad som är gemensamt kontra lägesspecifikt
 
-Ungefär 85 % av klientkoden är lägesoberoende: inspelning, teman, format-
+Ungefär 85 % av klientkoden är lägesoberoende: inspelning, format-
 prompter, sanering, historik, delning, redigering, Q&A.
 
 Lägesspecifikt är i praktiken bara fyra ställen:

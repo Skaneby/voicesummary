@@ -391,6 +391,49 @@ function check(name, ok, extra) {
     return s.style === 'summary';
   }));
 
+  // "På skoj"-avdelarna skiljer satiren från de sakliga formaten i UI:t
+  check('avdelarna dolda när humorläget är av', await appPage.evaluate(() => {
+    store.set('vs_fun', '0'); applyFunVisibility();
+    return $('funDivider').style.display === 'none' &&
+           document.querySelector('.reformat-sep').style.display === 'none';
+  }));
+  check('avdelarna syns när humorläget är på', await appPage.evaluate(() => {
+    store.set('vs_fun', '1'); applyFunVisibility();
+    return $('funDivider').style.display !== 'none' &&
+           document.querySelector('.reformat-sep').style.display !== 'none';
+  }));
+  check('satirkort får streckad markering, sakliga inte', await appPage.evaluate(() => {
+    const card = f => document.querySelector('.format-card[data-fmt="' + f + '"]');
+    return card('psyk').classList.contains('fun') && !card('protocol').classList.contains('fun');
+  }));
+  check('avdelaren ligger före första satirkortet i rutnätet', await appPage.evaluate(() => {
+    const div = $('funDivider');
+    const next = div.nextElementSibling;
+    return !!next && next.dataset.fmt && !!STYLE_META[next.dataset.fmt].fun;
+  }));
+
+  // Kopiera mail öppnar mailklienten med titeln som ämnesrad
+  check('Kopiera mail fyller ämnesraden från titeln', await appPage.evaluate(async () => {
+    s.title = 'Veckomöte om budgeten';
+    $('resultBox').innerHTML = '<article><section><h2>Beslut</h2><p>x</p></section></article>';
+    navigator.clipboard.write = async () => {};   // headless saknar urklippsrättighet
+    let href = null;
+    const orig = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () { href = this.getAttribute('href'); };
+    try { await copyFormatted(); } finally { HTMLAnchorElement.prototype.click = orig; }
+    return href === 'mailto:?subject=' + encodeURIComponent('Veckomöte om budgeten');
+  }));
+  check('Kopiera mail tar första rubriken när titel saknas', await appPage.evaluate(async () => {
+    s.title = '';
+    $('resultBox').innerHTML = '<article><section><h2>Beslut</h2><p>x</p></section></article>';
+    navigator.clipboard.write = async () => {};
+    let href = null;
+    const orig = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () { href = this.getAttribute('href'); };
+    try { await copyFormatted(); } finally { HTMLAnchorElement.prototype.click = orig; }
+    return href === 'mailto:?subject=' + encodeURIComponent('Beslut');
+  }));
+
   // Hjälprutan måste täcka varje format
   check('varje format har en hjälptext', await appPage.evaluate(() =>
     Object.keys(STYLE_META).every(k => typeof FORMAT_HELP[k] === 'string' && FORMAT_HELP[k].length > 20)));
@@ -506,6 +549,51 @@ function check(name, ok, extra) {
   check('integritetspolicyn beskriver lokala inspelningar', /Inspelningar på din enhet/.test(privLokal));
   check('policyn lovar fortfarande att inget lagras hos oss', /Sparas aldrig på våra servrar/.test(privLokal));
   await page.evaluate(() => clearAudio());
+
+  console.log('\n── 5b. Fellogg ──');
+  check('logError sparar och nyaste ligger först', await page.evaluate(() => {
+    clearErrors();
+    logError('app', 'första felet');
+    logError('js', 'andra felet', 'stack här');
+    const log = getErrors();
+    return log.length === 2 && log[0].msg === 'andra felet' && log[0].detail === 'stack här';
+  }));
+  check('ringbufferten toppar på 50 poster', await page.evaluate(() => {
+    clearErrors();
+    for (let i = 0; i < 60; i++) logError('app', 'fel ' + i);
+    const log = getErrors();
+    return log.length === 50 && log[0].msg === 'fel 59';
+  }));
+  check('showError hamnar i loggen', await page.evaluate(() => {
+    clearErrors();
+    showError('Något gick snett', false);
+    return getErrors()[0].msg === 'Något gick snett' && getErrors()[0].kind === 'app';
+  }));
+  check('okontrollerade fel fångas globalt', await page.evaluate(() => {
+    clearErrors();
+    window.dispatchEvent(new ErrorEvent('error', { message: 'ofångat', filename: 'x.js', lineno: 7 }));
+    const e = getErrors()[0];
+    return e.kind === 'js' && e.msg === 'ofångat' && /x\.js:7/.test(e.detail);
+  }));
+  check('långa meddelanden klipps', await page.evaluate(() => {
+    clearErrors();
+    logError('app', 'x'.repeat(999), 'y'.repeat(9999));
+    const e = getErrors()[0];
+    return e.msg.length === 300 && e.detail.length === 1000;
+  }));
+  check('listan i inställningarna visar felen', await page.evaluate(() => {
+    clearErrors(); logError('app', 'synligt fel');
+    renderErrList();
+    return /synligt fel/.test($('errList').textContent) && /1 fel/.test($('errTotal').textContent);
+  }));
+  check('delningsrapporten innehåller fel och miljö', await page.evaluate(() => {
+    const r = errReport();
+    return /synligt fel/.test(r) && /APP_MODE/.test(r) && r.includes(navigator.userAgent);
+  }));
+  check('rensning tömmer logg och lista', await page.evaluate(() => {
+    clearErrors(); renderErrList();
+    return getErrors().length === 0 && /Inga fel loggade/.test($('errList').textContent);
+  }));
 
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');

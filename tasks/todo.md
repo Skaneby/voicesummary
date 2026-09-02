@@ -109,7 +109,7 @@ adds bundling in Phase 3).
 **Locked decisions:**
 
 - [x] **GitHub Issues integration: REMOVE entirely.** Consumer app, paid subscription — power-user features add complexity, security surface (PATs in localStorage), and Play Store data-safety questions. The PWA on `main` keeps it for existing users.
-- [x] Settings panel content: keep theme picker + format picker; everything else (API key, model, GitHub token) goes away.
+- [x] Settings panel content: format picker only. Theme picker removed 2026-09-02 (single theme now); API key, model, GitHub token gone since Phase 2.
 
 **Constants to update at the top of the script section:**
 
@@ -168,7 +168,6 @@ All items below landed in a single commit (`347caab`):
   - [ ] Microphone permission flow
   - [ ] Long recording (30+ min) with screen off — verify the iOS-targeted keep-alive hack at [index.html:1191](../index.html#L1191) doesn't break Android
   - [ ] Background → foreground resume
-  - [ ] All 3 themes render correctly
   - [ ] All 8 format presets work
 - [ ] Generate signed AAB (Android App Bundle)
 
@@ -185,7 +184,7 @@ All items below landed in a single commit (`347caab`):
 - [ ] Store listing (Swedish):
   - [ ] Short description (80 char)
   - [ ] Full description (4000 char)
-  - [ ] Screenshots: phone (min 2, recommend 4–8). Use all 3 themes for visual variety.
+  - [ ] Screenshots: phone (min 2, recommend 4–8).
   - [ ] Feature graphic 1024×500
   - [ ] App icon
 - [ ] Create subscription product in Play Console:
@@ -357,9 +356,9 @@ står att användaren får Googles engelska faktureringstext rakt i ansiktet.
 
 ### Lös ändring i arbetskopian
 
-- [ ] `playwright-core` i `package.json` — `npm test` krävde den men den
-      saknades. Ligger i `git stash` ("playwright-core devDependency,
-      obeslutad"). Committa eller släng.
+- [x] `playwright-core` i `package.json` — stashen applicerad 2026-09-02,
+      `npm test` fungerar igen. Ligger ocommittad i arbetskopian tillsammans
+      med "På skoj"-avdelarna och mailämnesraden.
 
 ### Löst sedan anteckningarna skrevs
 

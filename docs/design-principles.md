@@ -95,14 +95,13 @@ kontrollera att den *faktiskt* pågår utan att öppna appen.
 stoppmöjlighet. Det är också vad `FOREGROUND_SERVICE_MICROPHONE` kräver för att
 Android inte ska avbryta inspelningen.
 
-## 8. Teman är varumärket — men systemet bestämmer första intrycket
+## 8. Ett tema — appen ska kännas som en produkt, inte en leksak
 
-Dianes tre teman är en produktegenskap och ska vara kvar. Men en app som öppnas
-i bländande ljust läge på en telefon inställd på mörkt läge känns fel byggd.
-
-**Princip:** systemets läge avgör *förvalet* vid första start. Därefter äger
-användarens val. Alla tre teman ska klara både ljus och mörk systeminställning
-utan att bli oläsliga.
+Beslut 2026-09-02: temaväljaren är borttagen. Diane har ett visuellt uttryck
+(det mörka indigo-temat) och inställningarna hålls fria från utsmyckning som
+inte hjälper kärnflödet inspelning → sammanfattning. Twin Peaks- och
+Panasonic-temana levde kvar från hobbyfasen och togs bort tillsammans med
+Google Fonts-beroendet de drog in.
 
 ## 9. Tillgänglighet är inte en efterhandsfråga
 
@@ -122,8 +121,8 @@ genomtänkta, eftersom de faktiskt inträffar.
 
 ## Vad detta betyder rent konkret
 
-Ingen omskrivning av gränssnittet. Dianes visuella uttryck — de tre temana, de
-stora knapparna, bottenpanelerna — är redan i grunden mobilanpassat. Det som
+Ingen omskrivning av gränssnittet. Dianes visuella uttryck — det mörka temat,
+de stora knapparna, bottenpanelerna — är redan i grunden mobilanpassat. Det som
 saknas är **systemintegrationen**: bakåtnavigering, insets, notis för pågående
 inspelning, behörighetsdialog med förklaring, och ett betalflöde som möter
 Plays krav.

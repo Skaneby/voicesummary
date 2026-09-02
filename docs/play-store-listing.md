@@ -41,7 +41,6 @@ BYGGD FÖR RIKTIGA MÖTEN
 • Pausa och återuppta mitt i
 • Sammanfattningarna sparas på din enhet och går att läsa utan nät
 • Dela direkt till mejl, kalender eller valfri app
-• Tre teman att välja mellan
 
 DITT SPRÅK, AUTOMATISKT
 Diane hör vilket språk du talar och svarar på samma språk. Ingen
@@ -85,7 +84,6 @@ Minst 2, rekommenderat 4–6. Förslag, i den ordningen:
 3. Ett färdigt protokoll — själva värdet
 4. Formatväljaren — visar bredden
 5. "Fråga om mötet" med en fråga och ett svar — den funktion ingen annan har
-6. Ett annat tema, för visuell variation
 
 Funktionsgrafik 1024×500 krävs också.
 

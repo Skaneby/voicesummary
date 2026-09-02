@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -30,55 +28,26 @@ window.addEventListener('beforeinstallprompt', function(e) {
 :root{
   --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
 }
-/* ── ORIGINAL (default) ── */
-html,html[data-theme="original"]{
+/* ── FÄRGER ── */
+html{
   --bg:#0f0f1a;--surface:#1a1a2e;--card:#1e1e3a;--border:#2a2a45;
   --accent:#e94560;--accent-hover:#c23152;--accent-dim:rgba(233,69,96,.15);
   --text:#e8e8f0;--muted:#8888aa;--success:#22c55e;
 }
-/* ── TWIN PEAKS ── */
-html[data-theme="twinpeaks"]{
-  --bg:#0e0205;--surface:#280810;--card:#320c14;--border:#6b1a28;
-  --accent:#d4122e;--accent-hover:#a80e24;--accent-dim:rgba(212,18,46,.22);
-  --text:#f5ead8;--muted:#a08878;--success:#4a9a6a;
-}
-/* ── PANASONIC ── */
-html[data-theme="panasonic"]{
-  --bg:#3a3a3c;--surface:#4a4a4e;--card:#545458;--border:#6a6a70;
-  --accent:#ff1a00;--accent-hover:#cc1500;--accent-dim:rgba(255,26,0,.15);
-  --text:#e8e8ec;--muted:#aaaaaf;--success:#44aa55;
-}
+
 html{height:100%}
 body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   font-size:16px;line-height:1.6;overflow:hidden}
-html[data-theme="twinpeaks"] body{font-family:'Special Elite','Courier New',monospace}
-html[data-theme="panasonic"] body{font-family:'Courier New',Courier,monospace}
-/* Twin Peaks: Black Lodge chevron floor */
-html[data-theme="twinpeaks"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.28;
-  background-image:repeating-linear-gradient(
-    135deg,#fff 0px,#fff 2px,transparent 2px,transparent 22px),
-  repeating-linear-gradient(
-    45deg,#fff 0px,#fff 2px,transparent 2px,transparent 22px)}
-/* Twin Peaks: Red Room — strong crimson vignette */
-html[data-theme="twinpeaks"] body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse at 50% 50%,transparent 0%,rgba(150,0,20,.65) 70%,rgba(8,0,2,.97) 100%)}
+
 #app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--st)}
-/* Twin Peaks: Red curtain strip at very top */
-html[data-theme="twinpeaks"] #app::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
-  background:linear-gradient(90deg,#8b0000,#d4122e,#ff2244,#d4122e,#8b0000);
-  z-index:10;box-shadow:0 0 16px rgba(212,18,46,.8)}
 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;
   padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;
   background:var(--surface)}
-html[data-theme="twinpeaks"] header{border-bottom:2px solid var(--accent);
-  background:linear-gradient(180deg,rgba(140,0,25,.6) 0%,rgba(20,2,8,.8) 100%);
-  box-shadow:0 6px 32px rgba(212,18,46,.3)}
 header h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;
   letter-spacing:.04em}
-html[data-theme="twinpeaks"] header h1{font-family:'Playfair Display',Georgia,serif}
 header h1 svg{color:var(--accent)}
 .icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;
   padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;
@@ -96,7 +65,6 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   display:flex;align-items:center;justify-content:center;
   border:1px solid rgba(233,69,96,.3);flex-shrink:0}
 .setup-title{font-size:1.8rem;font-weight:700;letter-spacing:.06em}
-html[data-theme="twinpeaks"] .setup-title{font-family:'Playfair Display',Georgia,serif}
 .setup-desc{color:var(--muted);font-size:.9rem;max-width:300px}
 .setup-steps{width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px}
 .setup-step{display:flex;gap:12px;align-items:flex-start;text-align:left}
@@ -132,7 +100,6 @@ html[data-theme="twinpeaks"] .setup-title{font-family:'Playfair Display',Georgia
   border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
   position:relative;-webkit-tap-highlight-color:transparent;transition:transform .15s;
   box-shadow:0 0 20px rgba(0,0,0,.4)}
-html[data-theme="twinpeaks"] .record-btn{box-shadow:0 0 24px rgba(212,18,46,.9),0 0 60px rgba(212,18,46,.5),0 0 100px rgba(212,18,46,.2),inset 0 0 20px rgba(255,255,255,.08)}
 .record-btn:active{transform:scale(.9)}
 .record-btn::before{content:'';position:absolute;width:116px;height:116px;
   border-radius:50%;border:2px solid var(--accent);opacity:.3;
@@ -172,7 +139,6 @@ html[data-theme="twinpeaks"] .record-btn{box-shadow:0 0 24px rgba(212,18,46,.9),
 .result-box article section:last-child{margin-bottom:0}
 .result-box h2{font-size:.95rem;font-weight:700;margin-bottom:10px;padding-bottom:6px;
   border-bottom:1px solid var(--border);color:var(--text);letter-spacing:.03em}
-html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georgia,serif}
 .result-box p{color:var(--muted);margin-bottom:10px}
 .result-box p:last-child{margin-bottom:0}
 .result-box ul{padding-left:18px;color:var(--muted)}
@@ -217,6 +183,12 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .format-card[data-fmt="vibecoder"]{--fc:#f59e0b}
 .format-card.active{border-left-color:var(--fc);background:rgba(255,255,255,.04)}
 .format-card.active .fc-name{color:var(--fc)}
+/* Satirformaten avskilda i väljaren: egen rubrik + streckad kant.
+   Klassen .fun sätts i applyFunVisibility utifrån STYLE_META. */
+.format-divider{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:6px;
+  font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.format-divider::before,.format-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.format-card.fun{border-style:dashed;border-left-style:solid}
 
 /* PER-PRESET RESULT ACCENTS */
 .result-box[data-style="protocol"]{border-left-color:#4a9eff}
@@ -233,13 +205,7 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .result-box[data-style="blog"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
 .result-box[data-style="vibecoder"]{border-left-color:#f59e0b}
 .result-box[data-style="vibecoder"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
-/* Panasonic theme: respect per-preset border color */
-html[data-theme="panasonic"] .result-box[data-style="protocol"]{border-left-color:#4a9eff}
-html[data-theme="panasonic"] .result-box[data-style="brief"]{border-left-color:#ff8c42}
-html[data-theme="panasonic"] .result-box[data-style="detailed"]{border-left-color:#3dd9c0}
-html[data-theme="panasonic"] .result-box[data-style="sales"]{border-left-color:#f0c040}
-html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:#a855f7}
-html[data-theme="panasonic"] .result-box[data-style="blog"]{border-left-color:#f59e0b}
+
 /* Result badge (preset name chip) */
 .result-badge{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:100px;
   letter-spacing:.04em;text-transform:uppercase}
@@ -255,7 +221,6 @@ html[data-theme="panasonic"] .result-box[data-style="blog"]{border-left-color:#f
 /* LETTER PRESET */
 .result-box[data-style="letter"]{border-left-color:#6e8efb}
 .result-box[data-style="letter"] h2{color:#6e8efb;border-bottom-color:rgba(110,142,251,.2)}
-html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:#6e8efb}
 .format-card[data-fmt="letter"]{--fc:#6e8efb}
 .format-card[data-fmt="insandare"]{--fc:#ef4444}
 .format-card[data-fmt="psyk"]{--fc:#a855f7}
@@ -291,6 +256,9 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .reformat-pill{flex-shrink:0;padding:5px 11px;border-radius:100px;font-size:.72rem;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s}
 .reformat-pill:hover{border-color:var(--accent);color:var(--text)}
 .reformat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.reformat-sep{flex-shrink:0;align-self:center;font-size:.62rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+  border-left:1px solid var(--border);padding-left:10px;margin-left:4px}
 .qa-wrap{width:100%;max-width:680px;display:flex;flex-direction:column;gap:8px}
 .qa-thread{display:flex;flex-direction:column;gap:8px}
 .qa-thread:empty{display:none}
@@ -459,7 +427,6 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 #s-panel.open{transform:translateY(0)}
 .s-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px}
 .s-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;letter-spacing:.03em}
-html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,serif}
 .s-form{display:flex;flex-direction:column;gap:14px}
 .s-save{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
   font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px}
@@ -515,72 +482,21 @@ html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,ser
 .gh-issue-link{display:block;color:var(--accent);font-size:.85rem;word-break:break-all;
   margin-top:8px;text-decoration:none}
 
-/* ── PANASONIC THEME — skeuomorphic cassette recorder ─────────────────── */
 /* Plastic body texture: subtle horizontal mold lines */
-html[data-theme="panasonic"] body{
-  background:linear-gradient(160deg,#424246 0%,#353538 40%,#3e3e42 100%)}
-html[data-theme="panasonic"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:repeating-linear-gradient(0deg,
-    rgba(255,255,255,.03) 0px,rgba(255,255,255,.03) 1px,
-    transparent 1px,transparent 4px),
-  repeating-linear-gradient(90deg,
-    rgba(0,0,0,.04) 0px,rgba(0,0,0,.04) 1px,
-    transparent 1px,transparent 60px)}
-/* Header: silver panel top with speaker-grille dots */
-html[data-theme="panasonic"] header{
-  background:linear-gradient(180deg,#5a5a5e 0%,#46464a 100%);
-  border-bottom:3px solid #222;
-  box-shadow:0 3px 0 #666,inset 0 1px 0 rgba(255,255,255,.15);
-  letter-spacing:.06em}
-/* Buttons: physical raised plastic keys */
-html[data-theme="panasonic"] .btn-sec{
-  background:linear-gradient(180deg,#5c5c62 0%,#484850 100%);
-  border:1px solid #333;border-radius:4px;
-  box-shadow:0 3px 0 #2a2a2e,0 4px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
-  color:#e8e8ec}
-html[data-theme="panasonic"] .btn-sec:active{
-  transform:translateY(2px);
-  box-shadow:0 1px 0 #2a2a2e,0 2px 4px rgba(0,0,0,.4)}
-html[data-theme="panasonic"] .btn-primary,html[data-theme="panasonic"] .btn-new,html[data-theme="panasonic"] .s-save{
-  border-radius:4px;
-  background:linear-gradient(180deg,#ee2200 0%,#bb1500 100%);
-  box-shadow:0 3px 0 #660800,0 4px 10px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,120,80,.3)}
-html[data-theme="panasonic"] .btn-primary:active,html[data-theme="panasonic"] .btn-new:active{
-  transform:translateY(2px);box-shadow:0 1px 0 #660800}
-/* Record button: big physical red push-button with depth */
-html[data-theme="panasonic"] .record-btn{
-  background:radial-gradient(circle at 38% 35%,#ff5544,#cc1100);
-  box-shadow:0 6px 0 #770800,0 8px 20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,180,160,.4);
-  border:2px solid #990a00;border-radius:50%}
-html[data-theme="panasonic"] .record-btn:active{
-  transform:translateY(4px) scale(.97);
-  box-shadow:0 2px 0 #770800,0 4px 10px rgba(0,0,0,.5)}
-html[data-theme="panasonic"] .record-btn::before{border-color:rgba(255,80,60,.5)}
-/* Inputs: recessed dark slots */
-html[data-theme="panasonic"] .input-group input,html[data-theme="panasonic"] .input-group select,
-html[data-theme="panasonic"] .participants-wrap input{
-  background:#2a2a2e;border:1px solid #222;border-radius:3px;color:#e8e8ec;
-  box-shadow:inset 0 2px 4px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.04)}
-/* Cards: recessed panel areas */
-html[data-theme="panasonic"] .result-box{
-  background:#2e2e32;border:1px solid #222;border-radius:4px;
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.4);border-left:3px solid var(--accent)}
-/* Red LED strip at top */
-html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,#660000,#ff1a00 30%,#ff4422 50%,#ff1a00 70%,#660000);
-  z-index:10;box-shadow:0 0 10px rgba(255,26,0,.9),0 0 20px rgba(255,26,0,.4)}
 
-/* ── THEME PICKER ─────────────────────────────────────────────────────────── */
+/* Header: silver panel top with speaker-grille dots */
+
+/* Buttons: physical raised plastic keys */
+
+/* Record button: big physical red push-button with depth */
+
+/* Inputs: recessed dark slots */
+
+/* Cards: recessed panel areas */
+
+/* Red LED strip at top */
+
 .theme-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
-.theme-card{background:var(--card);border:2px solid var(--border);border-radius:10px;
-  padding:12px 8px;cursor:pointer;text-align:center;transition:border-color .15s;
-  -webkit-tap-highlight-color:transparent}
-.theme-card.active{border-color:var(--accent)}
-.theme-swatch{width:36px;height:36px;border-radius:50%;margin:0 auto 8px;
-  display:flex;align-items:center;justify-content:center;border:2px solid}
-.theme-dot{width:12px;height:12px;border-radius:50%}
-.theme-name{font-size:.72rem;font-weight:600;color:var(--muted);line-height:1.2}
-.theme-card.active .theme-name{color:var(--text)}
 </style>
 </head>
 <body>
@@ -792,6 +708,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
             <div class="fc-name">⚡ Vibe Prompt</div>
             <div class="fc-desc">Prompt för Lovable, Bolt, v0, Cursor</div>
           </button>
+          <div class="format-divider" id="funDivider" style="display:none">På skoj</div>
           <button class="format-card" data-fmt="insandare">
             <div class="fc-name">😤 Arg insändare</div>
             <div class="fc-desc">Engagerat inlägg till lokaltidningen</div>
@@ -1060,27 +977,19 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         <button class="rec-act" id="recClearBtn" style="display:none">Radera alla</button>
       </div>
     </div>
-    <div class="input-group">
-      <label>Utseende</label>
-      <div class="theme-picker">
-        <button class="theme-card" data-theme="original">
-          <div class="theme-swatch" style="background:#0f0f1a;border-color:#e94560">
-            <div class="theme-dot" style="background:#e94560"></div>
-          </div>
-          <div class="theme-name">Original</div>
-        </button>
-        <button class="theme-card" data-theme="twinpeaks">
-          <div class="theme-swatch" style="background:#0e0205;border-color:#d4122e">
-            <div class="theme-dot" style="background:#d4122e"></div>
-          </div>
-          <div class="theme-name">Twin Peaks</div>
-        </button>
-        <button class="theme-card" data-theme="panasonic">
-          <div class="theme-swatch" style="background:#1a1a1c;border-color:#dd1a00">
-            <div class="theme-dot" style="background:#dd1a00"></div>
-          </div>
-          <div class="theme-name">Panasonic</div>
-        </button>
+    <div class="input-group" style="max-width:none">
+      <label style="margin-bottom:4px">Fellogg</label>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.45;margin:0 0 6px">
+        Fel som uppstår sparas här på telefonen så att de går att läsa i efterhand
+        eller dela vid felsökning. Inget skickas någonstans av sig självt.
+      </p>
+      <div class="rec-list" id="errList"></div>
+      <div class="rec-sum">
+        <span id="errTotal"></span>
+        <span style="display:flex;gap:6px">
+          <button class="rec-act" id="errShareBtn" style="display:none">Dela</button>
+          <button class="rec-act" id="errClearBtn" style="display:none">Rensa</button>
+        </span>
       </div>
     </div>
     <div class="input-group web-only">
@@ -1129,15 +1038,6 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
         </svg>
         Dela appen med en vän
-      </button>
-    </div>
-    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
-      <button class="btn-sec" id="forceUpdateBtn" style="width:100%;justify-content:center;gap:8px;opacity:.75">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-        </svg>
-        Tvinga uppdatering
       </button>
     </div>
   </div>
@@ -1271,8 +1171,6 @@ const API_PROXY = 'https://diane-api.johan-skaneby.workers.dev';
 const APP_URL = 'https://skaneby.github.io/voicesummary/';
 const GOOGLE_OAUTH_CLIENT_ID = '732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com';
 const SGH = 'vs_gh_token', SGHR = 'vs_gh_repos';
-const STHEME = 'vs_theme';
-
 // Safe localStorage wrapper — throws SecurityError on Safari with "Block all cookies"
 const store = {
   get(k, def = '') { try { return localStorage.getItem(k) || def; } catch { return def; } },
@@ -1280,14 +1178,6 @@ const store = {
   del(k)          { try { localStorage.removeItem(k); } catch {} },
   json(k, def)    { try { return JSON.parse(localStorage.getItem(k) || 'null') ?? def; } catch { return def; } },
 };
-
-function setTheme(name) {
-  document.documentElement.dataset.theme = name || 'original';
-  store.set(STHEME, name || 'original');
-  document.querySelectorAll('.theme-card').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.theme === (name || 'original'));
-  });
-}
 
 const PROMPTS = {
 
@@ -1826,11 +1716,17 @@ function funEnabled() { return store.get(SFUN) === '1'; }
 function isFunStyle(fmt) { return !!STYLE_META[fmt]?.fun; }
 
 // Visar eller döljer satirformaten i både formatväljaren och omformaterings-
-// raden. Anropas vid start och när inställningen ändras.
+// raden, tillsammans med "På skoj"-avdelarna som skiljer dem från de sakliga.
+// Anropas vid start och när inställningen ändras.
 function applyFunVisibility() {
   const on = funEnabled();
   document.querySelectorAll('.format-card').forEach(el => {
-    if (isFunStyle(el.dataset.fmt)) el.style.display = on ? '' : 'none';
+    const fun = isFunStyle(el.dataset.fmt);
+    el.classList.toggle('fun', fun);
+    if (fun) el.style.display = on ? '' : 'none';
+  });
+  document.querySelectorAll('.format-divider, .reformat-sep').forEach(el => {
+    el.style.display = on ? '' : 'none';
   });
   document.querySelectorAll('.reformat-pill').forEach(el => {
     if (isFunStyle(el.dataset.fmt)) el.style.display = on ? '' : 'none';
@@ -1998,13 +1894,10 @@ function closeHelp() {
 function openSettings() {
   if (APP_MODE) { const em = $('settingsEmail'); if (em) em.textContent = s.email || 'Inte inloggad'; }
   renderAudioList();
+  renderErrList();
   $('sKey').value = s.key;
   $('sModel').value = s.model;
   $('sGHToken').value = store.get(SGH);
-  const savedTheme = store.get(STHEME, 'original');
-  document.querySelectorAll('.theme-card').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.theme === savedTheme);
-  });
   $('s-panel').classList.add('open');
   $('s-overlay').classList.add('open');
 }
@@ -2414,6 +2307,7 @@ async function processFromText(text) {
     showResult(html, style);
   } catch(e) {
     if (reqId !== _reqId) return;
+    logError('app', 'Omformatering: ' + e.message, e.stack || '');
     show('result');
     toast('Fel: ' + e.message);
   }
@@ -2597,7 +2491,11 @@ async function transcribeAudio() {
       s.transcript = txt;
       if (histId) updateHistoryTranscript(histId, txt);
     }
-  } catch { /* tyst */ }
+  } catch (e) {
+    // Tyst mot användaren — Q&A faller tillbaka på resultattexten — men
+    // loggas, annars är felet osynligt vid felsökning
+    logError('app', 'Transkribering: ' + (e && e.message || e), e && e.stack || '');
+  }
   finally {
     s.transcribing = false;
     $('qaStatus').style.display = 'none';
@@ -2780,23 +2678,38 @@ async function copyMarkdown() {
 }
 
 // Kopierar resultatet som formaterad text (text/html + text/plain) så att
-// inklistring i Mail/Gmail/Outlook behåller rubriker, fetstil och listor
+// inklistring i Mail/Gmail/Outlook behåller rubriker, fetstil och listor,
+// och öppnar sedan mailklienten med titeln som ämnesrad. Urklipp kan aldrig
+// fylla i ämnesfältet — mailto: är enda vägen dit, och kroppen skickas inte
+// den vägen eftersom mailto varken klarar HTML eller långa texter.
 async function copyFormatted() {
   s.resultHTML = $('resultBox').innerHTML;
   const html = toEmailHtml(s.resultHTML, s.title || '');
   const plain = toRichText(s.resultHTML); // innehåller redan titeln
+  const subject = (s.title || $('resultBox').querySelector('h2')?.textContent || '').trim();
+  let copied = false;
   try {
     await navigator.clipboard.write([new ClipboardItem({
       'text/html': new Blob([html], { type: 'text/html' }),
       'text/plain': new Blob([plain], { type: 'text/plain' })
     })]);
-    toast('Formaterad text kopierad — klistra in i ditt mail ✓');
+    copied = true;
+    toast(subject ? 'Ämne ifyllt — klistra in texten i mailet ✓'
+                  : 'Formaterad text kopierad — klistra in i ditt mail ✓');
   } catch {
     // ClipboardItem stöds inte — fall tillbaka till ren text
     try {
       await navigator.clipboard.writeText(plain);
+      copied = true;
       toast('Kopierad som ren text (formatering stöds ej i denna webbläsare)');
     } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
+  }
+  if (copied && subject) {
+    // Ankarklick i stället för location.href — Capacitor fångar schemat och
+    // öppnar mailappen, och sidan navigeras inte bort i webbläsaren
+    const a = document.createElement('a');
+    a.href = 'mailto:?subject=' + encodeURIComponent(subject);
+    document.body.appendChild(a); a.click(); a.remove();
   }
 }
 
@@ -3247,6 +3160,100 @@ async function shareAudio(id) {
 
 // ── LJUDARKIV SLUT ─────────────────────────────────────────────────────────
 
+// ── FELLOGG ────────────────────────────────────────────────────────────────
+// Fel sparas lokalt (ringbuffert i localStorage) så att de går att läsa i
+// efterhand eller dela vid felsökning under test. Allt är best-effort —
+// loggningen får aldrig själv orsaka fel eller stoppa flödet.
+const SERR = 'vs_errlog';
+const ERR_KEEP = 50;
+
+function logError(kind, msg, detail) {
+  try {
+    const log = store.json(SERR, []);
+    log.unshift({
+      t: new Date().toISOString(),
+      kind,
+      msg: String(msg || 'okänt fel').slice(0, 300),
+      detail: String(detail || '').slice(0, 1000),
+    });
+    store.set(SERR, JSON.stringify(log.slice(0, ERR_KEEP)));
+  } catch { /* full disk eller privat läge — släpp */ }
+}
+
+function getErrors() { return store.json(SERR, []); }
+function clearErrors() { store.del(SERR); }
+
+// Fångar det som ingen felväg i koden själv tar hand om
+window.addEventListener('error', e => {
+  logError('js', e.message, (e.filename || '') + ':' + (e.lineno || 0) +
+    '\n' + (e.error && e.error.stack || ''));
+});
+window.addEventListener('unhandledrejection', e => {
+  const r = e.reason;
+  logError('promise', (r && r.message) || String(r), (r && r.stack) || '');
+});
+
+function renderErrList() {
+  const list = $('errList');
+  if (!list) return;
+  const all = getErrors();
+  list.innerHTML = '';
+  $('errTotal').textContent = all.length
+    ? all.length + ' fel · senaste ' + fmtDate(all[0].t) : '';
+  $('errShareBtn').style.display = all.length ? '' : 'none';
+  $('errClearBtn').style.display = all.length ? '' : 'none';
+  if (!all.length) {
+    const p = document.createElement('p');
+    p.className = 'rec-empty';
+    p.textContent = 'Inga fel loggade — bra tecken.';
+    list.appendChild(p);
+    return;
+  }
+  all.forEach(err => {
+    const row = document.createElement('div');
+    row.className = 'rec-row';
+    const info = document.createElement('div');
+    info.className = 'rec-info';
+    const name = document.createElement('b');
+    name.textContent = fmtDate(err.t) + ' · ' + err.kind;
+    const sub = document.createElement('span');
+    sub.textContent = err.msg;
+    sub.style.whiteSpace = 'pre-line';
+    info.appendChild(name); info.appendChild(sub);
+    row.appendChild(info);
+    // Tryck på raden växlar full detalj (stack, radnummer)
+    let expanded = false;
+    row.onclick = () => {
+      expanded = !expanded && !!err.detail;
+      sub.textContent = expanded ? err.msg + '\n' + err.detail : err.msg;
+    };
+    list.appendChild(row);
+  });
+}
+
+// Textrapport för delning — komplett med miljöinfo så den kan klistras
+// rakt in i en felsökningskonversation
+function errReport() {
+  const head = 'Diane fellogg · ' + new Date().toISOString() +
+    '\n' + navigator.userAgent + '\nAPP_MODE: ' + APP_MODE + '\n';
+  const body = getErrors().map(e =>
+    '--- ' + e.t + ' [' + e.kind + ']\n' + e.msg + (e.detail ? '\n' + e.detail : '')
+  ).join('\n');
+  return head + '\n' + body + '\n';
+}
+
+async function shareErrors() {
+  const text = errReport();
+  try {
+    if (navigator.share) { await navigator.share({ title: 'Diane fellogg', text }); return; }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return; // användaren ångrade sig
+  }
+  try { await navigator.clipboard.writeText(text); toast('Felloggen kopierad'); }
+  catch { toast('Kunde inte dela felloggen'); }
+}
+// ── FELLOGG SLUT ───────────────────────────────────────────────────────────
+
 // ── AUTH (endast appläge) ──────────────────────────────────────────────────
 // Två vägar väljs i runtime: i Capacitor driver @capgo/capacitor-social-login
 // den native Google-inloggningen; i webbläsare renderar Google Identity
@@ -3478,6 +3485,7 @@ async function restorePurchases() {
 
 // ── ERROR ──────────────────────────────────────────────────────────────────
 function showError(msg, showSettings) {
+  logError('app', msg);
   $('errorMsg').textContent = msg;
   $('errSettingsBtn').style.display = showSettings ? '' : 'none';
   show('error');
@@ -3666,6 +3674,12 @@ function init() {
     renderAudioList();
     toast('Alla inspelningar raderade');
   });
+  bind('errShareBtn', shareErrors);
+  bind('errClearBtn', () => {
+    clearErrors();
+    renderErrList();
+    toast('Felloggen rensad');
+  });
   bind('formatHelpBtn', openFormatHelp);
   bind('fh-overlay', closeFormatHelp);
   bind('discCancelBtn', closeAudioConsent);
@@ -3712,18 +3726,6 @@ function init() {
   $('s-overlay').onclick = closeSettings;
   $('sSaveBtn').onclick = saveSettings;
   $('shareAppBtn').onclick = shareApp;
-  $('forceUpdateBtn').onclick = async function() {
-    const btn = this;
-    btn.textContent = 'Uppdaterar…';
-    btn.disabled = true;
-    try {
-      if ('serviceWorker' in navigator) {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (reg) await reg.update();
-      }
-    } catch(e) { /* ignore */ }
-    window.location.reload();
-  };
   $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
   document.querySelectorAll('.format-card').forEach(btn => {
     btn.onclick = () => setFormat(btn.dataset.fmt);
@@ -3738,9 +3740,18 @@ function init() {
     toast(e.target.checked ? 'Humorformat påslagna' : 'Humorformat dolda');
   };
 
-  // Build re-format pills from STYLE_META
+  // Build re-format pills from STYLE_META. Satirformaten ligger sist i
+  // tabellen och föregås av en "På skoj"-avdelare, samma gräns som i rutnätet.
   const reformatRow = $('reformatRow');
+  let funSepAdded = false;
   Object.entries(STYLE_META).forEach(([fmt, meta]) => {
+    if (meta.fun && !funSepAdded) {
+      const sep = document.createElement('span');
+      sep.className = 'reformat-sep';
+      sep.textContent = 'På skoj';
+      reformatRow.appendChild(sep);
+      funSepAdded = true;
+    }
     const pill = document.createElement('button');
     pill.className = 'reformat-pill';
     pill.dataset.fmt = fmt;
@@ -3760,13 +3771,6 @@ function init() {
 
   // Show install button on iOS if not already installed as app
   if (isIOS() && !isStandalone()) $('installBtn').style.display = '';
-
-  // Theme picker — applies immediately on click, no need to save
-  document.querySelectorAll('.theme-card').forEach(btn => {
-    btn.onclick = () => setTheme(btn.dataset.theme);
-  });
-  // Apply saved theme on load
-  setTheme(store.get(STHEME, 'original'));
 
   // Find & Replace
   $('fnrPrev').onclick = () => fnrFindNext(true);
