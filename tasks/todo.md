@@ -316,7 +316,7 @@ Nedtecknat i slutet av en session som kördes med AI-videogeneratorns
 arbetskatalog, alltså utan Dianes egen `CLAUDE.md` laddad. Punkterna är
 verifierade mot koden efter rebase på `62bd4c2`.
 
-### Blockerande — Gemini-krediterna är slut
+### Krediterna — löst 2026-09-01
 
 Appen svarar `Gemini nekade förfrågan: …` på varje sammanfattning. Felet är
 Googles eget, vidarebefordrat oförändrat av Workern
@@ -337,15 +337,13 @@ Projektnumret matchar prefixet i `GOOGLE_OAUTH_CLIENT_ID` i
 det här projektet, vilket stämmer med att andra Gemini-nycklar på maskinen
 fortfarande fungerar.
 
-- [ ] Köp krediter på https://aistudio.google.com/billing → **Buy credits**
-      (min $10). Kontrollera att kontot **Diane** är valt.
-- [ ] Slå på **auto reload** samma sida. Googles dokumentation är tydlig med
+- [x] Krediter påfyllda 2026-09-01. Appen har fungerat sedan dess.
+- [ ] Slå på **auto reload** på https://aistudio.google.com/billing om det
+      inte redan är gjort. Googles dokumentation är tydlig med
       att alla Gemini-tjänster i alla projekt på ett tömt prepay-konto stoppas
       omedelbart — för Diane betyder det att sammanfattningar dör för samtliga
       användare utan förvarning.
-- [ ] Verifiera med `cd backend && npx wrangler tail` medan appen provas.
-
-Inget annat går att prova på riktigt förrän saldot är påfyllt.
+Backend, nyckel och entitlement-kedjan är därmed bevisade i drift.
 
 ### Faktureringsfallet saknar fallback
 
@@ -380,3 +378,22 @@ står att användaren får Googles engelska faktureringstext rakt i ansiktet.
       gällde fram till `62bd4c2` och är inte längre sant. Servern lagrar
       fortfarande ingenting — det är den delen av löftet som står kvar.
 - [x] `android/.idea/` ignorerad.
+
+### Nästa steg — kritisk väg till Play
+
+Ordnat efter ledtid, inte efter svårighet.
+
+1. **Play Console-kontot först.** Stängd testning kräver **minst 20 testare i
+   14 sammanhängande dagar** innan produktion kan öppnas för nya personliga
+   utvecklarkonton (`docs/runbooks/play-store-checklist.md`). Det är ren
+   kalendertid som inte går att koda bort — startas det inte nu blir det den
+   sista flaskhalsen. 25 USD engångsavgift.
+2. **Test på enhet.** Telefonen är ansluten och `npm run android:sync` körd.
+   Följ `docs/runbooks/test-on-device.md`: mikrofondialogen, lång inspelning
+   med släckt skärm, bakåtknappen, edge-to-edge, och nu även ljudarkivet.
+3. **RevenueCat publika SDK-nycklar.** Fortfarande platshållare
+   ([index.html:3415-3416](../index.html#L3415-L3416)) — köpflödet kastar
+   "Köp är inte konfigurerat än" tills de är satta. Blockerar all
+   betalväggstestning.
+4. **Faktureringsfallet** ([index.html:2258](../index.html#L2258)) — se ovan.
+5. **Merge `mobile-app` → `main`** så GitHub Pages blir publikt nåbart.
