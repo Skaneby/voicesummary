@@ -12,6 +12,8 @@ android/.gradle/
 android/local.properties
 android/captures/
 android/app/release/
+# Android Studio skriver hit när projektet öppnas — per maskin, inte per projekt
+android/.idea/
 
 # Local secrets the user may have downloaded — never commit these to the repo
 json/

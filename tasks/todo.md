@@ -307,3 +307,89 @@ prominent disclosure, integritetspolicy och raderingssida.
 - [ ] RevenueCat publika SDK-nycklar (platshållare i koden)
 - [ ] Merge `mobile-app` → `main` så sidorna blir publikt nåbara
 - [ ] Play Console: konto, produkt, testare
+
+---
+
+## Öppet 2026-09-02
+
+Nedtecknat i slutet av en session som kördes med AI-videogeneratorns
+arbetskatalog, alltså utan Dianes egen `CLAUDE.md` laddad. Punkterna är
+verifierade mot koden, men arbetet bör göras om i en session som står i
+det här repot.
+
+### Blockerande — Gemini-krediterna är slut
+
+Appen svarar `Gemini nekade förfrågan: …` på varje sammanfattning. Felet är
+Googles eget, vidarebefordrat oförändrat av Workern
+([backend/src/index.ts:216-225](../backend/src/index.ts#L216-L225)) och visat av
+klienten i APP_MODE-grenen för 429
+([index.html:2045](../index.html#L2045)). Googles text säger att de förbetalda
+krediterna är slut.
+
+Kontot är identifierat:
+
+| | |
+|---|---|
+| faktureringskonto | **Diane** — `014453-7CCCDF-2F90E4` |
+| projekt | `diane-prod-skaneby` (nr `732034397281`) |
+
+Projektnumret matchar prefixet i `GOOGLE_OAUTH_CLIENT_ID` i
+[backend/wrangler.jsonc:9](../backend/wrangler.jsonc#L9). Kontot betalar bara
+det här projektet, vilket stämmer med att andra Gemini-nycklar på maskinen
+fortfarande fungerar.
+
+- [ ] Köp krediter på https://aistudio.google.com/billing → **Buy credits**
+      (min $10). Kontrollera att kontot **Diane** är valt.
+- [ ] Slå på **auto reload** samma sida. Googles dokumentation är tydlig med
+      att alla Gemini-tjänster i alla projekt på ett tömt prepay-konto stoppas
+      omedelbart — för Diane betyder det att sammanfattningar dör för samtliga
+      användare utan förvarning.
+- [ ] Verifiera med `cd backend && npx wrangler tail` medan appen provas.
+
+### Ingen fallback i appläget
+
+`switchToFallback` körs bara i nyckelläget — i APP_MODE äger servern
+modellvalet, så en tömd nyckel har ingen väg vidare. Användaren får Googles
+engelska faktureringstext inuti "Gemini nekade förfrågan: …".
+
+- [ ] Fånga faktureringsfallet och visa ett svenskt meddelande om att tjänsten
+      är tillfälligt otillgänglig, i stället för att läcka uppströmstexten.
+
+### Formatkorten skiljer inte arbete från nöje
+
+Femton kort ligger i ett platt rutnät utan rubriker eller avdelare
+([index.html:679-734](../index.html#L679-L734)).
+
+**Arbete (9):** Sammanfattning · Protokoll · Kort · Detaljerad · Säljmöte ·
+Formellt brev · Sociala medier · Bloggpost · Vibe Prompt
+
+**Nöje (6):** Arg insändare · Psykiatrisk utredning · Politiskt tal ·
+Predikan · Drama Lab · Konspiration
+
+Att de sistnämnda är skämt syns bara i prompterna. Psykiatrisk utredning ber
+modellen om en livsstilsordination *"delightfully absurd but medically
+phrased"* ([index.html:1457](../index.html#L1457)) och ligger granne med
+Formellt mötesprotokoll. Emojin bär inte skillnaden — Bloggpost och Vibe
+Prompt har också emoji fast de är arbetsverktyg.
+
+- [ ] Två rubriker över samma rutnät: *Arbete* och *För skojs skull*. Bara
+      markup och CSS i befintlig `.format-card`-struktur.
+- [ ] **Beslut:** ska alla sex nöjesformat vara kvar för betalande användare,
+      eller döljas i produktionsbygget?
+
+### Lösa ändringar i arbetskopian
+
+- [ ] `playwright-core` tillagd i `package.json` — `npm test` krävde den men
+      den saknades. Committa eller backa.
+- [ ] `android/.idea/` otrackad efter att Android Studio öppnats. Hör troligen
+      hemma i `.gitignore`.
+
+### Inte en bugg — rör inte
+
+Ljudet lagras aldrig. Inspelningen lever i `s.chunks` → `s.blob`
+([index.html:1963](../index.html#L1963)), skickas som base64 till Workern och
+slängs. Det är ett dokumenterat produktlöfte
+(`docs/play-store-listing.md:94` — "Lagras ljudet? Nej — behandlas och
+kastas") med en egen samtyckesnyckel `vs_audio_consent`. Historiken sparar
+resultatet, inte ljudet: `vs_history`, max 40 poster, med transkriptionen
+kapad till 120 000 tecken.
