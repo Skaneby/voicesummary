@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Debug-bygget heter "Diane – beta" på hemskärmen så att det inte kan
+     förväxlas med en butiksinstallerad release. Release tar app_name från
+     main/res/values/strings.xml och påverkas inte av den här filen. -->
+<resources>
+    <string name="app_name">Diane – beta</string>
+    <string name="title_activity_main">Diane – beta</string>
+</resources>
