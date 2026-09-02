@@ -9,6 +9,10 @@ export interface SummarizeBody {
   /** Låt klienten begära lägre temperatur för faktafrågor. */
   temperature?: number;
   max_output_tokens?: number;
+  /** Tak på modellens tanketokens. Utan tak tänker Gemini 3.x dynamiskt och
+      kan äta hela svarsbudgeten på en ljuduppgift — svaret blir tomt efter
+      flera minuter. Servern sätter därför alltid ett tak, även utan fältet. */
+  thinking_budget?: number;
 }
 
 export function isSummarizeBody(x: unknown): x is SummarizeBody {
@@ -23,7 +27,35 @@ export function isSummarizeBody(x: unknown): x is SummarizeBody {
     if (typeof o.audio_base64 !== "string" || typeof o.audio_mime !== "string")
       return false;
   }
+  if (o.thinking_budget !== undefined && typeof o.thinking_budget !== "number")
+    return false;
   return true;
+}
+
+const THINKING_BUDGET_DEFAULT = 2048;
+const THINKING_BUDGET_MAX = 8192;
+
+/** Gemini-payloaden byggs separat så att tester kan verifiera att tanketaket
+    aldrig faller bort igen — det var så här appläget blev långsamt. */
+export function buildGeminiPayload(body: SummarizeBody) {
+  const parts: unknown[] = [{ text: body.prompt }];
+  if (body.audio_base64 && body.audio_mime) {
+    parts.push({
+      inlineData: { mimeType: body.audio_mime, data: body.audio_base64 },
+    });
+  }
+  const budget = Math.min(
+    Math.max(body.thinking_budget ?? THINKING_BUDGET_DEFAULT, 0),
+    THINKING_BUDGET_MAX,
+  );
+  return {
+    contents: body.contents ?? [{ parts }],
+    generationConfig: {
+      temperature: body.temperature ?? 0.4,
+      maxOutputTokens: body.max_output_tokens ?? 16384,
+      thinkingConfig: { thinkingBudget: budget },
+    },
+  };
 }
 
 /** Standardkedja när GEMINI_MODELS inte är satt. Ordning = fallande preferens. */
@@ -66,20 +98,7 @@ export async function callGemini(
 ): Promise<Response> {
   // Tre former stöds: färdig konversation (Q&A), prompt + ljud
   // (sammanfattning och transkribering) och enbart prompt (omformatering).
-  const parts: unknown[] = [{ text: body.prompt }];
-  if (body.audio_base64 && body.audio_mime) {
-    parts.push({
-      inlineData: { mimeType: body.audio_mime, data: body.audio_base64 },
-    });
-  }
-
-  const payload = {
-    contents: body.contents ?? [{ parts }],
-    generationConfig: {
-      temperature: body.temperature ?? 0.4,
-      maxOutputTokens: body.max_output_tokens ?? 8192,
-    },
-  };
+  const payload = buildGeminiPayload(body);
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   return await fetch(url, {

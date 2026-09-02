@@ -2107,7 +2107,12 @@ function callModel(base64, mime) {
         prompt: buildPrompt(),
         audio_base64: base64,
         audio_mime: mime,
-        audio_seconds: Math.round((s.elapsed || 0) / 1000)
+        audio_seconds: Math.round((s.elapsed || 0) / 1000),
+        temperature: 0.3,
+        max_output_tokens: 16384,
+        // Utan tanketak tänker Gemini 3.x obegränsat på ljud — minuter av
+        // väntan och tomma svar. Samma tak som webbläget sätter direkt.
+        thinking_budget: 2048
       })
     });
   }
@@ -2225,7 +2230,8 @@ function callGeminiRaw(payload, audioSeconds = 0) {
         contents: payload.contents,
         audio_seconds: Math.round(audioSeconds),
         temperature: payload.generationConfig?.temperature,
-        max_output_tokens: payload.generationConfig?.maxOutputTokens
+        max_output_tokens: payload.generationConfig?.maxOutputTokens,
+        thinking_budget: payload.generationConfig?.thinkingConfig?.thinkingBudget
       })
     });
   }

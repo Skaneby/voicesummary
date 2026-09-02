@@ -105,7 +105,31 @@ test("TRANSFER accepteras utan app_user_id", () => {
 });
 
 // ── Modellkedjan: överbelastning ska inte stoppa användaren ────────────────
-import { modelChain, shouldTryNextModel } from "../src/gemini.ts";
+import { modelChain, shouldTryNextModel, buildGeminiPayload } from "../src/gemini.ts";
+
+// Tanketaket är anledningen till att appläget en gång tog minuter på sig:
+// utan thinkingConfig tänker Gemini 3.x dynamiskt tills svarsbudgeten är slut.
+test("tanketaket sätts alltid — även när klienten inte skickar något", () => {
+  const p = buildGeminiPayload({ prompt: "x", audio_seconds: 10 });
+  assert.equal(p.generationConfig.thinkingConfig.thinkingBudget, 2048);
+  assert.equal(p.generationConfig.maxOutputTokens, 16384);
+});
+
+test("klientens tanketak följer med och klampas till rimliga gränser", () => {
+  const a = buildGeminiPayload({ prompt: "x", audio_seconds: 0, thinking_budget: 1024 });
+  assert.equal(a.generationConfig.thinkingConfig.thinkingBudget, 1024);
+  const b = buildGeminiPayload({ prompt: "x", audio_seconds: 0, thinking_budget: 999999 });
+  assert.equal(b.generationConfig.thinkingConfig.thinkingBudget, 8192);
+  const c = buildGeminiPayload({ prompt: "x", audio_seconds: 0, thinking_budget: -5 });
+  assert.equal(c.generationConfig.thinkingConfig.thinkingBudget, 0);
+});
+
+test("ljudet hamnar som inlineData bredvid prompten", () => {
+  const p = buildGeminiPayload({ prompt: "sammanfatta", audio_seconds: 5, audio_base64: "QUJD", audio_mime: "audio/webm" });
+  const parts = (p.contents as { parts: unknown[] }[])[0].parts;
+  assert.equal(parts.length, 2);
+  assert.deepEqual(parts[1], { inlineData: { mimeType: "audio/webm", data: "QUJD" } });
+});
 
 test("kedjan faller tillbaka på standard när inget är satt", () => {
   assert.deepEqual(modelChain(undefined), ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"]);
