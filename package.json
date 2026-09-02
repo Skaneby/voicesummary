@@ -11,7 +11,8 @@
     "test": "node tests/smoke.js"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.3.4"
+    "@capacitor/cli": "^8.3.4",
+    "playwright-core": "^1.62.1"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
