@@ -502,6 +502,20 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 /* Red LED strip at top */
 
 .theme-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
+
+/* ── STOR SKÄRM ── appen är byggd för en telefon; på en laptop ska den inte
+   fylla hela fönstret utan stå som en centrerad kolumn. Bottenpanelerna
+   följer samma bredd så de inte spänner över hela skärmen. */
+@media (min-width: 760px){
+  body{background:#0a0a12}
+  #app{max-width:640px;margin:0 auto;background:var(--bg);
+    box-shadow:0 0 0 1px var(--border),0 30px 90px rgba(0,0,0,.55)}
+  #s-panel,#h-panel,#fh-panel,#help-panel,#cal-panel,#gh-panel{
+    left:50%;right:auto;width:100%;max-width:640px;transform:translate(-50%,100%)}
+  #s-panel.open,#h-panel.open,#fh-panel.open,#help-panel.open,#cal-panel.open,#gh-panel.open{
+    transform:translate(-50%,0)}
+  #disc-panel{left:50% !important;right:auto !important;width:100%;max-width:640px;transform:translateX(-50%)}
+}
 </style>
 </head>
 <body>
@@ -971,6 +985,14 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   <div class="s-handle"></div>
   <h2 class="s-title">Inställningar</h2>
   <div class="s-form">
+    <div class="input-group web-only" style="max-width:none">
+      <label style="margin-bottom:6px">Konto</label>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.45;margin:0 0 8px">
+        Har du en Diane-prenumeration? Logga in så behövs ingen egen API-nyckel —
+        prenumerationen följer med från appen.
+      </p>
+      <button class="btn-sec" id="settingsSignInBtn" style="width:100%;justify-content:center">Logga in med Google — för prenumeranter</button>
+    </div>
     <div class="input-group" style="max-width:none">
       <label style="margin-bottom:8px">Innehåll</label>
       <div class="sw-row">
@@ -4035,6 +4057,7 @@ function init() {
     show(APP_MODE ? 'signin' : (s.key ? 'idle' : 'setup'));
   };
   bind('setupSignInBtn', () => show('signin'));
+  bind('settingsSignInBtn', () => { closeSettings(); show('signin'); });
   bind('paywallSignOutBtn', () => { signOutLocal(); afterSignOut(); });
   bind('paywallDeleteBtn', deleteAccount);
   bind('settingsSignOutBtn', () => { signOutLocal(); closeSettings(); afterSignOut(); });

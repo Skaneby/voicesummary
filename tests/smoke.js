@@ -691,6 +691,30 @@ function check(name, ok, extra) {
     show('idle');
     return ok;
   }));
+  check('inställningarna har inloggningsknapp i nyckelläget', await page.evaluate(() => {
+    s.idToken = ''; applyAuthVisibility(); openSettings();
+    const visible = $('settingsSignInBtn').closest('.web-only').style.display !== 'none';
+    $('settingsSignInBtn').click();
+    const ok = visible && document.querySelector('.screen.active')?.id === 'screen-signin'
+      && !$('s-panel').classList.contains('open');
+    show('idle');
+    return ok;
+  }));
+  check('inloggningsknappen i inställningarna göms när man är inloggad', await page.evaluate(() => {
+    s.idToken = 'fake'; applyAuthVisibility();
+    const hidden = $('settingsSignInBtn').closest('.web-only').style.display === 'none';
+    s.idToken = ''; applyAuthVisibility();
+    return hidden;
+  }));
+  await page.setViewportSize({ width: 1280, height: 800 });
+  check('stor skärm: appen står som centrerad kolumn och panelerna följer', await page.evaluate(() => {
+    const app = getComputedStyle($('app'));
+    const panel = getComputedStyle($('s-panel'));
+    return app.maxWidth === '640px' && panel.maxWidth === '640px' && panel.left !== '0px';
+  }));
+  await page.setViewportSize({ width: 400, height: 800 });
+  check('telefonbredd: appen fyller skärmen som förut', await page.evaluate(() =>
+    getComputedStyle($('app')).maxWidth === 'none' && getComputedStyle($('s-panel')).left === '0px'));
 
   console.log('\n── 5i. Drive-synk (bokföringsmönstret) ──');
   // Mockat Drive: en fil i appDataFolder, tokenklient som svarar direkt
