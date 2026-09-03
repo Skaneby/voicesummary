@@ -419,12 +419,18 @@ och webbversionen är live — punkten om merge är därmed avklarad.
 2. [ ] **Lägg till testanvändare** på samma sida (`+ Add users`, max 100 i
    Testing-läge) — samma personer som ska ingå i Play Consolets stängda
    testning nedan, så de kan logga in i Diane och testa på riktigt.
-3. [ ] **Play Console-kontot.** Med DUNS-numret registreras ett
-   organisationskonto, vilket undantar Diane från kravet på 20 testare i
-   14 sammanhängande dagar som gäller personliga utvecklarkonton — den
-   tidigare största kalenderflaskhalsen försvinner. Registrera ändå i god
-   tid: organisationsverifieringen hos Google tar egen tid.
-   https://play.google.com/console/signup — 25 USD engångsavgift.
+3. [ ] **Play Console-kontot.** Johan har ett DUNS-nummer och kan registrera
+   ett organisationskonto i stället för personligt. **OVERIFIERAT PÅSTÅENDE
+   FRÅN 2026-09-03, TA INTE FÖR SANT:** att org-konton med DUNS skulle vara
+   undantagna från kravet på 20 testare i 14 sammanhängande dagar. Det
+   kravet är dokumenterat för *personliga* konton
+   (`docs/runbooks/play-store-checklist.md`) — huruvida det gäller
+   organisationskonton med DUNS-verifiering med, framgår inte av något vi
+   faktiskt kollat. **Verifiera i Play Console själv** vid registreringen
+   (konsolen visar kraven för den valda kontotypen) innan detta planeras
+   som en genväg. Registrera i god tid oavsett: organisationsverifieringen
+   hos Google tar egen tid. https://play.google.com/console/signup —
+   25 USD engångsavgift.
 4. [ ] **RevenueCat publika SDK-nycklar.** Fortfarande platshållare i
    klienten — köpflödet kastar "Köp är inte konfigurerat än" tills de är
    satta. Blockerar all betalväggstestning i appen.
