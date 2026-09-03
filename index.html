@@ -1126,7 +1126,7 @@ const FORMAT_HELP = {
   predikan:   'Predikan över det du berättat, med moral och avslutande välsignelse.',
   drama:      'Vardagliga händelser omskrivna som episkt teaterdrama.',
   konspiration: 'Den påhittade "dolda sanningen" bakom det du just berättade.',
-  floskel:    'Inspelningen omskriven i tom konsultsvenska — stora ord, noll innehåll.',
+  floskel:    'Din vardag som byråkratisk processrapport: fikat blir "strategisk implementering av bakverk" och vännerna intressenter.',
 };
 
 // Bygger hjälprutan från STYLE_META så listan aldrig kan bli inaktuell
@@ -1666,25 +1666,30 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
 </article>
 Rules: Treat the recording's content as real evidence — reference it specifically. All organizations and documents must be invented but plausible. Calm, assured tone throughout — the most convincing conspiracy theories never shout. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
-floskel: `Analyze this audio recording and rewrite its content entirely in hollow corporate buzzword language — the kind of empty management-consultant speak that sounds impressive but says nothing ("floskler" in Swedish).
-Detect the language being spoken and respond ENTIRELY in that same language.
-Every concrete fact, decision or feeling in the recording must be inflated into vague, grandiose platitudes. In Swedish, lean on classics like "synergier", "ta höjd", "växla upp", "agilt förhållningssätt", "holistiskt perspektiv", "lågt hängande frukter", "vi tar med oss det här" — in other languages, use their equivalents. Never state anything plainly. The comedy comes from recognizing the real content buried under corporate fog, so keep the underlying facts traceable — just absurdly overdressed.
+floskel: `You are a management consultant who communicates EXCLUSIVELY in corporate jargon, buzzwords and — when the language is Swedish — svengelska. You are incapable of saying anything plainly.
+Analyze this audio recording and rewrite its content as an extremely bureaucratic, business-formal process report. Detect the language being spoken and respond ENTIRELY in that same language (apply the Swedish examples below as equivalents in that language).
+Your method is to deliberately invert every principle of good communication: instead of simplifying the complicated, you maximize the complexity of the utterly simple. Steer everything away from the concrete and human, toward the abstract and process-driven, using these five transformations on EVERYTHING in the recording:
+1. LEXICAL SUBSTITUTION — replace concrete nouns with abstract business terms. An 80th birthday becomes "övergången till version 8.0"; a moped becomes a "mobilitetslösning"; a kitchen becomes a "nutritionsfacilitet".
+2. PROCESSIFICATION — replace human actions with project terminology. Having coffee becomes "strategisk implementering av bakverk" or "processande av fikakvoten"; going for a walk becomes "exekvering av den ambulatoriska roadmapen".
+3. DEPERSONIFICATION — family, friends and colleagues become "intressenter", "resurser", "processägare" or "kravställare". No one is ever a person; everyone is a function.
+4. KEYWORD INJECTION — maintain a high density of: synergier, onboarding, out-of-the-box, core business, agilt, allokera, ta höjd, växla upp, holistiskt, lågt hängande frukter.
+5. FEELINGS BECOME METRICS — replace personal experience with business value. Joy becomes "hög kundnöjdhet" or "maximerat mervärde"; tiredness becomes "suboptimal resursutnyttjandegrad"; love becomes "stark stakeholder-alignment".
 Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [pompous 4–7 word corporate vision statement]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
     <h2>[Exekutiv sammanfattning / Executive summary]</h2>
-    <p>[The whole recording restated as one grand, empty vision. Maximum buzzwords, minimum content.]</p>
+    <p>[The whole recording restated as one grand, empty vision. Maximum buzzword density, minimum content.]</p>
   </section>
   <section>
     <h2>[Vår resa / Our journey]</h2>
-    <p>[What was actually said, reframed as an inspiring transformation narrative. Everything is a "resa", every problem an "utmaning och möjlighet".]</p>
+    <p>[What actually happened or was said, run through all five transformations. Everything is a "resa", every problem an "utmaning och möjlighet".]</p>
   </section>
   <section>
     <h2>[Nyckelinsikter / Key takeaways]</h2>
     <ul>
-      <li>[3–5 bullets. Each takes one real point from the recording and inflates it into consultant-speak. The reader should be able to guess what was actually meant — barely.]</li>
+      <li>[3–5 bullets. Each takes one real point from the recording and applies the transformations. The reader should be able to guess what was actually meant — barely.]</li>
     </ul>
   </section>
   <section>
@@ -1692,7 +1697,7 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <p>[Vague next steps that commit to nothing and name no one. End with an absurdly grandiose closing statement about the future.]</p>
   </section>
 </article>
-Rules: Straight face throughout — the text must never wink at the reader or admit it is satire; the emptiness IS the joke. No new facts, only reupholstered ones from the recording. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Straight face throughout — the text must never wink at the reader or admit it is satire; the emptiness IS the joke. No new facts, only reupholstered ones from the recording — the underlying reality must remain (barely) traceable under the corporate fog. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
