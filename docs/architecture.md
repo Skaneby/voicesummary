@@ -97,16 +97,24 @@ plötsligt hantera två format.
 Ungefär 85 % av klientkoden är lägesoberoende: inspelning, format-
 prompter, sanering, historik, delning, redigering, Q&A.
 
+Sedan grenen `web-app` är avgörandet inte längre app kontra webb utan
+**proxyläge** (`proxyMode()` i klienten): appen ELLER en webbanvändare som
+loggat in med Google. Webben har därmed två lägen — nyckelläget (BYOK, som
+förut) och kontoläget (samma inloggning, betalvägg och Worker-väg som appen,
+men utan köpknappar: prenumerationen tecknas i appen och följer med kontot).
+
 Lägesspecifikt är i praktiken bara fyra ställen:
 
-| Ställe | Webb | App |
+| Ställe | Webb med nyckel | Proxyläge (app / inloggad webb) |
 |---|---|---|
 | anropet i `generate()` | Gemini direkt | `POST /summarize` |
 | gate i `startRecording()` | API-nyckel finns? | inloggad + prenumererar? |
 | inställningspanelen | nyckel, modell | konto, prenumeration |
 | skärmlistan | `setup` | `signin`, `paywall` |
 
-Håll den listan kort. Växer den är det ett tecken på att något byggs i fel lager.
+RevenueCat-köp och delnings-/uppdateringsknappar är fortsatt `APP_MODE`-
+exklusiva. Håll listan kort. Växer den är det ett tecken på att något byggs
+i fel lager.
 
 ## Säkerhetsgränser
 

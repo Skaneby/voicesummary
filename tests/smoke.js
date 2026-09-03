@@ -597,6 +597,56 @@ function check(name, ok, extra) {
     return getErrors().length === 0 && /Inga fel loggade/.test($('errList').textContent);
   }));
 
+  console.log('\n── 5h. Webbkontoläge (inloggad i webbläsaren) ──');
+  check('proxyMode av i webbens nyckelläge', await page.evaluate(() => {
+    s.idToken = ''; return !proxyMode();
+  }));
+  check('proxyMode på när webbanvändaren loggat in', await page.evaluate(() => {
+    s.idToken = 'fake'; return proxyMode();
+  }));
+
+  // Inloggad webb ska anropa Workern med Bearer-token, inte Google direkt
+  let webbProxyReq = null;
+  await ctx.route('**/diane-api.johan-skaneby.workers.dev/**', route => {
+    webbProxyReq = {
+      url: route.request().url(),
+      auth: route.request().headers()['authorization'],
+    };
+    route.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'ok' }] }, finishReason: 'STOP' }] }) });
+  });
+  await page.evaluate(async () => {
+    s.idToken = 'fake-token';
+    await callGeminiRaw({ contents: [{ parts: [{ text: 'x' }] }],
+      generationConfig: { thinkingConfig: { thinkingBudget: 2048 } } });
+  });
+  check('inloggad webb går via Workern', !!webbProxyReq && /\/summarize$/.test(webbProxyReq.url));
+  check('token följer med som Bearer', webbProxyReq?.auth === 'Bearer fake-token');
+  await ctx.unroute('**/diane-api.johan-skaneby.workers.dev/**');
+
+  check('webbens betalvägg hänvisar till appen — inga köpknappar', await page.evaluate(() => {
+    applyAuthVisibility();
+    return document.querySelector('.plan-row').style.display === 'none' &&
+      $('paywallRestoreBtn').style.display === 'none' &&
+      $('paywallWebNote').style.display !== 'none';
+  }));
+  check('BYOK-fälten göms och kontosektionen visas vid inloggning', await page.evaluate(() => {
+    s.idToken = 'fake'; applyAuthVisibility();
+    return [...document.querySelectorAll('.web-only')].every(el => el.style.display === 'none') &&
+      [...document.querySelectorAll('.app-only')].every(el => el.style.display !== 'none');
+  }));
+  check('utloggning återställer nyckelläget', await page.evaluate(() => {
+    signOutLocal(); applyAuthVisibility();
+    return !proxyMode() &&
+      [...document.querySelectorAll('.web-only')].every(el => el.style.display !== 'none');
+  }));
+  check('setup-skärmens inloggningsknapp visar signin', await page.evaluate(() => {
+    $('setupSignInBtn').click();
+    const ok = document.querySelector('.screen.active')?.id === 'screen-signin';
+    show('idle');
+    return ok;
+  }));
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');

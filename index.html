@@ -586,6 +586,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
         </div>
       </div>
       <button class="btn-primary" id="setupSaveBtn">Kom igång</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:6px;width:min(100%,300px)">
+        <span style="flex:1;height:1px;background:var(--border)"></span>
+        <span style="font-size:.75rem;color:var(--muted)">eller</span>
+        <span style="flex:1;height:1px;background:var(--border)"></span>
+      </div>
+      <button class="btn-sec" id="setupSignInBtn">Logga in med Google — för prenumeranter</button>
     </section>
 
     <!-- SIGN IN (appläge) -->
@@ -634,6 +640,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
       </div>
       <p style="font-size:.78rem;color:var(--muted);margin-top:4px;max-width:330px;text-align:center" id="paywallTerms">
         Provperioden är gratis i 7 dagar och övergår sedan automatiskt i den prenumeration du valt. Avsluta när som helst i Google Play.
+      </p>
+      <p class="setup-desc" id="paywallWebNote" style="display:none;max-width:330px;font-size:.88rem">
+        Prenumerationen tecknas i Diane-appen på din telefon. Logga sedan in här
+        med samma Google-konto — så följer den med hit.
       </p>
       <p style="font-size:.78rem;color:var(--muted);margin-top:2px" id="paywallEmail"></p>
       <div style="display:flex;gap:14px;margin-top:6px">
@@ -1174,6 +1184,10 @@ function closeFormatHelp() {
 // all trafik via vår proxy som håller nyckeln. Se docs/architecture.md.
 const isCapacitor = () => !!(window.Capacitor?.isNativePlatform?.());
 const APP_MODE = isCapacitor();
+// Proxyläge: alla Gemini-anrop går via Workern med kontots token i stället
+// för direkt till Google med egen nyckel. Sant i appen — och i webbläsaren
+// så fort användaren loggat in med Google (webbversionen av appen).
+function proxyMode() { return APP_MODE || !!s.idToken; }
 const API_PROXY = 'https://diane-api.johan-skaneby.workers.dev';
 // Webbappens publika adress. Enda stället den står — ändras här om repot
 // byter namn eller får en egen domän.
@@ -1870,6 +1884,7 @@ function handleBack() {
   }
   if (cur === 'result' || cur === 'error' || cur === 'working') { show('idle'); return true; }
   if (cur === 'paywall') { show('signin'); return true; }
+  if (cur === 'signin' && !APP_MODE) { show(s.key ? 'idle' : 'setup'); return true; }
   if (cur === 'setup' && s.key) { show('idle'); return true; }
   return false;                        // rot — låt bakåt stänga appen
 }
@@ -1934,7 +1949,7 @@ function closeHelp() {
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 function openSettings() {
-  if (APP_MODE) { const em = $('settingsEmail'); if (em) em.textContent = s.email || 'Inte inloggad'; }
+  if (proxyMode()) { const em = $('settingsEmail'); if (em) em.textContent = s.email || 'Inte inloggad'; }
   renderAudioList();
   renderErrList();
   $('sKey').value = s.key;
@@ -1988,7 +2003,7 @@ function closeAudioConsent() {
 }
 
 async function startRecording() {
-  if (APP_MODE) {
+  if (proxyMode()) {
     if (!s.idToken) { show('signin'); return; }
     if (!s.subActive) { show('paywall'); return; }
     if (!hasAudioConsent()) { askAudioConsent(); return; }
@@ -2138,7 +2153,7 @@ function switchToFallback(reason) {
 // oförändrat Gemini-svar — proxyn skickar tillbaka Googles svar rått — så all
 // svarsparsning nedanför är gemensam.
 function callModel(base64, mime) {
-  if (APP_MODE) {
+  if (proxyMode()) {
     return fetch(API_PROXY + '/summarize', {
       method: 'POST',
       headers: {
@@ -2183,9 +2198,10 @@ async function generate(base64, mime, attempt = 0) {
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
-    // Appläge: servern äger modellvalet, så ingen fallback-kedja här. I stället
-    // är felen kontorelaterade — utloggad, obetald, kvot slut.
-    if (APP_MODE) {
+    // Proxyläge (app eller inloggad webb): servern äger modellvalet, så ingen
+    // fallback-kedja här. I stället är felen kontorelaterade — utloggad,
+    // obetald, kvot slut.
+    if (proxyMode()) {
       if (r.status === 401) { signOutLocal(); show('signin'); throw new Error('Din inloggning har gått ut — logga in igen.'); }
       if (r.status === 402) { show('paywall'); throw new Error('Din prenumeration är inte aktiv.'); }
       if (r.status === 429) {
@@ -2260,7 +2276,7 @@ async function generate(base64, mime, attempt = 0) {
 // eftersom klienten där inte har någon nyckel. Utan detta faller
 // omformatering, transkribering och Fråga om mötet tyst sönder i appen.
 function callGeminiRaw(payload, audioSeconds = 0) {
-  if (APP_MODE) {
+  if (proxyMode()) {
     return fetch(API_PROXY + '/summarize', {
       method: 'POST',
       headers: {
@@ -3312,8 +3328,10 @@ async function shareErrors() {
 // kallstarter — annars tvingas användaren logga in varje gång appen startas.
 // I en delad webbläsare håller vi den kortlivad.
 const tokenStore = {
-  get() { try { return (APP_MODE ? localStorage : sessionStorage).getItem('vs_id_token') || ''; } catch { return ''; } },
-  set(v) { try { (APP_MODE ? localStorage : sessionStorage).setItem('vs_id_token', v); } catch {} },
+  // localStorage även i webben — inloggningen ska överleva att webbläsaren
+  // stängs. (Tidigare sessionStorage i webbläget; gamla nycklar städas i del.)
+  get() { try { return localStorage.getItem('vs_id_token') || sessionStorage.getItem('vs_id_token') || ''; } catch { return ''; } },
+  set(v) { try { localStorage.setItem('vs_id_token', v); } catch {} },
   del() { try { localStorage.removeItem('vs_id_token'); sessionStorage.removeItem('vs_id_token'); } catch {} },
 };
 
@@ -3358,6 +3376,7 @@ async function nativeGoogleSignIn() {
 }
 
 let gisInitialized = false;
+let gisRetries = 0;
 function initGoogleSignIn() {
   const host = $('googleSignInBtn');
   if (!host) return;
@@ -3381,7 +3400,8 @@ function initGoogleSignIn() {
       sc.async = true; sc.defer = true;
       document.head.appendChild(sc);
     }
-    setTimeout(initGoogleSignIn, 200);
+    // Ge upp efter ~10 s — offline ska inte ge en evig omförsökstimer
+    if (gisRetries++ < 50) setTimeout(initGoogleSignIn, 200);
     return;
   }
   google.accounts.id.initialize({
@@ -3434,8 +3454,9 @@ async function fetchMe() {
 }
 
 async function routeAfterAuth() {
+  applyAuthVisibility();
   const me = await fetchMe();
-  if (!s.idToken) { show('signin'); return; }
+  if (!s.idToken) { applyAuthVisibility(); show('signin'); return; }
   if (me && me.sub_active === 1) { show('idle'); }
   else {
     const em = $('paywallEmail');
@@ -3454,7 +3475,8 @@ async function deleteAccount() {
   } catch { toast('Kunde inte radera kontot. Försök igen.'); return; }
   signOutLocal();
   closeSettings();
-  show('signin');
+  applyAuthVisibility();
+  show(APP_MODE ? 'signin' : (s.key ? 'idle' : 'setup'));
   toast('Kontot är raderat');
 }
 
@@ -3688,33 +3710,63 @@ function installApp() {
   }
 }
 
+// Läges- och inloggningsberoende synlighet. BYOK-fälten (nyckel/modell/
+// GitHub) hör till webbens nyckelläge; kontosektionen till proxyläget —
+// appen eller inloggad webb. Köpknapparna är RevenueCat och finns bara i
+// appen; webbens betalvägg hänvisar till appen. Anropas vid start och när
+// inloggningsläget ändras.
+function applyAuthVisibility() {
+  document.querySelectorAll('.web-only').forEach(el => { el.style.display = proxyMode() ? 'none' : ''; });
+  document.querySelectorAll('.app-only').forEach(el => { el.style.display = proxyMode() ? '' : 'none'; });
+  const webPaywall = !APP_MODE;
+  const planRow = document.querySelector('.plan-row');
+  if (planRow) planRow.style.display = webPaywall ? 'none' : '';
+  const restore = $('paywallRestoreBtn');
+  if (restore) restore.style.display = webPaywall ? 'none' : '';
+  const terms = $('paywallTerms');
+  if (terms) terms.style.display = webPaywall ? 'none' : '';
+  const note = $('paywallWebNote');
+  if (note) note.style.display = webPaywall ? '' : 'none';
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 function init() {
   pushBackSentinel();
 
-  // Lägesberoende synlighet: nyckel/modell/GitHub hör till webben, konto till appen
-  document.querySelectorAll('.web-only').forEach(el => { if (APP_MODE) el.style.display = 'none'; });
-  document.querySelectorAll('.app-only').forEach(el => { el.style.display = APP_MODE ? '' : 'none'; });
+  s.idToken = tokenStore.get();
+  applyAuthVisibility();
   if (APP_MODE) { const gh = $('githubBtn'); if (gh) gh.style.display = 'none'; }
 
   if (APP_MODE) {
-    // Appläge: hämta ev. sparad token och låt /me avgöra var användaren landar
-    s.idToken = tokenStore.get();
+    // Appläge: låt /me avgöra var användaren landar
     show('signin');
     initGoogleSignIn();
     if (isIOS()) $('paywallTerms').textContent =
       'Provperioden övergår automatiskt i en prenumeration på 40 kr/månad om du inte avslutar den. Avsluta när som helst i App Store.';
     if (s.idToken) routeAfterAuth();
+  } else if (s.idToken) {
+    // Inloggad webbanvändare — samma kontoflöde som appen
+    initGoogleSignIn();
+    routeAfterAuth();
   } else {
+    // Webbens nyckelläge, med inloggning som alternativ på setup-skärmen
     show(s.key ? 'idle' : 'setup');
+    initGoogleSignIn();
   }
 
   // Konto-knappar (finns bara i appläge, men kopplas villkorslöst — de är
   // dolda i webbläge och kostar inget att binda)
   const bind = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
-  bind('paywallSignOutBtn', () => { signOutLocal(); show('signin'); });
+  // Utloggad i appen hamnar på inloggningen; i webben på nyckelskärmen
+  // (eller idle om en BYOK-nyckel finns sparad)
+  const afterSignOut = () => {
+    applyAuthVisibility();
+    show(APP_MODE ? 'signin' : (s.key ? 'idle' : 'setup'));
+  };
+  bind('setupSignInBtn', () => show('signin'));
+  bind('paywallSignOutBtn', () => { signOutLocal(); afterSignOut(); });
   bind('paywallDeleteBtn', deleteAccount);
-  bind('settingsSignOutBtn', () => { signOutLocal(); closeSettings(); show('signin'); });
+  bind('settingsSignOutBtn', () => { signOutLocal(); closeSettings(); afterSignOut(); });
   bind('settingsDeleteBtn', deleteAccount);
   bind('manageSubBtn', manageSubscription);
   bind('recClearBtn', async () => {

@@ -106,6 +106,15 @@ test("TRANSFER accepteras utan app_user_id", () => {
 
 // ── Modellkedjan: överbelastning ska inte stoppa användaren ────────────────
 import { modelChain, shouldTryNextModel, buildGeminiPayload } from "../src/gemini.ts";
+import { isOriginAllowed } from "../src/cors.ts";
+
+test("CORS: webbversionen och apparnas origins släpps in, främmande nekas", () => {
+  assert.equal(isOriginAllowed("https://skaneby.github.io"), true);
+  assert.equal(isOriginAllowed("capacitor://localhost"), true);
+  assert.equal(isOriginAllowed("http://localhost:8000"), true);
+  assert.equal(isOriginAllowed("https://evil.com"), false);
+  assert.equal(isOriginAllowed("https://skaneby.github.io.evil.com"), false);
+});
 
 // Tanketaket är anledningen till att appläget en gång tog minuter på sig:
 // utan thinkingConfig tänker Gemini 3.x dynamiskt tills svarsbudgeten är slut.

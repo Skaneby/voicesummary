@@ -7,6 +7,7 @@ import {
 } from "./entitlement";
 import { callGeminiWithFallback, isSummarizeBody } from "./gemini";
 import { applyWebhookEvent, isRevenueCatWebhookBody } from "./webhook";
+import { isOriginAllowed } from "./cors";
 
 interface RateLimit {
   limit(opts: { key: string }): Promise<{ success: boolean }>;
@@ -42,19 +43,6 @@ function anyProviderConfigured(env: Env): boolean {
 }
 
 const VERSION = "0.6.0";
-
-// Origins allowed to call the API from a browser context. Native curl /
-// server-to-server requests (no Origin header) are unaffected — CORS is a
-// browser security feature only.
-const ALLOWED_ORIGINS = new Set([
-  "capacitor://localhost", // iOS Capacitor default
-  "https://localhost", // Android Capacitor default (Capacitor 5+)
-  "ionic://localhost", // legacy Capacitor / Ionic
-]);
-const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
-  /^http:\/\/localhost(:\d+)?$/,
-  /^http:\/\/127\.0\.0\.1(:\d+)?$/,
-];
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -321,11 +309,6 @@ function json(body: object, status = 200): Response {
     status,
     headers: { "content-type": "application/json" },
   });
-}
-
-function isOriginAllowed(origin: string): boolean {
-  if (ALLOWED_ORIGINS.has(origin)) return true;
-  return ALLOWED_ORIGIN_PATTERNS.some((re) => re.test(origin));
 }
 
 function cors(request: Request, res: Response): Response {

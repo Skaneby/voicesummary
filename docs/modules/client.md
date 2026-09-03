@@ -85,7 +85,8 @@ ljudet. Den fungerar därför även på gamla poster där ljudet är gallrat.
 `vs_key`, `vs_model`, `vs_style`, `vs_history`, `vs_errlog` (fellogg,
 ringbuffert om 50 poster för felsökning under test). (`vs_theme` utgick när
 temaväljaren togs bort 2026-09-02; en kvarliggande nyckel är ofarlig.)
-ID-token i appläget lagras separat och avsiktligt kortlivat.
+ID-token (`vs_id_token`) lagras i localStorage i båda lägena sedan
+webbkontoläget — inloggningen ska överleva att webbläsaren stängs.
 
 ## Fallgropar
 
