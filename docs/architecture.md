@@ -9,39 +9,40 @@ inloggning och prenumeration. Skillnaden avgörs i runtime — se
 
 ```mermaid
 flowchart TB
-  subgraph WEBB["Gratis webbversion"]
-    W1["Webbläsaren<br/>användarens egen nyckel"]
+  subgraph KLIENTER["En kodbas — tre sätt att använda den"]
+    W1["Webb, nyckelläge (BYOK)<br/>användarens egen Gemini-nyckel<br/><i>ligger kvar tills lanseringen</i>"]
+    W2["Webb, kontoläge<br/>Google-inloggning i webbläsaren<br/>prenumerationen följer med"]
+    A0["Appen — Capacitor<br/>native Google/Apple-inloggning<br/>förgrundstjänst vid inspelning"]
   end
 
-  subgraph TELEFON["Betald app — Capacitor"]
-    A1["Inspelning<br/>Opus 32 kbit, mono"]
-    A2["Förgrundstjänst<br/>håller appen vid liv<br/>med släckt skärm"]
-    A3["Gränssnittet<br/>format, resultat, historik"]
-    A4["Inloggning<br/>Google på Android<br/>Apple på iOS"]
-  end
+  PM{"proxyMode()<br/>inloggad?"}
 
   subgraph SERVER["Cloudflare Worker — diane-api"]
     S1["Verifierar ID-token<br/>auth.ts"]
     S2["Rättighet och kvot<br/>entitlement.ts"]
-    S3["Vidarebefordran<br/>modellkedja 3.7 → 3.6 → lite"]
+    S3["Gemini-payload<br/>tanketak alltid satt<br/>modellkedja 3.7 → 3.6 → lite"]
   end
 
   DB[("D1<br/>konto, prenumeration, förbrukning")]
   RC["RevenueCat<br/>Play Store och App Store"]
   GEM["Google Gemini"]
+  GD[("Användarens eget Google Drive<br/>diane.json i dold app-mapp<br/>historik + formatval")]
+  LOK[("På enheten<br/>ljudarkiv i IndexedDB<br/>historik, fellogg")]
 
-  A2 -.skyddar.-> A1
-  A1 --> A3
-  A4 -- ID-token --> A3
-  A3 -- "ljud + prompt" --> S1
+  W1 -->|nej: egen nyckel| GEM
+  W2 --> PM
+  A0 --> PM
+  PM -->|"ja: ljud + prompt + token"| S1
   S1 --> S2
   S2 <--> DB
   S2 -- godkänd --> S3
   S3 --> GEM
-  GEM -- "svar oförändrat" --> A3
+  GEM -- "svar oförändrat" --> PM
   RC -- webhook --> DB
-
-  W1 -- "eget konto" --> GEM
+  W2 -. "Drive-synk (drive.appdata)" .-> GD
+  A0 -. "sparas alltid FÖRE analys" .-> LOK
+  W1 -. dito .-> LOK
+  W2 -. dito .-> LOK
 ```
 
 Observera pilen märkt **"svar oförändrat"**: proxyn returnerar Geminis svar
