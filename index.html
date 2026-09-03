@@ -1229,12 +1229,18 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
 <article>
   <section>
     <h2>[Summary heading]</h2>
-    <p>[Comprehensive prose summary — 2-4 paragraphs covering main topics, context, conclusions]</p>
+    <p>[Substantial prose summary — aim for 3-5 full paragraphs. Cover not only WHAT was said and decided but also the WHY: reasoning, alternatives that were discussed, concerns raised, and how conclusions were reached. Include relevant context and, where it matters, the mood or tone. Do not compress away nuance.]</p>
   </section>
   <section>
     <h2>[Key Points heading]</h2>
     <ul>
-      <li><strong>[Topic/person]:</strong> [specific detail]</li>
+      <li><strong>[Topic/person]:</strong> [1-2 full sentences with the specific detail AND its significance — not telegram style]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Open Questions heading]</h2>
+    <ul>
+      <li>[Anything left unresolved, postponed or explicitly parked]</li>
     </ul>
   </section>
   <section>
@@ -1244,7 +1250,7 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     </ul>
   </section>
 </article>
-Rules: Omit Action Items if none. Capture names, numbers, dates, decisions. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+Rules: This is still a summary, not a transcript — no long quotes, no play-by-play; aim for roughly 250-450 words in total. But when in doubt, INCLUDE the concrete detail rather than dropping it: names, numbers, dates, amounts, decisions. 5-10 key points. Omit Open Questions and Action Items if there are none. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
 protocol: `Analyze this audio recording and produce formal meeting minutes.
 Detect the language being spoken and respond ENTIRELY in that same language.
