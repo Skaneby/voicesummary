@@ -3390,7 +3390,11 @@ function driveSignIn() {
   if (!client) return Promise.reject(new Error('Google-tjänsterna kunde inte laddas — kontrollera nätet och försök igen'));
   return new Promise((resolve, reject) => {
     drivePendingSignIns.push({ resolve, reject });
-    client.requestAccessToken({ prompt: '' });
+    // hint = Diane-inloggningens e-post: synken ska hamna på SAMMA Google-
+    // konto som användaren är inloggad med, inte ett annat konto de råkar
+    // välja i popupen. I nyckelläget finns ingen inloggning — då väljer
+    // användaren konto fritt.
+    client.requestAccessToken({ prompt: '', hint: s.email || '' });
   });
 }
 
@@ -3481,6 +3485,13 @@ function driveSchedulePush(delayMs = 60000) {
 
 async function driveConnect() {
   await driveSignIn();
+  // Inloggad i Diane: synken MÅSTE hamna på samma Google-konto. Fel konto i
+  // popupen ger annars en fil på ett Drive användaren inte tror sig använda.
+  if (s.email && driveEmail && driveEmail.toLowerCase() !== s.email.toLowerCase()) {
+    const other = driveEmail;
+    driveDisconnect();
+    throw new Error('Fel Google-konto valdes (' + other + '). Välj samma konto som du är inloggad i Diane med: ' + s.email);
+  }
   // Första anslutningen: finns en kopia på Drive och lokal historik saknas,
   // hämta den — annars ladda upp nuläget.
   const fileId = await driveFindFile();

@@ -378,6 +378,18 @@ står att användaren får Googles engelska faktureringstext rakt i ansiktet.
       fortfarande ingenting — det är den delen av löftet som står kvar.
 - [x] `android/.idea/` ignorerad.
 
+### Produktbeslut 2026-09-03: Google-konto krävs vid lansering
+
+Vid lanseringen av nya tjänsten krävs Google-konto för att använda Diane —
+både i appen och på webben. Drive-synken följer därmed varje användares eget
+Google-konto (`drive.appdata` = filen ligger på användarens eget Drive,
+osynlig för oss). Klienten skickar inloggningens e-post som `hint` till
+Drive-popupen och vägrar ansluta om fel konto väljs, så synk och inloggning
+kan aldrig glida isär.
+
+Kvar till efter lansering: Drive-synk i appläget (kräver native token-väg —
+GIS-tokenklienten är opålitlig i Capacitors webview).
+
 ### Produktlöfte 2026-09-03: BYOK-webben ligger kvar till lanseringen
 
 Nuvarande BYOK-version av webben (egen Gemini-nyckel, gratis) får INTE tas

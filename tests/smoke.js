@@ -725,6 +725,11 @@ function check(name, ok, extra) {
     saveToHistory('<article><p>w</p></article>', 'Efter frånkoppling');
     return !driveSignedIn() && !drivePushTimer;
   }));
+  check('fel Google-konto i popupen avvisas', await page.evaluate(async () => {
+    s.email = 'diane-kontot@example.se';   // mockens tokeninfo svarar test@drive.se
+    try { await driveConnect(); s.email = ''; return false; }
+    catch (e) { s.email = ''; return !driveSignedIn() && /Fel Google-konto/.test(e.message); }
+  }));
   await ctx.unroute('**/www.googleapis.com/**');
   await page.evaluate(() => { localStorage.removeItem('vs_history'); updateHistoryBadge(); });
 
