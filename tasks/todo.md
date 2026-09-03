@@ -404,21 +404,35 @@ Drive-synken ligger bredvid BYOK, inte i stället för — så en merge är
 förenlig med löftet. Det som inte får ske före lansering är att nyckelfältet
 eller direktvägen till Gemini plockas bort.
 
-### Nästa steg — kritisk väg till Play
+### Nästa steg — kritisk väg till lansering (uppdaterat 2026-09-03)
 
-Ordnat efter ledtid, inte efter svårighet.
+Ordnat efter ledtid, inte efter svårighet. `web-app` är mergad till `main`
+och webbversionen är live — punkten om merge är därmed avklarad.
 
-1. **Play Console-kontot först.** Stängd testning kräver **minst 20 testare i
-   14 sammanhängande dagar** innan produktion kan öppnas för nya personliga
-   utvecklarkonton (`docs/runbooks/play-store-checklist.md`). Det är ren
-   kalendertid som inte går att koda bort — startas det inte nu blir det den
-   sista flaskhalsen. 25 USD engångsavgift.
-2. **Test på enhet.** Telefonen är ansluten och `npm run android:sync` körd.
-   Följ `docs/runbooks/test-on-device.md`: mikrofondialogen, lång inspelning
-   med släckt skärm, bakåtknappen, edge-to-edge, och nu även ljudarkivet.
-3. **RevenueCat publika SDK-nycklar.** Fortfarande platshållare
-   ([index.html:3415-3416](../index.html#L3415-L3416)) — köpflödet kastar
-   "Köp är inte konfigurerat än" tills de är satta. Blockerar all
-   betalväggstestning.
-4. **Faktureringsfallet** ([index.html:2258](../index.html#L2258)) — se ovan.
-5. **Merge `mobile-app` → `main`** så GitHub Pages blir publikt nåbart.
+1. [ ] **Google OAuth-verifiering.** Samtyckesskärmen står i **Testing**-läge
+   — bara konton tillagda som Test users kan logga in just nu (Johan är det
+   automatiskt som ägare). Eftersom `drive.appdata` räknas som ett känsligt
+   scope kräver övergång till **In production** Googles granskning av appen,
+   vilket normalt tar några dagar till ett par veckor. Starta processen nu:
+   https://console.cloud.google.com/auth/audience?project=diane-prod-skaneby
+   (Publishing status → Publish app → Google startar granskningen).
+2. [ ] **Lägg till testanvändare** på samma sida (`+ Add users`, max 100 i
+   Testing-läge) — samma personer som ska ingå i Play Consolets stängda
+   testning nedan, så de kan logga in i Diane och testa på riktigt.
+3. [ ] **Play Console-kontot.** Med DUNS-numret registreras ett
+   organisationskonto, vilket undantar Diane från kravet på 20 testare i
+   14 sammanhängande dagar som gäller personliga utvecklarkonton — den
+   tidigare största kalenderflaskhalsen försvinner. Registrera ändå i god
+   tid: organisationsverifieringen hos Google tar egen tid.
+   https://play.google.com/console/signup — 25 USD engångsavgift.
+4. [ ] **RevenueCat publika SDK-nycklar.** Fortfarande platshållare i
+   klienten — köpflödet kastar "Köp är inte konfigurerat än" tills de är
+   satta. Blockerar all betalväggstestning i appen.
+5. [ ] **Säkerhetsaudit** innan appen delas med testare utanför Johan själv:
+   backend (tokenverifiering, webhook-hemlighet, rate limiting, D1-frågor),
+   klienten (HTML-sanering, tokenlagring, delningsvägar), Android-manifestet,
+   och att Play Data safety-formuläret stämmer exakt mot vad appen gör.
+6. [ ] **Enhetstest enligt runbook.** Telefonen kopplas in, senaste betan
+   installeras, `docs/runbooks/test-on-device.md` körs igenom — mikrofon,
+   lång inspelning med släckt skärm, bakåtknappen, edge-to-edge, ljudarkivet
+   (Lyssna/Sammanfatta), felloggen som skyddsnät om något strular.
