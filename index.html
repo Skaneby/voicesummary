@@ -995,6 +995,22 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
         <button class="rec-act" id="recClearBtn" style="display:none">Radera alla</button>
       </div>
     </div>
+    <div class="input-group" style="max-width:none" id="driveGroup">
+      <label style="margin-bottom:4px">Säkerhetskopiering till Google Drive</label>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.45;margin:0 0 6px">
+        Historiken och dina formatval sparas som en fil i Dianes egen dolda mapp
+        på ditt Google Drive — appen ser aldrig dina övriga filer, och inget
+        hamnar på våra servrar. Ljudinspelningarna stannar på enheten.
+      </p>
+      <div class="rec-sum">
+        <span id="driveStatus">Inte ansluten.</span>
+        <span style="display:flex;gap:6px">
+          <button class="rec-act" id="driveOnBtn">Anslut</button>
+          <button class="rec-act" id="drivePullBtn" style="display:none">Hämta</button>
+          <button class="rec-act" id="driveOffBtn" style="display:none">Koppla från</button>
+        </span>
+      </div>
+    </div>
     <div class="input-group" style="max-width:none">
       <label style="margin-bottom:4px">Fellogg</label>
       <p style="font-size:.78rem;color:var(--muted);line-height:1.45;margin:0 0 6px">
@@ -1952,6 +1968,7 @@ function openSettings() {
   if (proxyMode()) { const em = $('settingsEmail'); if (em) em.textContent = s.email || 'Inte inloggad'; }
   renderAudioList();
   renderErrList();
+  renderDriveStatus();
   $('sKey').value = s.key;
   $('sModel').value = s.model;
   $('sGHToken').value = store.get(SGH);
@@ -3319,6 +3336,179 @@ async function shareErrors() {
 }
 // ── FELLOGG SLUT ───────────────────────────────────────────────────────────
 
+// ── DRIVE-SYNK (endast webben) ─────────────────────────────────────────────
+// Samma mönster som i Bokf-ring-repot: en enda JSON-fil i användarens dolda
+// appDataFolder på Google Drive (scope drive.appdata — appen ser ALDRIG
+// användarens övriga filer). Historiken och formatvalen synkas; ljudet
+// stannar på enheten. Ingenting rör våra servrar — filen ligger på
+// användarens egen Drive. Auto-push är debounced efter ändringar; hämtning
+// är alltid ett aktivt val. Avstängd i appläget: GIS-tokenklienten är inte
+// pålitlig i Capacitors webview.
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE = 'diane.json';
+const DRIVE_API = 'https://www.googleapis.com/drive/v3';
+const DRIVE_UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
+
+let driveToken = null, driveExpiry = 0, driveEmail = null;
+let driveTokenClient = null, drivePushTimer = null, driveLastSync = null;
+let drivePendingSignIns = [];
+
+function driveSignedIn() { return !!driveToken && Date.now() < driveExpiry; }
+
+function driveGetTokenClient() {
+  if (driveTokenClient) return driveTokenClient;
+  if (!window.google?.accounts?.oauth2?.initTokenClient) return null;
+  driveTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_OAUTH_CLIENT_ID,
+    scope: DRIVE_SCOPE,
+    callback: resp => {
+      if (resp.error) {
+        const err = new Error(resp.error_description || resp.error);
+        drivePendingSignIns.forEach(p => p.reject(err));
+        drivePendingSignIns = [];
+        renderDriveStatus();
+        return;
+      }
+      driveToken = resp.access_token;
+      driveExpiry = Date.now() + (resp.expires_in || 3600) * 1000;
+      fetch('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' + driveToken)
+        .then(r => r.json()).then(info => { driveEmail = info.email || null; })
+        .catch(() => {})
+        .finally(() => {
+          drivePendingSignIns.forEach(p => p.resolve());
+          drivePendingSignIns = [];
+          renderDriveStatus();
+        });
+    },
+  });
+  return driveTokenClient;
+}
+
+function driveSignIn() {
+  if (driveSignedIn()) return Promise.resolve();
+  const client = driveGetTokenClient();
+  if (!client) return Promise.reject(new Error('Google-tjänsterna kunde inte laddas — kontrollera nätet och försök igen'));
+  return new Promise((resolve, reject) => {
+    drivePendingSignIns.push({ resolve, reject });
+    client.requestAccessToken({ prompt: '' });
+  });
+}
+
+function driveDisconnect() {
+  if (driveToken) { try { google.accounts.oauth2.revoke(driveToken, () => {}); } catch {} }
+  driveToken = null; driveExpiry = 0; driveEmail = null; driveLastSync = null;
+  if (drivePushTimer) { clearTimeout(drivePushTimer); drivePushTimer = null; }
+  renderDriveStatus();
+}
+
+function driveAuthHeader() { return { 'Authorization': 'Bearer ' + driveToken }; }
+
+async function driveFindFile() {
+  const r = await fetch(DRIVE_API + "/files?spaces=appDataFolder&q=name%3D'" + DRIVE_FILE + "'&fields=files(id)",
+    { headers: driveAuthHeader() });
+  if (!r.ok) throw new Error('Drive-sökning misslyckades (' + r.status + ')');
+  const d = await r.json();
+  return d.files?.[0]?.id || null;
+}
+
+async function driveUpload(content, existingId) {
+  const metadata = existingId ? { name: DRIVE_FILE } : { name: DRIVE_FILE, parents: ['appDataFolder'] };
+  const body = new FormData();
+  body.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+  body.append('file', new Blob([content], { type: 'application/json' }));
+  const url = existingId
+    ? DRIVE_UPLOAD + '/files/' + existingId + '?uploadType=multipart'
+    : DRIVE_UPLOAD + '/files?uploadType=multipart';
+  const r = await fetch(url, { method: existingId ? 'PATCH' : 'POST', headers: driveAuthHeader(), body });
+  if (!r.ok) throw new Error('Drive-uppladdning misslyckades (' + r.status + ')');
+}
+
+async function driveDownload(fileId) {
+  const r = await fetch(DRIVE_API + '/files/' + fileId + '?alt=media', { headers: driveAuthHeader() });
+  if (!r.ok) throw new Error('Drive-nedladdning misslyckades (' + r.status + ')');
+  return r.text();
+}
+
+// Det som synkas: historiken (med transkript) och formatvalen. Inte ljudet —
+// det är flera MB per inspelning och stannar i IndexedDB på enheten.
+function buildDriveBackup() {
+  return {
+    app: 'diane', version: 1, exported: new Date().toISOString(),
+    history: getHistory(),
+    style: store.get('vs_style', 'summary'),
+    fun: store.get(SFUN, '0'),
+  };
+}
+
+function applyDriveBackup(d) {
+  if (!d || d.app !== 'diane' || !Array.isArray(d.history)) throw new Error('Filen på Drive är inte en Diane-säkerhetskopia');
+  store.set(SH, JSON.stringify(d.history.slice(0, MAX_HISTORY)));
+  if (d.style) store.set('vs_style', d.style);
+  if (d.fun !== undefined) store.set(SFUN, d.fun);
+  applyFunVisibility();
+  updateHistoryBadge();
+}
+
+async function drivePush() {
+  if (!driveSignedIn()) return;
+  try {
+    const existingId = await driveFindFile();
+    await driveUpload(JSON.stringify(buildDriveBackup(), null, 2), existingId);
+    driveLastSync = new Date();
+    renderDriveStatus();
+  } catch (e) {
+    logError('drive', e.message || String(e));
+    renderDriveStatus(e.message);
+  }
+}
+
+async function drivePull() {
+  if (!driveSignedIn()) throw new Error('Inte ansluten till Google Drive');
+  const fileId = await driveFindFile();
+  if (!fileId) throw new Error('Ingen Diane-säkerhetskopia hittad på ditt Drive-konto');
+  applyDriveBackup(JSON.parse(await driveDownload(fileId)));
+  driveLastSync = new Date();
+  renderDriveStatus();
+}
+
+// Debounced auto-push — anropas från historikändringarna. En minut samlar
+// ihop närliggande ändringar (ny post + transkript-patch) till en uppladdning.
+function driveSchedulePush(delayMs = 60000) {
+  if (!driveSignedIn()) return;
+  if (drivePushTimer) clearTimeout(drivePushTimer);
+  drivePushTimer = setTimeout(() => { drivePushTimer = null; drivePush(); }, delayMs);
+}
+
+async function driveConnect() {
+  await driveSignIn();
+  // Första anslutningen: finns en kopia på Drive och lokal historik saknas,
+  // hämta den — annars ladda upp nuläget.
+  const fileId = await driveFindFile();
+  if (fileId && !getHistory().length) {
+    applyDriveBackup(JSON.parse(await driveDownload(fileId)));
+    driveLastSync = new Date();
+    toast('Historiken hämtad från Google Drive ✓');
+  } else {
+    await drivePush();
+    toast('Ansluten — historiken säkerhetskopieras till ditt Drive ✓');
+  }
+  renderDriveStatus();
+}
+
+function renderDriveStatus(errMsg) {
+  const status = $('driveStatus');
+  if (!status) return;
+  const on = driveSignedIn();
+  if (errMsg) status.textContent = 'Fel: ' + errMsg;
+  else if (on) status.textContent = 'Ansluten' + (driveEmail ? ' som ' + driveEmail : '') +
+    (driveLastSync ? ' · synkad ' + driveLastSync.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : '');
+  else status.textContent = 'Inte ansluten.';
+  $('driveOnBtn').style.display = on ? 'none' : '';
+  $('drivePullBtn').style.display = on ? '' : 'none';
+  $('driveOffBtn').style.display = on ? '' : 'none';
+}
+// ── DRIVE-SYNK SLUT ────────────────────────────────────────────────────────
+
 // ── AUTH (endast appläge) ──────────────────────────────────────────────────
 // Två vägar väljs i runtime: i Capacitor driver @capgo/capacitor-social-login
 // den native Google-inloggningen; i webbläsare renderar Google Identity
@@ -3576,24 +3766,28 @@ function saveToHistory(html, title, forcedId) {
   if (history.length > MAX_HISTORY) history.splice(MAX_HISTORY);
   store.set(SH, JSON.stringify(history));
   updateHistoryBadge();
+  driveSchedulePush();
   return id;
 }
 // Bakgrundstranskriberingen blir klar efter att posten sparats — patcha in den
 function updateHistoryTranscript(id, transcript) {
   const history = getHistory().map(x => x.id === id ? { ...x, transcript: transcript.slice(0, 120000) } : x);
   store.set(SH, JSON.stringify(history));
+  driveSchedulePush();
 }
 function deleteFromHistory(id) {
   const history = getHistory().filter(x => x.id !== id);
   store.set(SH, JSON.stringify(history));
   renderHistoryList();
   updateHistoryBadge();
+  driveSchedulePush();
 }
 function clearHistory() {
   if (!getHistory().length) return;
   store.del(SH);
   renderHistoryList();
   updateHistoryBadge();
+  driveSchedulePush();
   toast('Historik rensad');
 }
 function updateHistoryBadge() {
@@ -3781,6 +3975,15 @@ function init() {
     renderErrList();
     toast('Felloggen rensad');
   });
+  // Drive-synk finns bara i webben — GIS-tokenklienten är opålitlig i webview
+  if (APP_MODE) { const dg = $('driveGroup'); if (dg) dg.style.display = 'none'; }
+  bind('driveOnBtn', () => driveConnect().catch(e => { renderDriveStatus(e.message); toast(e.message || 'Anslutningen misslyckades'); }));
+  bind('drivePullBtn', () => {
+    if (getHistory().length && !confirm('Ersätta historiken på den här enheten med kopian från Google Drive?')) return;
+    drivePull().then(() => { renderHistoryList(); toast('Hämtat från Google Drive ✓'); })
+      .catch(e => { renderDriveStatus(e.message); toast(e.message || 'Hämtningen misslyckades'); });
+  });
+  bind('driveOffBtn', () => { driveDisconnect(); toast('Google Drive frånkopplat'); });
   bind('formatHelpBtn', openFormatHelp);
   bind('fh-overlay', closeFormatHelp);
   bind('discCancelBtn', closeAudioConsent);

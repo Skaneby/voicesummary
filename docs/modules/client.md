@@ -88,6 +88,16 @@ temaväljaren togs bort 2026-09-02; en kvarliggande nyckel är ofarlig.)
 ID-token (`vs_id_token`) lagras i localStorage i båda lägena sedan
 webbkontoläget — inloggningen ska överleva att webbläsaren stängs.
 
+### Drive-synk (endast webben)
+
+Samma mönster som i Bokf-ring-repot: historiken och formatvalen sparas som
+`diane.json` i användarens dolda appDataFolder på Google Drive (scope
+`drive.appdata` — appen ser aldrig övriga filer). Auto-push är debounced en
+minut efter historikändringar; hämtning är alltid ett aktivt val med
+bekräftelse. Ljudet synkas inte — det är flera MB per inspelning och stannar
+i IndexedDB. Avstängt i appläget: GIS-tokenklienten är opålitlig i webview.
+Kräver att Google Drive API är aktiverat i GCP-projektet.
+
 ## Fallgropar
 
 - **Lägg inte till ett byggsteg.** Hela poängen är "ändra en fil, pusha, klart".

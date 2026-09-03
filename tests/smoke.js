@@ -647,6 +647,87 @@ function check(name, ok, extra) {
     return ok;
   }));
 
+  console.log('\n── 5i. Drive-synk (bokföringsmönstret) ──');
+  // Mockat Drive: en fil i appDataFolder, tokenklient som svarar direkt
+  const driveMock = { fileId: null, content: '', requests: [] };
+  await ctx.route('**/www.googleapis.com/**', route => {
+    const req = route.request();
+    const url = req.url();
+    driveMock.requests.push(req.method() + ' ' + url.split('?')[0]);
+    if (url.includes('tokeninfo')) {
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ email: 'test@drive.se' }) });
+    }
+    if (url.includes('/upload/drive/v3/files')) {
+      driveMock.fileId = 'f1';
+      // Plocka ut fildelen (sista parten) ur multipart-kroppen
+      const pd = req.postData() || '';
+      const boundary = (req.headers()['content-type'] || '').split('boundary=')[1];
+      if (boundary) {
+        const parts = pd.split('--' + boundary).filter(p => p.trim() && p.trim() !== '--');
+        const filePart = parts[parts.length - 1] || '';
+        const idx = filePart.indexOf('\r\n\r\n');
+        if (idx >= 0) driveMock.content = filePart.slice(idx + 4).replace(/\r\n$/, '');
+      }
+      return route.fulfill({ status: 200, contentType: 'application/json', body: '{"id":"f1"}' });
+    }
+    if (url.includes('alt=media')) {
+      return route.fulfill({ status: 200, contentType: 'application/json', body: driveMock.content });
+    }
+    if (url.includes('/drive/v3/files')) {
+      return route.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify({ files: driveMock.fileId ? [{ id: driveMock.fileId }] : [] }) });
+    }
+    route.fulfill({ status: 404, body: '{}' });
+  });
+  await page.evaluate(() => {
+    window.google = window.google || {};
+    google.accounts = google.accounts || {};
+    google.accounts.oauth2 = {
+      initTokenClient: cfg => ({ requestAccessToken: () => cfg.callback({ access_token: 'drive-tok', expires_in: 3600 }) }),
+      revoke: (t, cb) => cb && cb(),
+    };
+  });
+
+  check('säkerhetskopian bär historik och formatval', await page.evaluate(() => {
+    const b = buildDriveBackup();
+    return b.app === 'diane' && Array.isArray(b.history) && typeof b.style === 'string' && b.fun !== undefined;
+  }));
+  check('främmande fil på Drive avvisas', await page.evaluate(() => {
+    try { applyDriveBackup({ app: 'inte-diane' }); return false; } catch { return true; }
+  }));
+  check('anslutning med lokal historik laddar upp nuläget', await page.evaluate(async () => {
+    localStorage.removeItem('vs_history');
+    saveToHistory('<article><p>lokal post</p></article>', 'Lokal post');
+    await driveConnect();
+    return driveSignedIn() && /Ansluten som test@drive\.se/.test($('driveStatus').textContent);
+  }) && driveMock.requests.some(r => r.startsWith('POST') && r.includes('/upload/drive/v3/files')));
+  check('anslutning mot tom enhet hämtar kopian från Drive', await page.evaluate(async () => {
+    driveDisconnect();
+    localStorage.removeItem('vs_history'); updateHistoryBadge();
+    await driveConnect();
+    return getHistory().length === 1 && getHistory()[0].title === 'Lokal post';
+  }));
+  check('hämta ersätter enhetens historik med Drive-kopian', await page.evaluate(async () => {
+    localStorage.removeItem('vs_history');
+    saveToHistory('<article><p>x</p></article>', 'Gammal lokal');
+    saveToHistory('<article><p>y</p></article>', 'Nyare lokal');
+    await drivePull();
+    return getHistory().length === 1 && getHistory()[0].title === 'Lokal post';
+  }));
+  check('historikändring schemalägger auto-push', await page.evaluate(() => {
+    saveToHistory('<article><p>z</p></article>', 'Trigger');
+    const scheduled = !!drivePushTimer;
+    clearTimeout(drivePushTimer); drivePushTimer = null;
+    return scheduled;
+  }));
+  check('frånkoppling stoppar synken', await page.evaluate(() => {
+    driveDisconnect();
+    saveToHistory('<article><p>w</p></article>', 'Efter frånkoppling');
+    return !driveSignedIn() && !drivePushTimer;
+  }));
+  await ctx.unroute('**/www.googleapis.com/**');
+  await page.evaluate(() => { localStorage.removeItem('vs_history'); updateHistoryBadge(); });
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
