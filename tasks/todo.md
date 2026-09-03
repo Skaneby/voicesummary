@@ -337,6 +337,13 @@ det här projektet, vilket stämmer med att andra Gemini-nycklar på maskinen
 fortfarande fungerar.
 
 - [x] Krediter påfyllda 2026-09-01. Appen har fungerat sedan dess.
+- [ ] **Trolig delorsak funnen 2026-09-03:** projektet "EVFL fakturering" låg
+      av misstag på Dianes faktureringskonto (tillagt 2026-09-02) — prepaid-
+      krediter dras av ALLA projekt på kontot, så EVFL:s förbrukning kan ha
+      bidragit till tömningen. Johan flyttar bort EVFL till eget konto via
+      console.cloud.google.com/billing/014453-7CCCDF-2F90E4/manage. Bocka av
+      när flytten är gjord och kostnadsrapporten (reports, grupperad per
+      projekt) visat hur mycket som gick till EVFL.
 - [ ] Slå på **auto reload** på https://aistudio.google.com/billing om det
       inte redan är gjort. Googles dokumentation är tydlig med
       att alla Gemini-tjänster i alla projekt på ett tömt prepay-konto stoppas

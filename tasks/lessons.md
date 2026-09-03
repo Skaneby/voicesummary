@@ -33,3 +33,17 @@ inte, eftersom de verifierar beteende, inte stilar.
 djupräkning, strängar och kommentarer hanterade), aldrig med radheuristik.
 Efter varje CSS-ingrepp: kontrollera att klamrarna går jämnt ut OCH ta en
 skärmdump via playwright — grön testsvit bevisar inte att designen lever.
+
+## 2026-09-03 — Ett faktureringskonto per produkt
+
+**Vad hände:** Projektet "EVFL fakturering" hamnade av misstag på Dianes
+faktureringskonto. Prepaid-krediter dras av alla projekt på kontot, så ett
+främmande projekt kan tömma Dianes saldo — och kreditstoppet 2026-09-01
+drabbade alla användare utan förvarning.
+
+**Regel:** Ett faktureringskonto per produkt — Diane-kontot betalar bara
+`diane-prod-skaneby`. Vid kreditmysterier: kontrollera FÖRST vilka projekt
+som ligger på kontot (console.cloud.google.com/billing/<id>/manage), sedan
+förbrukning per projekt under reports. AI Studios "Projects using this
+billing account" visar bara AI Studio-importerade projekt — Cloud Console
+är facit.
