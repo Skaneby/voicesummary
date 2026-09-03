@@ -26,8 +26,8 @@ VÄLJ FORMAT EFTER SITUATION
 • Bloggpost, inlägg för sociala medier, formellt brev
 • Och flera till
 
-Vill du ha något lättsammare finns sex format på skoj — insändare,
-predikan, konspirationsteori. De är avstängda från början och slås på i
+Vill du ha något lättsammare finns sju format på skoj — insändare,
+predikan, konspirationsteori, floskelrapport. De är avstängda från början och slås på i
 inställningarna, så formatväljaren håller sig saklig tills du vill
 annat.
 

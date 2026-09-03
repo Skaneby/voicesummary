@@ -38,8 +38,8 @@ av delarna.
 
 ### Sakliga format och satirformat
 
-Sex format är satir: `insandare`, `psyk`, `tal`, `predikan`, `drama`,
-`konspiration`. De är märkta `fun: true` i `STYLE_META` och **dolda som
+Sju format är satir: `insandare`, `psyk`, `tal`, `predikan`, `drama`,
+`konspiration`, `floskel`. De är märkta `fun: true` i `STYLE_META` och **dolda som
 standard** — Diane används på riktiga möten, och en psykiatrisk "utredning"
 bredvid ett mötesprotokoll inbjuder till missförstånd. Användaren slår på dem
 medvetet under Inställningar → Humorformat (`vs_fun`).

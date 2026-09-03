@@ -237,6 +237,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .result-box[data-style="konspiration"]{border-left-color:#6366f1}
 .result-box[data-style="konspiration"] h2{color:#6366f1;border-bottom-color:rgba(99,102,241,.2)}
 .result-badge[data-style="konspiration"]{background:rgba(99,102,241,.15);color:#6366f1}
+.format-card[data-fmt="floskel"]{--fc:#0ea5e9}
+.result-box[data-style="floskel"]{border-left-color:#0ea5e9}
+.result-box[data-style="floskel"] h2{color:#0ea5e9;border-bottom-color:rgba(14,165,233,.2)}
+.result-badge[data-style="floskel"]{background:rgba(14,165,233,.15);color:#0ea5e9}
 .result-box[data-style="tal"]{border-left-color:#e11d48}
 .result-box[data-style="tal"] h2{color:#e11d48;border-bottom-color:rgba(225,29,72,.2)}
 .result-badge[data-style="tal"]{background:rgba(225,29,72,.15);color:#e11d48}
@@ -733,6 +737,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
             <div class="fc-name">🕵️ Konspiration</div>
             <div class="fc-desc">Den dolda sanningen bakom det uppenbara</div>
           </button>
+          <button class="format-card" data-fmt="floskel">
+            <div class="fc-name">💼 Floskler</div>
+            <div class="fc-desc">Mötet i tom konsultsvenska</div>
+          </button>
         </div>
       </div>
     </section>
@@ -957,7 +965,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
       <div class="sw-row">
         <div class="sw-text">
           <b>Humorformat</b>
-          <span>Lägger till sex format på skoj — insändare, predikan, konspirationsteori och några till. Avstängt som standard så att formatväljaren håller sig saklig.</span>
+          <span>Lägger till sju format på skoj — insändare, predikan, floskelrapport och några till. Avstängt som standard så att formatväljaren håller sig saklig.</span>
         </div>
         <label class="sw">
           <input type="checkbox" id="sFun" aria-label="Visa humorformat">
@@ -1118,6 +1126,7 @@ const FORMAT_HELP = {
   predikan:   'Predikan över det du berättat, med moral och avslutande välsignelse.',
   drama:      'Vardagliga händelser omskrivna som episkt teaterdrama.',
   konspiration: 'Den påhittade "dolda sanningen" bakom det du just berättade.',
+  floskel:    'Inspelningen omskriven i tom konsultsvenska — stora ord, noll innehåll.',
 };
 
 // Bygger hjälprutan från STYLE_META så listan aldrig kan bli inaktuell
@@ -1148,7 +1157,7 @@ function openFormatHelp() {
   if (!funEnabled()) {
     const hint = document.createElement('p');
     hint.className = 'fh-hint';
-    hint.textContent = 'Sex format på skoj finns också — slå på Humorformat i inställningarna.';
+    hint.textContent = 'Sju format på skoj finns också — slå på Humorformat i inställningarna.';
     body.appendChild(hint);
   }
   $('fh-overlay').classList.add('open');
@@ -1655,7 +1664,35 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <p>[Deliver the conclusion with quiet conviction. What is really going on? End with a line that sounds like a warning or an invitation to wake up — but measured, not hysterical.]</p>
   </section>
 </article>
-Rules: Treat the recording's content as real evidence — reference it specifically. All organizations and documents must be invented but plausible. Calm, assured tone throughout — the most convincing conspiracy theories never shout. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Treat the recording's content as real evidence — reference it specifically. All organizations and documents must be invented but plausible. Calm, assured tone throughout — the most convincing conspiracy theories never shout. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+floskel: `Analyze this audio recording and rewrite its content entirely in hollow corporate buzzword language — the kind of empty management-consultant speak that sounds impressive but says nothing ("floskler" in Swedish).
+Detect the language being spoken and respond ENTIRELY in that same language.
+Every concrete fact, decision or feeling in the recording must be inflated into vague, grandiose platitudes. In Swedish, lean on classics like "synergier", "ta höjd", "växla upp", "agilt förhållningssätt", "holistiskt perspektiv", "lågt hängande frukter", "vi tar med oss det här" — in other languages, use their equivalents. Never state anything plainly. The comedy comes from recognizing the real content buried under corporate fog, so keep the underlying facts traceable — just absurdly overdressed.
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [pompous 4–7 word corporate vision statement]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Exekutiv sammanfattning / Executive summary]</h2>
+    <p>[The whole recording restated as one grand, empty vision. Maximum buzzwords, minimum content.]</p>
+  </section>
+  <section>
+    <h2>[Vår resa / Our journey]</h2>
+    <p>[What was actually said, reframed as an inspiring transformation narrative. Everything is a "resa", every problem an "utmaning och möjlighet".]</p>
+  </section>
+  <section>
+    <h2>[Nyckelinsikter / Key takeaways]</h2>
+    <ul>
+      <li>[3–5 bullets. Each takes one real point from the recording and inflates it into consultant-speak. The reader should be able to guess what was actually meant — barely.]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Vägen framåt / The way forward]</h2>
+    <p>[Vague next steps that commit to nothing and name no one. End with an absurdly grandiose closing statement about the future.]</p>
+  </section>
+</article>
+Rules: Straight face throughout — the text must never wink at the reader or admit it is satire; the emptiness IS the joke. No new facts, only reupholstered ones from the recording. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -2408,6 +2445,7 @@ const STYLE_META = {
   drama:      { label: 'Dramat är satt',             badge: '🎭 Drama Lab', fun: true },
   konspiration: { label: 'Sanningen avslöjad',       badge: '🕵️ Konspiration', fun: true,
                 warn: 'Påhittad konspirationsteori, skriven på skoj. Inget av detta är sant.' },
+  floskel:    { label: 'Visionen är förankrad',      badge: '💼 Floskler', fun: true },
 };
 
 function showResult(html, style) {
