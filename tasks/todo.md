@@ -337,14 +337,13 @@ det här projektet, vilket stämmer med att andra Gemini-nycklar på maskinen
 fortfarande fungerar.
 
 - [x] Krediter påfyllda 2026-09-01. Appen har fungerat sedan dess.
-- [ ] **Uppföljt 2026-09-03:** projektet "EVFL fakturering" låg av misstag på
+- [x] **Uppföljt 2026-09-03:** projektet "EVFL fakturering" låg av misstag på
       Dianes faktureringskonto (tillagt 2026-09-02) men hade INGEN förbrukning
       — tömningen 2026-09-01 var alltså Dianes egen användning. Kvar att göra:
       Johan kopplar bort EVFL via Disable billing på
       console.cloud.google.com/billing/014453-7CCCDF-2F90E4/manage så att
-      bara `diane-prod-skaneby` ligger på kontot. Bocka av när det är gjort.
-- [ ] Slå på **auto reload** på https://aistudio.google.com/billing om det
-      inte redan är gjort. Googles dokumentation är tydlig med
+      bara `diane-prod-skaneby` ligger på kontot. **Gjort 2026-09-03.**
+- [x] **Auto reload påslaget 2026-09-03** på https://aistudio.google.com/billing. Googles dokumentation är tydlig med
       att alla Gemini-tjänster i alla projekt på ett tömt prepay-konto stoppas
       omedelbart — för Diane betyder det att sammanfattningar dör för samtliga
       användare utan förvarning.
