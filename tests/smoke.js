@@ -532,7 +532,52 @@ function check(name, ok, extra) {
         && $('recClearBtn').style.display === 'none';
   }));
 
+  check('arkivraden har Lyssna, Sammanfatta, Dela och Radera', await page.evaluate(async () => {
+    await clearAudio();
+    await saveAudio(7, new Blob([new Uint8Array(64)], { type: 'audio/webm' }), { title: 'Knapptest', seconds: 5 });
+    await renderAudioList();
+    const labels = [...$('recList').querySelectorAll('.rec-act')].map(b => b.textContent);
+    return ['Lyssna', 'Sammanfatta', 'Dela', 'Radera'].every(l => labels.includes(l));
+  }));
+
+  check('Lyssna spelar upp och blir Stoppa; andra tryck stoppar', await page.evaluate(async () => {
+    // Stubba Audio — headless-ljud är inte poängen, tillståndsmaskinen är det
+    const RealAudio = window.Audio;
+    let played = 0;
+    window.Audio = class { constructor(src) { this.src = src; }
+      play() { played++; return Promise.resolve(); } pause() {} };
+    await playArchived(7);
+    await renderAudioList();   // playArchived inväntar inte sin egen omritning
+    const efterStart = archPlayingId === 7 &&
+      [...$('recList').querySelectorAll('.rec-act')].some(b => b.textContent === 'Stoppa');
+    await playArchived(7);
+    const efterStopp = archPlayingId === null;
+    window.Audio = RealAudio;
+    return played === 1 && efterStart && efterStopp;
+  }));
+
+  await ctx.route('**/generativelanguage.googleapis.com/**', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'TITLE: Omkörd\n<article><section><h2>R</h2><p>x</p></section></article>' }] }, finishReason: 'STOP' }] })
+  }));
+  check('Sammanfatta ur arkivet ger nytt resultat utan dubblettpost', await page.evaluate(async () => {
+    s.idToken = ''; s.key = 'test-key';
+    const före = (await listAudio()).length;
+    await summarizeArchived(7);
+    const efter = (await listAudio()).length;
+    return före === 1 && efter === 1 &&
+      document.querySelector('.screen.active')?.id === 'screen-result';
+  }));
+
+  check('Försök igen återanvänder arkivposten', await page.evaluate(async () => {
+    const före = (await listAudio()).length;
+    await process(s.blob, 'audio/webm', s.recId);
+    return (await listAudio()).length === före;
+  }));
+  await ctx.unroute('**/generativelanguage.googleapis.com/**');
+
   check('listan visar titel, längd och storlek', await page.evaluate(async () => {
+    await clearAudio();
     await saveAudio(99, new Blob([new Uint8Array(3 * 1024 * 1024)], { type: 'audio/webm' }),
       { title: 'Styrelsemöte', seconds: 1830 });
     await renderAudioList();

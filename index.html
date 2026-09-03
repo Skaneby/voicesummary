@@ -336,7 +336,8 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 /* Ljudarkiv i inställningar */
 .rec-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
 .rec-row{display:flex;align-items:center;gap:10px;background:var(--card);
-  border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+  border:1px solid var(--border);border-radius:10px;padding:10px 12px;flex-wrap:wrap}
+.rec-acts{display:flex;gap:6px;flex-basis:100%;justify-content:flex-end}
 .rec-info{flex:1;min-width:0}
 .rec-info b{display:block;font-size:.85rem;font-weight:600;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1982,6 +1983,7 @@ function openSettings() {
   $('s-overlay').classList.add('open');
 }
 function closeSettings() {
+  stopArchivedPlayback();
   $('s-panel').classList.remove('open');
   $('s-overlay').classList.remove('open');
 }
@@ -2401,16 +2403,18 @@ async function processFromText(text) {
 }
 
 // ── MAIN FLOW ──────────────────────────────────────────────────────────────
-async function process(blob, mime) {
+async function process(blob, mime, existingRecId) {
   // Clear stale result so old content can never bleed into a fresh recording
   s.resultText = '';
   s.resultHTML = '';
   s.transcript = '';
   s.qaHistory = [];
   // Ljudet sparas innan analysen — går den fel ska inspelningen ändå finnas
-  // kvar. Samma id som historikposten, så de hör ihop.
-  const recId = Date.now();
-  saveAudio(recId, blob, { title: s.title, seconds: (s.elapsed || 0) / 1000 });
+  // kvar. Samma id som historikposten, så de hör ihop. Vid omkörning (Försök
+  // igen eller Sammanfatta ur arkivet) återanvänds arkivposten — ingen dubblett.
+  const recId = existingRecId || Date.now();
+  s.recId = recId;
+  if (!existingRecId) saveAudio(recId, blob, { title: s.title, seconds: (s.elapsed || 0) / 1000 });
   const reqId = ++_reqId;
   const style = s.style; // capture before any await
   show('working');
@@ -3198,24 +3202,80 @@ async function renderAudioList() {
     sub.textContent = fmtDate(rec.date) + ' · ' + fmt(rec.seconds * 1000) + ' · ' + fmtBytes(rec.size);
     info.appendChild(name); info.appendChild(sub);
 
-    const share = document.createElement('button');
-    share.className = 'rec-act';
-    share.textContent = 'Dela';
-    share.onclick = () => shareAudio(rec.id);
-
-    const del = document.createElement('button');
-    del.className = 'rec-act';
-    del.textContent = 'Radera';
-    del.onclick = async () => {
+    const acts = document.createElement('div');
+    acts.className = 'rec-acts';
+    const act = (label, fn) => {
+      const b = document.createElement('button');
+      b.className = 'rec-act';
+      b.textContent = label;
+      b.onclick = fn;
+      acts.appendChild(b);
+      return b;
+    };
+    act(archPlayingId === rec.id ? 'Stoppa' : 'Lyssna', () => playArchived(rec.id));
+    act('Sammanfatta', () => summarizeArchived(rec.id));
+    act('Dela', () => shareAudio(rec.id));
+    act('Radera', async () => {
       if (!confirm('Radera inspelningen? Sammanfattningen i historiken påverkas inte.')) return;
+      if (archPlayingId === rec.id) stopArchivedPlayback();
       await deleteAudio(rec.id);
       renderAudioList();
       toast('Inspelningen raderad');
-    };
+    });
 
-    row.appendChild(info); row.appendChild(share); row.appendChild(del);
+    row.appendChild(info); row.appendChild(acts);
     list.appendChild(row);
   });
+}
+
+// ── Uppspelning ur arkivet — en inspelning i taget, via ett delat Audio-
+// element. Objekt-URL:en frigörs när uppspelningen stoppas eller tar slut.
+let archAudio = null, archPlayingId = null;
+
+function stopArchivedPlayback() {
+  if (archAudio) {
+    try { archAudio.pause(); URL.revokeObjectURL(archAudio.src); } catch {}
+    archAudio = null;
+  }
+  if (archPlayingId !== null) { archPlayingId = null; renderAudioList(); }
+}
+
+async function playArchived(id) {
+  if (archPlayingId === id) { stopArchivedPlayback(); return; }
+  stopArchivedPlayback();
+  const rec = await getAudio(id);
+  if (!rec || !rec.blob) { toast('Inspelningen kunde inte läsas'); return; }
+  archAudio = new Audio(URL.createObjectURL(rec.blob));
+  archPlayingId = id;
+  archAudio.onended = stopArchivedPlayback;
+  archAudio.onerror = () => { toast('Kunde inte spela upp inspelningen'); stopArchivedPlayback(); };
+  archAudio.play().catch(() => { toast('Kunde inte spela upp inspelningen'); stopArchivedPlayback(); });
+  renderAudioList();
+}
+
+// ── Sammanfatta igen ur arkivet. Säkerhetsnätet efter t.ex. nätbortfall:
+// ljudet sparas alltid FÖRE analysen, så varje arkivpost kan bli en (ny)
+// sammanfattning i efterhand — även efter att appen startats om. Samma
+// arkiv-id återanvänds så ingen dubblett skapas.
+async function summarizeArchived(id) {
+  const rec = await getAudio(id);
+  if (!rec || !rec.blob) { toast('Inspelningen kunde inte läsas'); return; }
+  // Samma gater som startRecording — fast utan mikrofon
+  if (proxyMode()) {
+    if (!s.idToken) { closeSettings(); show('signin'); return; }
+    if (!s.subActive) { closeSettings(); show('paywall'); return; }
+  } else if (!s.key) {
+    toast('Ange din Gemini API-nyckel först');
+    return;
+  }
+  stopArchivedPlayback();
+  closeSettings();
+  s.blob = rec.blob;
+  s.mimeType = rec.mime || 'audio/webm';
+  s.elapsed = (rec.seconds || 0) * 1000;
+  s.title = rec.title || '';
+  $('titleInput').value = s.title;
+  await process(rec.blob, (rec.mime || 'audio/webm').split(';')[0], rec.id);
 }
 
 function audioFileName(rec) {
@@ -4041,7 +4101,7 @@ function init() {
   $('shareBtn').onclick = share;
   $('newBtn').onclick = () => show('idle');
   $('homeBtn').onclick = () => show('idle');
-  $('retryBtn').onclick = () => { if (s.blob) process(s.blob, (s.mimeType||'audio/webm').split(';')[0]); else show('idle'); };
+  $('retryBtn').onclick = () => { if (s.blob) process(s.blob, (s.mimeType||'audio/webm').split(';')[0], s.recId); else show('idle'); };
   $('errSettingsBtn').onclick = openSettings;
   $('settingsBtn').onclick = openSettings;
   $('s-overlay').onclick = closeSettings;
