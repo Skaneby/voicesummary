@@ -378,6 +378,15 @@ står att användaren får Googles engelska faktureringstext rakt i ansiktet.
       fortfarande ingenting — det är den delen av löftet som står kvar.
 - [x] `android/.idea/` ignorerad.
 
+### Produktlöfte 2026-09-03: BYOK-webben ligger kvar till lanseringen
+
+Nuvarande BYOK-version av webben (egen Gemini-nyckel, gratis) får INTE tas
+bort förrän den nya tjänsten (appen + webbkontoläget) är lanserad. Beslutet
+styr merge till `main`: `web-app`-grenen är byggd additivt — kontoläget och
+Drive-synken ligger bredvid BYOK, inte i stället för — så en merge är
+förenlig med löftet. Det som inte får ske före lansering är att nyckelfältet
+eller direktvägen till Gemini plockas bort.
+
 ### Nästa steg — kritisk väg till Play
 
 Ordnat efter ledtid, inte efter svårighet.
