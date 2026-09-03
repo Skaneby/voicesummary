@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -30,55 +28,26 @@ window.addEventListener('beforeinstallprompt', function(e) {
 :root{
   --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
 }
-/* ── ORIGINAL (default) ── */
-html,html[data-theme="original"]{
+/* ── FÄRGER ── */
+html{
   --bg:#0f0f1a;--surface:#1a1a2e;--card:#1e1e3a;--border:#2a2a45;
   --accent:#e94560;--accent-hover:#c23152;--accent-dim:rgba(233,69,96,.15);
   --text:#e8e8f0;--muted:#8888aa;--success:#22c55e;
 }
-/* ── TWIN PEAKS ── */
-html[data-theme="twinpeaks"]{
-  --bg:#0e0205;--surface:#280810;--card:#320c14;--border:#6b1a28;
-  --accent:#d4122e;--accent-hover:#a80e24;--accent-dim:rgba(212,18,46,.22);
-  --text:#f5ead8;--muted:#a08878;--success:#4a9a6a;
-}
-/* ── PANASONIC ── */
-html[data-theme="panasonic"]{
-  --bg:#3a3a3c;--surface:#4a4a4e;--card:#545458;--border:#6a6a70;
-  --accent:#ff1a00;--accent-hover:#cc1500;--accent-dim:rgba(255,26,0,.15);
-  --text:#e8e8ec;--muted:#aaaaaf;--success:#44aa55;
-}
+
 html{height:100%}
 body{height:100vh;height:100dvh;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   font-size:16px;line-height:1.6;overflow:hidden}
-html[data-theme="twinpeaks"] body{font-family:'Special Elite','Courier New',monospace}
-html[data-theme="panasonic"] body{font-family:'Courier New',Courier,monospace}
-/* Twin Peaks: Black Lodge chevron floor */
-html[data-theme="twinpeaks"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.28;
-  background-image:repeating-linear-gradient(
-    135deg,#fff 0px,#fff 2px,transparent 2px,transparent 22px),
-  repeating-linear-gradient(
-    45deg,#fff 0px,#fff 2px,transparent 2px,transparent 22px)}
-/* Twin Peaks: Red Room — strong crimson vignette */
-html[data-theme="twinpeaks"] body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse at 50% 50%,transparent 0%,rgba(150,0,20,.65) 70%,rgba(8,0,2,.97) 100%)}
+
 #app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:var(--st)}
-/* Twin Peaks: Red curtain strip at very top */
-html[data-theme="twinpeaks"] #app::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
-  background:linear-gradient(90deg,#8b0000,#d4122e,#ff2244,#d4122e,#8b0000);
-  z-index:10;box-shadow:0 0 16px rgba(212,18,46,.8)}
 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;
   padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0;
   background:var(--surface)}
-html[data-theme="twinpeaks"] header{border-bottom:2px solid var(--accent);
-  background:linear-gradient(180deg,rgba(140,0,25,.6) 0%,rgba(20,2,8,.8) 100%);
-  box-shadow:0 6px 32px rgba(212,18,46,.3)}
 header h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;
   letter-spacing:.04em}
-html[data-theme="twinpeaks"] header h1{font-family:'Playfair Display',Georgia,serif}
 header h1 svg{color:var(--accent)}
 .icon-btn{background:none;border:none;color:var(--muted);cursor:pointer;
   padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;
@@ -96,7 +65,6 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   display:flex;align-items:center;justify-content:center;
   border:1px solid rgba(233,69,96,.3);flex-shrink:0}
 .setup-title{font-size:1.8rem;font-weight:700;letter-spacing:.06em}
-html[data-theme="twinpeaks"] .setup-title{font-family:'Playfair Display',Georgia,serif}
 .setup-desc{color:var(--muted);font-size:.9rem;max-width:300px}
 .setup-steps{width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px}
 .setup-step{display:flex;gap:12px;align-items:flex-start;text-align:left}
@@ -132,7 +100,6 @@ html[data-theme="twinpeaks"] .setup-title{font-family:'Playfair Display',Georgia
   border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
   position:relative;-webkit-tap-highlight-color:transparent;transition:transform .15s;
   box-shadow:0 0 20px rgba(0,0,0,.4)}
-html[data-theme="twinpeaks"] .record-btn{box-shadow:0 0 24px rgba(212,18,46,.9),0 0 60px rgba(212,18,46,.5),0 0 100px rgba(212,18,46,.2),inset 0 0 20px rgba(255,255,255,.08)}
 .record-btn:active{transform:scale(.9)}
 .record-btn::before{content:'';position:absolute;width:116px;height:116px;
   border-radius:50%;border:2px solid var(--accent);opacity:.3;
@@ -172,7 +139,6 @@ html[data-theme="twinpeaks"] .record-btn{box-shadow:0 0 24px rgba(212,18,46,.9),
 .result-box article section:last-child{margin-bottom:0}
 .result-box h2{font-size:.95rem;font-weight:700;margin-bottom:10px;padding-bottom:6px;
   border-bottom:1px solid var(--border);color:var(--text);letter-spacing:.03em}
-html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georgia,serif}
 .result-box p{color:var(--muted);margin-bottom:10px}
 .result-box p:last-child{margin-bottom:0}
 .result-box ul{padding-left:18px;color:var(--muted)}
@@ -217,6 +183,12 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .format-card[data-fmt="vibecoder"]{--fc:#f59e0b}
 .format-card.active{border-left-color:var(--fc);background:rgba(255,255,255,.04)}
 .format-card.active .fc-name{color:var(--fc)}
+/* Satirformaten avskilda i väljaren: egen rubrik + streckad kant.
+   Klassen .fun sätts i applyFunVisibility utifrån STYLE_META. */
+.format-divider{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:6px;
+  font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.format-divider::before,.format-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.format-card.fun{border-style:dashed;border-left-style:solid}
 
 /* PER-PRESET RESULT ACCENTS */
 .result-box[data-style="protocol"]{border-left-color:#4a9eff}
@@ -233,13 +205,7 @@ html[data-theme="twinpeaks"] .result-box h2{font-family:'Playfair Display',Georg
 .result-box[data-style="blog"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
 .result-box[data-style="vibecoder"]{border-left-color:#f59e0b}
 .result-box[data-style="vibecoder"] h2{color:#f59e0b;border-bottom-color:rgba(245,158,11,.2)}
-/* Panasonic theme: respect per-preset border color */
-html[data-theme="panasonic"] .result-box[data-style="protocol"]{border-left-color:#4a9eff}
-html[data-theme="panasonic"] .result-box[data-style="brief"]{border-left-color:#ff8c42}
-html[data-theme="panasonic"] .result-box[data-style="detailed"]{border-left-color:#3dd9c0}
-html[data-theme="panasonic"] .result-box[data-style="sales"]{border-left-color:#f0c040}
-html[data-theme="panasonic"] .result-box[data-style="social"]{border-left-color:#a855f7}
-html[data-theme="panasonic"] .result-box[data-style="blog"]{border-left-color:#f59e0b}
+
 /* Result badge (preset name chip) */
 .result-badge{font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:100px;
   letter-spacing:.04em;text-transform:uppercase}
@@ -255,7 +221,6 @@ html[data-theme="panasonic"] .result-box[data-style="blog"]{border-left-color:#f
 /* LETTER PRESET */
 .result-box[data-style="letter"]{border-left-color:#6e8efb}
 .result-box[data-style="letter"] h2{color:#6e8efb;border-bottom-color:rgba(110,142,251,.2)}
-html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:#6e8efb}
 .format-card[data-fmt="letter"]{--fc:#6e8efb}
 .format-card[data-fmt="insandare"]{--fc:#ef4444}
 .format-card[data-fmt="psyk"]{--fc:#a855f7}
@@ -272,6 +237,10 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .result-box[data-style="konspiration"]{border-left-color:#6366f1}
 .result-box[data-style="konspiration"] h2{color:#6366f1;border-bottom-color:rgba(99,102,241,.2)}
 .result-badge[data-style="konspiration"]{background:rgba(99,102,241,.15);color:#6366f1}
+.format-card[data-fmt="floskel"]{--fc:#0ea5e9}
+.result-box[data-style="floskel"]{border-left-color:#0ea5e9}
+.result-box[data-style="floskel"] h2{color:#0ea5e9;border-bottom-color:rgba(14,165,233,.2)}
+.result-badge[data-style="floskel"]{background:rgba(14,165,233,.15);color:#0ea5e9}
 .result-box[data-style="tal"]{border-left-color:#e11d48}
 .result-box[data-style="tal"] h2{color:#e11d48;border-bottom-color:rgba(225,29,72,.2)}
 .result-badge[data-style="tal"]{background:rgba(225,29,72,.15);color:#e11d48}
@@ -291,6 +260,9 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .reformat-pill{flex-shrink:0;padding:5px 11px;border-radius:100px;font-size:.72rem;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s}
 .reformat-pill:hover{border-color:var(--accent);color:var(--text)}
 .reformat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.reformat-sep{flex-shrink:0;align-self:center;font-size:.62rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+  border-left:1px solid var(--border);padding-left:10px;margin-left:4px}
 .qa-wrap{width:100%;max-width:680px;display:flex;flex-direction:column;gap:8px}
 .qa-thread{display:flex;flex-direction:column;gap:8px}
 .qa-thread:empty{display:none}
@@ -305,6 +277,78 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 .qa-send{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:0 18px;font-size:1rem;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .qa-send:disabled{opacity:.5;cursor:default}
 .qa-status{font-size:.72rem;color:var(--muted)}
+
+/* Reglage i inställningar */
+.sw-row{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.sw-text{flex:1;min-width:0}
+.sw-text b{display:block;font-size:.9rem;font-weight:600;color:var(--text)}
+.sw-text span{display:block;font-size:.78rem;color:var(--muted);margin-top:2px;line-height:1.45}
+.sw{position:relative;flex-shrink:0;width:48px;height:28px;margin-top:2px}
+.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw span{position:absolute;inset:0;background:var(--border);border-radius:100px;transition:background .2s;pointer-events:none}
+.sw span::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw input:checked + span{background:var(--accent)}
+.sw input:checked + span::after{transform:translateX(20px)}
+.sw input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Varning ovanför satirresultat */
+.fun-warn{width:100%;max-width:680px;display:flex;gap:10px;align-items:flex-start;
+  background:var(--accent-dim);border:1px solid var(--accent);border-radius:12px;
+  padding:11px 14px;font-size:.82rem;line-height:1.5;color:var(--text)}
+.fun-warn b{font-weight:700}
+
+/* Planval på betalväggen */
+.plan-row{display:flex;flex-direction:column;gap:10px;width:min(100%,320px);margin-top:8px}
+.plan{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:var(--accent);color:#fff;border:2px solid var(--accent);border-radius:14px;
+  padding:16px 18px;cursor:pointer;font-family:inherit;
+  -webkit-tap-highlight-color:transparent;transition:transform .12s}
+.plan:active{transform:scale(.98)}
+.plan-alt{background:transparent;color:var(--text);border-color:var(--border)}
+.plan-price{font-size:1.25rem;font-weight:700;line-height:1.1}
+.plan-price small{font-size:.85rem;font-weight:500;opacity:.85}
+.plan-note{font-size:.76rem;opacity:.9}
+.plan-alt .plan-note{color:var(--muted)}
+.plan-tag{position:absolute;top:-9px;background:var(--text);color:var(--bg);
+  font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  padding:3px 9px;border-radius:100px}
+.plan:disabled{opacity:.6}
+
+/* Hjälpruta för format */
+#fh-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100}
+#fh-overlay.open{display:block}
+#fh-panel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);
+  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
+  padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:80vh;overflow-y:auto}
+#fh-panel.open{transform:translateY(0)}
+.fh-group{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);margin:18px 0 8px}
+.fh-group:first-child{margin-top:0}
+.fh-item{padding:10px 0;border-bottom:1px solid var(--border)}
+.fh-item:last-child{border-bottom:none}
+.fh-item b{display:block;font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:3px}
+.fh-item span{display:block;font-size:.83rem;line-height:1.5;color:var(--muted)}
+.fh-hint{font-size:.8rem;color:var(--muted);margin-top:16px;padding-top:14px;
+  border-top:1px solid var(--border)}
+
+/* Ljudarkiv i inställningar */
+.rec-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.rec-row{display:flex;align-items:center;gap:10px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;padding:10px 12px;flex-wrap:wrap}
+.rec-acts{display:flex;gap:6px;flex-basis:100%;justify-content:flex-end}
+.rec-info{flex:1;min-width:0}
+.rec-info b{display:block;font-size:.85rem;font-weight:600;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-info span{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+.rec-act{background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:8px;padding:6px 10px;font-size:.75rem;cursor:pointer;flex-shrink:0;
+  font-family:inherit;-webkit-tap-highlight-color:transparent}
+.rec-act:active{border-color:var(--accent);color:var(--accent)}
+.rec-empty{font-size:.8rem;color:var(--muted);padding:6px 0}
+.rec-sum{font-size:.72rem;color:var(--muted);margin-top:10px;
+  display:flex;justify-content:space-between;align-items:center;gap:10px}
 .fnr-bar{width:100%;max-width:680px;background:var(--card);border:1px solid var(--border);
   border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .fnr-row{display:flex;gap:6px;align-items:center}
@@ -388,7 +432,6 @@ html[data-theme="panasonic"] .result-box[data-style="letter"]{border-left-color:
 #s-panel.open{transform:translateY(0)}
 .s-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px}
 .s-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;letter-spacing:.03em}
-html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,serif}
 .s-form{display:flex;flex-direction:column;gap:14px}
 .s-save{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
   font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px}
@@ -444,72 +487,21 @@ html[data-theme="twinpeaks"] .s-title{font-family:'Playfair Display',Georgia,ser
 .gh-issue-link{display:block;color:var(--accent);font-size:.85rem;word-break:break-all;
   margin-top:8px;text-decoration:none}
 
-/* ── PANASONIC THEME — skeuomorphic cassette recorder ─────────────────── */
 /* Plastic body texture: subtle horizontal mold lines */
-html[data-theme="panasonic"] body{
-  background:linear-gradient(160deg,#424246 0%,#353538 40%,#3e3e42 100%)}
-html[data-theme="panasonic"] body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:repeating-linear-gradient(0deg,
-    rgba(255,255,255,.03) 0px,rgba(255,255,255,.03) 1px,
-    transparent 1px,transparent 4px),
-  repeating-linear-gradient(90deg,
-    rgba(0,0,0,.04) 0px,rgba(0,0,0,.04) 1px,
-    transparent 1px,transparent 60px)}
-/* Header: silver panel top with speaker-grille dots */
-html[data-theme="panasonic"] header{
-  background:linear-gradient(180deg,#5a5a5e 0%,#46464a 100%);
-  border-bottom:3px solid #222;
-  box-shadow:0 3px 0 #666,inset 0 1px 0 rgba(255,255,255,.15);
-  letter-spacing:.06em}
-/* Buttons: physical raised plastic keys */
-html[data-theme="panasonic"] .btn-sec{
-  background:linear-gradient(180deg,#5c5c62 0%,#484850 100%);
-  border:1px solid #333;border-radius:4px;
-  box-shadow:0 3px 0 #2a2a2e,0 4px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
-  color:#e8e8ec}
-html[data-theme="panasonic"] .btn-sec:active{
-  transform:translateY(2px);
-  box-shadow:0 1px 0 #2a2a2e,0 2px 4px rgba(0,0,0,.4)}
-html[data-theme="panasonic"] .btn-primary,html[data-theme="panasonic"] .btn-new,html[data-theme="panasonic"] .s-save{
-  border-radius:4px;
-  background:linear-gradient(180deg,#ee2200 0%,#bb1500 100%);
-  box-shadow:0 3px 0 #660800,0 4px 10px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,120,80,.3)}
-html[data-theme="panasonic"] .btn-primary:active,html[data-theme="panasonic"] .btn-new:active{
-  transform:translateY(2px);box-shadow:0 1px 0 #660800}
-/* Record button: big physical red push-button with depth */
-html[data-theme="panasonic"] .record-btn{
-  background:radial-gradient(circle at 38% 35%,#ff5544,#cc1100);
-  box-shadow:0 6px 0 #770800,0 8px 20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,180,160,.4);
-  border:2px solid #990a00;border-radius:50%}
-html[data-theme="panasonic"] .record-btn:active{
-  transform:translateY(4px) scale(.97);
-  box-shadow:0 2px 0 #770800,0 4px 10px rgba(0,0,0,.5)}
-html[data-theme="panasonic"] .record-btn::before{border-color:rgba(255,80,60,.5)}
-/* Inputs: recessed dark slots */
-html[data-theme="panasonic"] .input-group input,html[data-theme="panasonic"] .input-group select,
-html[data-theme="panasonic"] .participants-wrap input{
-  background:#2a2a2e;border:1px solid #222;border-radius:3px;color:#e8e8ec;
-  box-shadow:inset 0 2px 4px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.04)}
-/* Cards: recessed panel areas */
-html[data-theme="panasonic"] .result-box{
-  background:#2e2e32;border:1px solid #222;border-radius:4px;
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.4);border-left:3px solid var(--accent)}
-/* Red LED strip at top */
-html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,#660000,#ff1a00 30%,#ff4422 50%,#ff1a00 70%,#660000);
-  z-index:10;box-shadow:0 0 10px rgba(255,26,0,.9),0 0 20px rgba(255,26,0,.4)}
 
-/* ── THEME PICKER ─────────────────────────────────────────────────────────── */
+/* Header: silver panel top with speaker-grille dots */
+
+/* Buttons: physical raised plastic keys */
+
+/* Record button: big physical red push-button with depth */
+
+/* Inputs: recessed dark slots */
+
+/* Cards: recessed panel areas */
+
+/* Red LED strip at top */
+
 .theme-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
-.theme-card{background:var(--card);border:2px solid var(--border);border-radius:10px;
-  padding:12px 8px;cursor:pointer;text-align:center;transition:border-color .15s;
-  -webkit-tap-highlight-color:transparent}
-.theme-card.active{border-color:var(--accent)}
-.theme-swatch{width:36px;height:36px;border-radius:50%;margin:0 auto 8px;
-  display:flex;align-items:center;justify-content:center;border:2px solid}
-.theme-dot{width:12px;height:12px;border-radius:50%}
-.theme-name{font-size:.72rem;font-weight:600;color:var(--muted);line-height:1.2}
-.theme-card.active .theme-name{color:var(--text)}
 </style>
 </head>
 <body>
@@ -595,6 +587,71 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         </div>
       </div>
       <button class="btn-primary" id="setupSaveBtn">Kom igång</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:6px;width:min(100%,300px)">
+        <span style="flex:1;height:1px;background:var(--border)"></span>
+        <span style="font-size:.75rem;color:var(--muted)">eller</span>
+        <span style="flex:1;height:1px;background:var(--border)"></span>
+      </div>
+      <button class="btn-sec" id="setupSignInBtn">Logga in med Google — för prenumeranter</button>
+    </section>
+
+    <!-- SIGN IN (appläge) -->
+    <section class="screen" id="screen-signin">
+      <div class="setup-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </div>
+      <h2 class="setup-title">Diane</h2>
+      <p class="setup-desc">Logga in för att komma igång.</p>
+      <div id="googleSignInBtn" style="margin-top:8px"></div>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:16px;max-width:300px;text-align:center">
+        Diane använder ditt Google-konto för inloggning. Vi sparar bara din e-postadress och din prenumerationsstatus.
+      </p>
+    </section>
+
+    <!-- PAYWALL (appläge) -->
+    <section class="screen" id="screen-paywall">
+      <div class="setup-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2 class="setup-title">Diane Premium</h2>
+      <p class="setup-desc">7 dagar gratis. Sedan väljer du själv.</p>
+      <ul style="list-style:none;padding:0;margin:0;color:var(--text);font-size:.92rem;text-align:left;max-width:320px;line-height:1.7">
+        <li>✓ Spela in möten även med släckt skärm</li>
+        <li>✓ Sammanfattning på det språk du talar</li>
+        <li>✓ Alla format — protokoll, säljmöte, bloggpost, brev m.m.</li>
+        <li>✓ Fråga om mötet och få svar ur hela inspelningen</li>
+        <li>✓ 100 sammanfattningar och 60 minuter ljud varje månad</li>
+      </ul>
+      <div class="plan-row">
+        <button class="plan" id="paywallSubscribeBtn" data-plan="ANNUAL">
+          <span class="plan-tag">Bäst värde</span>
+          <span class="plan-price">470 kr<small>/år</small></span>
+          <span class="plan-note">Motsvarar 39 kr/mån — två månader gratis</span>
+        </button>
+        <button class="plan plan-alt" id="paywallMonthlyBtn" data-plan="MONTHLY">
+          <span class="plan-price">47 kr<small>/mån</small></span>
+          <span class="plan-note">Löpande, avsluta när du vill</span>
+        </button>
+      </div>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:4px;max-width:330px;text-align:center" id="paywallTerms">
+        Provperioden är gratis i 7 dagar och övergår sedan automatiskt i den prenumeration du valt. Avsluta när som helst i Google Play.
+      </p>
+      <p class="setup-desc" id="paywallWebNote" style="display:none;max-width:330px;font-size:.88rem">
+        Prenumerationen tecknas i Diane-appen på din telefon. Logga sedan in här
+        med samma Google-konto — så följer den med hit.
+      </p>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:2px" id="paywallEmail"></p>
+      <div style="display:flex;gap:14px;margin-top:6px">
+        <button class="btn-sec" id="paywallRestoreBtn" style="font-size:.82rem">Återställ köp</button>
+        <button class="btn-sec" id="paywallSignOutBtn" style="font-size:.82rem">Logga ut</button>
+        <button class="btn-sec" id="paywallDeleteBtn" style="font-size:.82rem">Radera konto</button>
+      </div>
     </section>
 
     <!-- IDLE -->
@@ -627,9 +684,8 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       <div class="participants-wrap" style="max-width:none;width:min(100%,500px)">
         <div style="display:flex;align-items:center;margin-bottom:6px">
           <label class="participants-label" style="margin-bottom:0">Format</label>
-          <button class="tip-btn" type="button" data-tip="tip-format">?</button>
+          <button class="tip-btn" type="button" id="formatHelpBtn" aria-label="Vad gör formaten?">?</button>
         </div>
-        <span class="tip-text" id="tip-format">Välj hur inspelningen ska bearbetas. Varje format ger ett helt olika resultat — från mötesprotokoll till sociala medieinlägg.</span>
         <div class="format-grid" id="formatRow">
           <button class="format-card" data-fmt="summary">
             <div class="fc-name">Sammanfattning</div>
@@ -667,6 +723,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
             <div class="fc-name">⚡ Vibe Prompt</div>
             <div class="fc-desc">Prompt för Lovable, Bolt, v0, Cursor</div>
           </button>
+          <div class="format-divider" id="funDivider" style="display:none">På skoj</div>
           <button class="format-card" data-fmt="insandare">
             <div class="fc-name">😤 Arg insändare</div>
             <div class="fc-desc">Engagerat inlägg till lokaltidningen</div>
@@ -690,6 +747,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <button class="format-card" data-fmt="konspiration">
             <div class="fc-name">🕵️ Konspiration</div>
             <div class="fc-desc">Den dolda sanningen bakom det uppenbara</div>
+          </button>
+          <button class="format-card" data-fmt="floskel">
+            <div class="fc-name">💼 Floskler</div>
+            <div class="fc-desc">Mötet i tom konsultsvenska</div>
           </button>
         </div>
       </div>
@@ -735,6 +796,10 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         <span class="result-badge" id="resultBadge"></span>
       </div>
       <p id="resultTitle" style="display:none;font-weight:700;font-size:1rem;width:100%;max-width:680px;text-align:left"></p>
+      <div class="fun-warn" id="funWarn" style="display:none">
+        <span aria-hidden="true">🎭</span>
+        <span><b>På skoj.</b> <span id="funWarnText"></span></span>
+      </div>
       <div class="result-box" id="resultBox"></div>
       <div class="reformat-wrap" id="reformatWrap" style="display:none">
         <div class="reformat-label">Kör om som</div>
@@ -836,6 +901,30 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
 </div>
 
 <!-- HISTORY PANEL -->
+<div id="fh-overlay"></div>
+<aside id="fh-panel" role="dialog" aria-label="Om formaten">
+  <div class="s-handle"></div>
+  <h2 class="s-title">Vad formaten gör</h2>
+  <div id="fh-body"></div>
+</aside>
+
+<div id="disc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100"></div>
+<aside id="disc-panel" role="dialog" aria-label="Om ljudinspelning" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;max-height:80vh;overflow-y:auto">
+  <div class="s-handle"></div>
+  <h2 class="s-title">Innan du spelar in</h2>
+  <p style="font-size:.9rem;line-height:1.6;color:var(--text);margin:0 0 12px">
+    Diane spelar in ljud via telefonens mikrofon och <strong>skickar inspelningen till Google Gemini</strong> för att skapa din sammanfattning.
+  </p>
+  <ul style="font-size:.88rem;line-height:1.6;color:var(--muted);padding-left:18px;margin:0 0 16px">
+    <li>Inspelningen skickas krypterat och sparas inte på våra servrar.</li>
+    <li>Sammanfattningen lagras bara lokalt på din enhet.</li>
+    <li>De tio senaste inspelningarna sparas på telefonen så att du kan dela eller radera dem. Du hittar dem under Inställningar.</li>
+    <li>Spela inte in personer utan att berätta att du gör det.</li>
+  </ul>
+  <button class="s-save" id="discAcceptBtn" style="width:100%">Jag förstår — fortsätt</button>
+  <button class="btn-sec" id="discCancelBtn" style="width:100%;justify-content:center;margin-top:8px">Avbryt</button>
+</aside>
+
 <div id="h-overlay"></div>
 <aside id="h-panel" role="dialog" aria-label="Historik">
   <div class="s-handle"></div>
@@ -882,30 +971,63 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
   <div class="s-handle"></div>
   <h2 class="s-title">Inställningar</h2>
   <div class="s-form">
-    <div class="input-group">
-      <label>Utseende</label>
-      <div class="theme-picker">
-        <button class="theme-card" data-theme="original">
-          <div class="theme-swatch" style="background:#0f0f1a;border-color:#e94560">
-            <div class="theme-dot" style="background:#e94560"></div>
-          </div>
-          <div class="theme-name">Original</div>
-        </button>
-        <button class="theme-card" data-theme="twinpeaks">
-          <div class="theme-swatch" style="background:#0e0205;border-color:#d4122e">
-            <div class="theme-dot" style="background:#d4122e"></div>
-          </div>
-          <div class="theme-name">Twin Peaks</div>
-        </button>
-        <button class="theme-card" data-theme="panasonic">
-          <div class="theme-swatch" style="background:#1a1a1c;border-color:#dd1a00">
-            <div class="theme-dot" style="background:#dd1a00"></div>
-          </div>
-          <div class="theme-name">Panasonic</div>
-        </button>
+    <div class="input-group" style="max-width:none">
+      <label style="margin-bottom:8px">Innehåll</label>
+      <div class="sw-row">
+        <div class="sw-text">
+          <b>Humorformat</b>
+          <span>Lägger till sju format på skoj — insändare, predikan, floskelrapport och några till. Avstängt som standard så att formatväljaren håller sig saklig.</span>
+        </div>
+        <label class="sw">
+          <input type="checkbox" id="sFun" aria-label="Visa humorformat">
+          <span></span>
+        </label>
       </div>
     </div>
-    <div class="input-group">
+    <div class="input-group" style="max-width:none">
+      <label style="margin-bottom:4px">Inspelningar på enheten</label>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.45;margin:0 0 6px">
+        De tio senaste sparas här på telefonen. Dela dem vidare till Drive, mejl
+        eller Filer — eller radera dem. De skickas aldrig någon annanstans av sig själva.
+      </p>
+      <div class="rec-list" id="recList"></div>
+      <div class="rec-sum">
+        <span id="recTotal"></span>
+        <button class="rec-act" id="recClearBtn" style="display:none">Radera alla</button>
+      </div>
+    </div>
+    <div class="input-group" style="max-width:none" id="driveGroup">
+      <label style="margin-bottom:4px">Säkerhetskopiering till Google Drive</label>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.45;margin:0 0 6px">
+        Historiken och dina formatval sparas som en fil i Dianes egen dolda mapp
+        på ditt Google Drive — appen ser aldrig dina övriga filer, och inget
+        hamnar på våra servrar. Ljudinspelningarna stannar på enheten.
+      </p>
+      <div class="rec-sum">
+        <span id="driveStatus">Inte ansluten.</span>
+        <span style="display:flex;gap:6px">
+          <button class="rec-act" id="driveOnBtn">Anslut</button>
+          <button class="rec-act" id="drivePullBtn" style="display:none">Hämta</button>
+          <button class="rec-act" id="driveOffBtn" style="display:none">Koppla från</button>
+        </span>
+      </div>
+    </div>
+    <div class="input-group" style="max-width:none">
+      <label style="margin-bottom:4px">Fellogg</label>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.45;margin:0 0 6px">
+        Fel som uppstår sparas här på telefonen så att de går att läsa i efterhand
+        eller dela vid felsökning. Inget skickas någonstans av sig självt.
+      </p>
+      <div class="rec-list" id="errList"></div>
+      <div class="rec-sum">
+        <span id="errTotal"></span>
+        <span style="display:flex;gap:6px">
+          <button class="rec-act" id="errShareBtn" style="display:none">Dela</button>
+          <button class="rec-act" id="errClearBtn" style="display:none">Rensa</button>
+        </span>
+      </div>
+    </div>
+    <div class="input-group web-only">
       <div style="display:flex;align-items:center;margin-bottom:6px">
         <label style="margin-bottom:0">Gemini API-nyckel</label>
         <button class="tip-btn" type="button" data-tip="tip-apikey">?</button>
@@ -913,7 +1035,7 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
       <span class="tip-text" id="tip-apikey">Din personliga nyckel från Google AI Studio. Lagras bara lokalt i din webbläsare och skickas aldrig till Dianes servrar — bara direkt till Google.</span>
       <input type="text" id="sKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
     </div>
-    <div class="input-group">
+    <div class="input-group web-only">
       <div style="display:flex;align-items:center;margin-bottom:6px">
         <label style="margin-bottom:0">Modell</label>
         <button class="tip-btn" type="button" data-tip="tip-model">?</button>
@@ -925,11 +1047,25 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
         <option value="gemini-2.5-pro">gemini-2.5-pro (bäst kvalitet, kräver fakturering)</option>
       </select>
     </div>
-    <div class="input-group">
+    <div class="input-group web-only">
       <label>GitHub Token (valfritt — för att skapa issues)</label>
       <input type="text" id="sGHToken" placeholder="ghp_…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
     </div>
-    <button class="s-save" id="sSaveBtn">Spara</button>
+    <button class="s-save web-only" id="sSaveBtn">Spara</button>
+    <div class="app-only" style="display:none">
+      <div class="input-group" style="max-width:none">
+        <label style="margin-bottom:6px">Konto</label>
+        <div style="padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.85rem">
+          <span id="settingsEmail" style="color:var(--muted)"></span>
+        </div>
+      </div>
+      <button class="btn-sec" id="manageSubBtn" style="width:100%;justify-content:center;margin-top:10px">Hantera prenumeration</button>
+      <button class="btn-sec" id="settingsSignOutBtn" style="width:100%;justify-content:center;margin-top:8px">Logga ut</button>
+      <button class="btn-sec" id="settingsDeleteBtn" style="width:100%;justify-content:center;margin-top:8px;color:var(--accent)">Radera konto</button>
+      <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:12px">
+        <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted)">Integritetspolicy</a>
+      </p>
+    </div>
     <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
       <button class="btn-sec" id="shareAppBtn" style="width:100%;justify-content:center;gap:8px">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -937,15 +1073,6 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
           <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
         </svg>
         Dela appen med en vän
-      </button>
-    </div>
-    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
-      <button class="btn-sec" id="forceUpdateBtn" style="width:100%;justify-content:center;gap:8px;opacity:.75">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-        </svg>
-        Tvinga uppdatering
       </button>
     </div>
   </div>
@@ -1006,9 +1133,84 @@ html[data-theme="panasonic"] #app::before{content:'';position:absolute;top:0;lef
 'use strict';
 const API_BASE = 'https://generativelanguage.googleapis.com';
 const SK = 'vs_key', SM = 'vs_model';
-const SGH = 'vs_gh_token', SGHR = 'vs_gh_repos';
-const STHEME = 'vs_theme';
 
+
+// Vad varje format ger, i klartext. Renderas i hjälprutan vid formatväljaren.
+// Varje nyckel i STYLE_META måste finnas här — smoke-testet kontrollerar det.
+const FORMAT_HELP = {
+  summary:    'Helheten i löpande text med nyckelpunkter. Bra förstahandsval när du bara vill veta vad som sades.',
+  protocol:   'Formellt mötesprotokoll: närvarande, beslut och åtgärdspunkter med ansvarig. För möten som ska dokumenteras.',
+  brief:      'Kortversionen, några rader. När någon bara behöver veta vad som hände utan att läsa allt.',
+  detailed:   'Komplett genomgång med all kontext, resonemang och detaljer. När inget får falla bort.',
+  sales:      'Kundens situation, behov, invändningar och nästa steg. Skriven för att kunna klistras in i CRM efter ett säljsamtal.',
+  social:     'Kort personligt inlägg i jag-form, max 500 tecken plus hashtaggar. För LinkedIn eller Facebook.',
+  blog:       'Blogginlägg i din egen röst, med mellanrubriker, konkreta exempel och fem taggar på slutet.',
+  letter:     'Sakligt brev med mottagare, ärendemening och tydlig begäran. Till myndighet, hyresvärd eller företag.',
+  vibecoder:  'En färdig prompt att klistra in i Lovable, Bolt, v0 eller Cursor när du beskrivit en app du vill bygga.',
+  insandare:  'Engagerat inlägg till lokaltidningen, med lagom mängd upprördhet.',
+  psyk:       'Påhittad psykiatrisk utredning av dig själv, komplett med diagnos och ordination. Ren satir.',
+  tal:        'Politiskt brandtal med paroll och pauser för applåder.',
+  predikan:   'Predikan över det du berättat, med moral och avslutande välsignelse.',
+  drama:      'Vardagliga händelser omskrivna som episkt teaterdrama.',
+  konspiration: 'Den påhittade "dolda sanningen" bakom det du just berättade.',
+  floskel:    'Din vardag som byråkratisk processrapport: fikat blir "strategisk implementering av bakverk" och vännerna intressenter.',
+};
+
+// Bygger hjälprutan från STYLE_META så listan aldrig kan bli inaktuell
+function openFormatHelp() {
+  const body = $('fh-body');
+  body.innerHTML = '';
+  const groups = [
+    ['Sakliga format', Object.keys(STYLE_META).filter(k => !STYLE_META[k].fun)],
+    ['På skoj', funEnabled() ? Object.keys(STYLE_META).filter(k => STYLE_META[k].fun) : []],
+  ];
+  groups.forEach(([title, keys]) => {
+    if (!keys.length) return;
+    const h = document.createElement('div');
+    h.className = 'fh-group';
+    h.textContent = title;
+    body.appendChild(h);
+    keys.forEach(k => {
+      const row = document.createElement('div');
+      row.className = 'fh-item';
+      const name = document.createElement('b');
+      name.textContent = STYLE_META[k].badge;
+      const desc = document.createElement('span');
+      desc.textContent = FORMAT_HELP[k] || '';
+      row.appendChild(name); row.appendChild(desc);
+      body.appendChild(row);
+    });
+  });
+  if (!funEnabled()) {
+    const hint = document.createElement('p');
+    hint.className = 'fh-hint';
+    hint.textContent = 'Sju format på skoj finns också — slå på Humorformat i inställningarna.';
+    body.appendChild(hint);
+  }
+  $('fh-overlay').classList.add('open');
+  $('fh-panel').classList.add('open');
+}
+function closeFormatHelp() {
+  $('fh-overlay').classList.remove('open');
+  $('fh-panel').classList.remove('open');
+}
+
+// ── LÄGE ───────────────────────────────────────────────────────────────────
+// Samma fil kör två produkter. Webbläge: användarens egen Gemini-nyckel,
+// anrop direkt till Google. Appläge (Capacitor): inloggning + prenumeration,
+// all trafik via vår proxy som håller nyckeln. Se docs/architecture.md.
+const isCapacitor = () => !!(window.Capacitor?.isNativePlatform?.());
+const APP_MODE = isCapacitor();
+// Proxyläge: alla Gemini-anrop går via Workern med kontots token i stället
+// för direkt till Google med egen nyckel. Sant i appen — och i webbläsaren
+// så fort användaren loggat in med Google (webbversionen av appen).
+function proxyMode() { return APP_MODE || !!s.idToken; }
+const API_PROXY = 'https://diane-api.johan-skaneby.workers.dev';
+// Webbappens publika adress. Enda stället den står — ändras här om repot
+// byter namn eller får en egen domän.
+const APP_URL = 'https://skaneby.github.io/voicesummary/';
+const GOOGLE_OAUTH_CLIENT_ID = '732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com';
+const SGH = 'vs_gh_token', SGHR = 'vs_gh_repos';
 // Safe localStorage wrapper — throws SecurityError on Safari with "Block all cookies"
 const store = {
   get(k, def = '') { try { return localStorage.getItem(k) || def; } catch { return def; } },
@@ -1017,30 +1219,29 @@ const store = {
   json(k, def)    { try { return JSON.parse(localStorage.getItem(k) || 'null') ?? def; } catch { return def; } },
 };
 
-function setTheme(name) {
-  document.documentElement.dataset.theme = name || 'original';
-  store.set(STHEME, name || 'original');
-  document.querySelectorAll('.theme-card').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.theme === (name || 'original'));
-  });
-}
-
 const PROMPTS = {
 
 summary: `Analyze this audio recording carefully.
 Detect the language being spoken and respond ENTIRELY in that same language.
+PERSPECTIVE: Detect whether this is ONE person thinking aloud (a voice memo, a monologue, "I" statements, no other voices) or a conversation between SEVERAL people. If it is one person, write the summary in FIRST PERSON as that person ("jag bestämde", "I decided") — it is their own note to themselves. If it is several people, stay neutral and impersonal; do not invent a narrator.
 Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [concise 4–6 word title in the detected language]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
 <article>
   <section>
     <h2>[Summary heading]</h2>
-    <p>[Comprehensive prose summary — 2-4 paragraphs covering main topics, context, conclusions]</p>
+    <p>[Substantial prose summary — aim for 3-5 full paragraphs. Cover not only WHAT was said and decided but also the WHY: reasoning, alternatives that were discussed, concerns raised, and how conclusions were reached. Include relevant context and, where it matters, the mood or tone. Do not compress away nuance.]</p>
   </section>
   <section>
     <h2>[Key Points heading]</h2>
     <ul>
-      <li><strong>[Topic/person]:</strong> [specific detail]</li>
+      <li><strong>[Topic/person]:</strong> [1-2 full sentences with the specific detail AND its significance — not telegram style]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Open Questions heading]</h2>
+    <ul>
+      <li>[Anything left unresolved, postponed or explicitly parked]</li>
     </ul>
   </section>
   <section>
@@ -1050,7 +1251,7 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     </ul>
   </section>
 </article>
-Rules: Omit Action Items if none. Capture names, numbers, dates, decisions. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+Rules: This is still a summary, not a transcript — no long quotes, no play-by-play; aim for roughly 250-450 words in total. But when in doubt, INCLUDE the concrete detail rather than dropping it: names, numbers, dates, amounts, decisions. 5-10 key points. Omit Open Questions and Action Items if there are none. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
 
 protocol: `Analyze this audio recording and produce formal meeting minutes.
 Detect the language being spoken and respond ENTIRELY in that same language.
@@ -1091,6 +1292,7 @@ Rules: Omit entire sections AND individual lines/list items for which the record
 
 brief: `Analyze this audio recording and produce a brief executive summary.
 Detect the language being spoken and respond ENTIRELY in that same language.
+PERSPECTIVE: Detect whether this is ONE person thinking aloud (a voice memo, a monologue, "I" statements, no other voices) or a conversation between SEVERAL people. If it is one person, write the summary in FIRST PERSON as that person ("jag bestämde", "I decided") — it is their own note to themselves. If it is several people, stay neutral and impersonal; do not invent a narrator.
 Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [concise 4–6 word title in the detected language]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
@@ -1116,6 +1318,7 @@ Rules: Be ruthlessly concise. No long prose. Max 5 bullets per section. Omit sec
 
 detailed: `Analyze this audio recording and produce a comprehensive, detailed summary.
 Detect the language being spoken and respond ENTIRELY in that same language.
+PERSPECTIVE: Detect whether this is ONE person thinking aloud (a voice memo, a monologue, "I" statements, no other voices) or a conversation between SEVERAL people. If it is one person, write the summary in FIRST PERSON as that person ("jag bestämde", "I decided") — it is their own note to themselves. If it is several people, stay neutral and impersonal; do not invent a narrator.
 Return your response in exactly two parts — no other text:
 Line 1 — TITLE: [concise 4–6 word title in the detected language]
 Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
@@ -1498,7 +1701,40 @@ Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the 
     <p>[Deliver the conclusion with quiet conviction. What is really going on? End with a line that sounds like a warning or an invitation to wake up — but measured, not hysterical.]</p>
   </section>
 </article>
-Rules: Treat the recording's content as real evidence — reference it specifically. All organizations and documents must be invented but plausible. Calm, assured tone throughout — the most convincing conspiracy theories never shout. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
+Rules: Treat the recording's content as real evidence — reference it specifically. All organizations and documents must be invented but plausible. Calm, assured tone throughout — the most convincing conspiracy theories never shout. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`,
+
+floskel: `You are a management consultant who communicates EXCLUSIVELY in corporate jargon, buzzwords and — when the language is Swedish — svengelska. You are incapable of saying anything plainly.
+Analyze this audio recording and rewrite its content as an extremely bureaucratic, business-formal process report. Detect the language being spoken and respond ENTIRELY in that same language (apply the Swedish examples below as equivalents in that language).
+Your method is to deliberately invert every principle of good communication: instead of simplifying the complicated, you maximize the complexity of the utterly simple. Steer everything away from the concrete and human, toward the abstract and process-driven, using these five transformations on EVERYTHING in the recording:
+1. LEXICAL SUBSTITUTION — replace concrete nouns with abstract business terms. An 80th birthday becomes "övergången till version 8.0"; a moped becomes a "mobilitetslösning"; a kitchen becomes a "nutritionsfacilitet".
+2. PROCESSIFICATION — replace human actions with project terminology. Having coffee becomes "strategisk implementering av bakverk" or "processande av fikakvoten"; going for a walk becomes "exekvering av den ambulatoriska roadmapen".
+3. DEPERSONIFICATION — family, friends and colleagues become "intressenter", "resurser", "processägare" or "kravställare". No one is ever a person; everyone is a function.
+4. KEYWORD INJECTION — maintain a high density of: synergier, onboarding, out-of-the-box, core business, agilt, allokera, ta höjd, växla upp, holistiskt, lågt hängande frukter.
+5. FEELINGS BECOME METRICS — replace personal experience with business value. Joy becomes "hög kundnöjdhet" or "maximerat mervärde"; tiredness becomes "suboptimal resursutnyttjandegrad"; love becomes "stark stakeholder-alignment".
+Return your response in exactly two parts — no other text:
+Line 1 — TITLE: [pompous 4–7 word corporate vision statement]
+Line 2 onwards — valid HTML, no markdown, no code fences, no text outside the HTML.
+<article>
+  <section>
+    <h2>[Exekutiv sammanfattning / Executive summary]</h2>
+    <p>[The whole recording restated as one grand, empty vision. Maximum buzzword density, minimum content.]</p>
+  </section>
+  <section>
+    <h2>[Vår resa / Our journey]</h2>
+    <p>[What actually happened or was said, run through all five transformations. Everything is a "resa", every problem an "utmaning och möjlighet".]</p>
+  </section>
+  <section>
+    <h2>[Nyckelinsikter / Key takeaways]</h2>
+    <ul>
+      <li>[3–5 bullets. Each takes one real point from the recording and applies the transformations. The reader should be able to guess what was actually meant — barely.]</li>
+    </ul>
+  </section>
+  <section>
+    <h2>[Vägen framåt / The way forward]</h2>
+    <p>[Vague next steps that commit to nothing and name no one. End with an absurdly grandiose closing statement about the future.]</p>
+  </section>
+</article>
+Rules: Straight face throughout — the text must never wink at the reader or admit it is satire; the emptiness IS the joke. No new facts, only reupholstered ones from the recording — the underlying reality must remain (barely) traceable under the corporate fog. Use only: article, section, h2, p, ul, li, strong, em. No CSS, class/id, inline styles or scripts.`
 
 };
 
@@ -1543,10 +1779,40 @@ const s = {
   mimeType: '', start: 0, elapsed: 0, paused: false, timerRef: null,
   audioCtx: null, analyser: null, raf: null,
   resultHTML: '', participants: '', title: '',
+  // Appläge: konto och prenumerationsstatus (tomma i webbläge)
+  idToken: '', googleSub: '', email: '', subActive: 0, periodEnd: null,
+  summariesUsed: 0, audioSecondsUsed: 0, caps: null,
   transcript: '', transcribing: false, qaHistory: [], qaPending: false, historyId: 0
 };
 // Format där "Fråga om mötet" är tillgängligt
 const QA_STYLES = ['sales', 'protocol', 'summary', 'detailed'];
+
+// Satirformaten är avstängda som standard. Diane används på riktiga möten,
+// och en psykiatrisk "utredning" bredvid ett mötesprotokoll inbjuder till
+// missförstånd. Den som vill ha dem slår på dem medvetet.
+const SFUN = 'vs_fun';
+function funEnabled() { return store.get(SFUN) === '1'; }
+function isFunStyle(fmt) { return !!STYLE_META[fmt]?.fun; }
+
+// Visar eller döljer satirformaten i både formatväljaren och omformaterings-
+// raden, tillsammans med "På skoj"-avdelarna som skiljer dem från de sakliga.
+// Anropas vid start och när inställningen ändras.
+function applyFunVisibility() {
+  const on = funEnabled();
+  document.querySelectorAll('.format-card').forEach(el => {
+    const fun = isFunStyle(el.dataset.fmt);
+    el.classList.toggle('fun', fun);
+    if (fun) el.style.display = on ? '' : 'none';
+  });
+  document.querySelectorAll('.format-divider, .reformat-sep').forEach(el => {
+    el.style.display = on ? '' : 'none';
+  });
+  document.querySelectorAll('.reformat-pill').forEach(el => {
+    if (isFunStyle(el.dataset.fmt)) el.style.display = on ? '' : 'none';
+  });
+  // Står användaren på ett dolt format, flytta till sammanfattning
+  if (!on && isFunStyle(s.style)) setFormat('summary');
+}
 
 // ── WAKE LOCK ──────────────────────────────────────────────────────────────
 let wakeLock = null;
@@ -1597,14 +1863,58 @@ document.addEventListener('visibilitychange', () => {
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const screens = ['setup','idle','recording','working','result','error'];
+const screens = ['setup','signin','paywall','idle','recording','working','result','error'];
 
 function show(name) {
   screens.forEach(n => {
     const el = $('screen-' + n);
     el.classList.toggle('active', n === name);
   });
+  s.screen = name;
 }
+
+// ── BAKÅTNAVIGERING ────────────────────────────────────────────────────────
+// Utan detta stänger systemets bakåtgest hela appen — även mitt i en
+// inspelning. Vi håller alltid en extra history-post; bakåt konsumerar den,
+// vi utför åtgärden själva och lägger tillbaka en ny. Först när det inte
+// finns något kvar att backa ur låter vi appen stängas.
+// Fungerar i båda lägena: i webbläsaren blir det vanlig bakåtnavigering.
+function openPanels() {
+  return [...document.querySelectorAll('aside[id$="-panel"].open')];
+}
+function closeAllPanels() {
+  closeSettings(); closeHistory(); closeHelp();
+  if (typeof closeGitHub === 'function') closeGitHub();
+  closeCalendarDialog();
+}
+function pushBackSentinel() {
+  try { history.pushState({ diane: true }, ''); } catch {}
+}
+
+// Returnerar true om vi tog hand om bakåt, false om appen får stängas
+function handleBack() {
+  if (openPanels().length) { closeAllPanels(); return true; }
+  const cur = s.screen;
+  if (cur === 'recording') {
+    if (confirm('Avbryta inspelningen? Det inspelade går förlorat.')) {
+      try { if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') s.mediaRecorder.stop(); } catch {}
+      try { s.stream?.getTracks().forEach(t => t.stop()); } catch {}
+      recordingServiceStop();
+      s.chunks = [];
+      show('idle');
+    }
+    return true;                       // stanna kvar oavsett svar
+  }
+  if (cur === 'result' || cur === 'error' || cur === 'working') { show('idle'); return true; }
+  if (cur === 'paywall') { show('signin'); return true; }
+  if (cur === 'signin' && !APP_MODE) { show(s.key ? 'idle' : 'setup'); return true; }
+  if (cur === 'setup' && s.key) { show('idle'); return true; }
+  return false;                        // rot — låt bakåt stänga appen
+}
+
+window.addEventListener('popstate', () => {
+  if (handleBack()) pushBackSentinel();
+});
 
 let toastTimer;
 function toast(msg) {
@@ -1623,6 +1933,16 @@ function fmt(ms) {
 }
 
 function setProgress(pct) { $('progressFill').style.width = pct + '%'; }
+
+// Bitrate för tal, inte musik. Ljudet ska bara vara begripligt för en
+// taligenkänningsmodell, och uppladdningen sker ofta över mobilnät.
+// Opus är transparent för tal redan vid 32 kbit/s mono; AAC (iOS) behöver
+// lite mer för samma kvalitet.
+// Noterbart: Gemini räknar ljud som 32 token/sekund oavsett bitrate, så
+// detta påverkar uppladdningstiden — inte kostnaden.
+function bitrateFor(mime) {
+  return /mp4|aac/i.test(mime || '') ? 48000 : 32000;
+}
 
 function getMime() {
   const order = isIOS()
@@ -1652,17 +1972,18 @@ function closeHelp() {
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 function openSettings() {
+  if (proxyMode()) { const em = $('settingsEmail'); if (em) em.textContent = s.email || 'Inte inloggad'; }
+  renderAudioList();
+  renderErrList();
+  renderDriveStatus();
   $('sKey').value = s.key;
   $('sModel').value = s.model;
   $('sGHToken').value = store.get(SGH);
-  const savedTheme = store.get(STHEME, 'original');
-  document.querySelectorAll('.theme-card').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.theme === savedTheme);
-  });
   $('s-panel').classList.add('open');
   $('s-overlay').classList.add('open');
 }
 function closeSettings() {
+  stopArchivedPlayback();
   $('s-panel').classList.remove('open');
   $('s-overlay').classList.remove('open');
 }
@@ -1681,9 +2002,37 @@ function saveSettings() {
     show('idle');
 }
 
+// ── FÖRGRUNDSTJÄNST (Android) ──────────────────────────────────────────────
+// Håller processen vid liv när skärmen släcks. Utan den fryser Android
+// appen och inspelningen dör mitt i mötet. Allt är best-effort: saknas
+// plugin:et eller kastar det, ska inspelningen fortsätta ändå.
+function recordingServiceStart() {
+  try { window.Capacitor?.Plugins?.Recording?.start?.(); } catch {}
+}
+function recordingServiceStop() {
+  try { window.Capacitor?.Plugins?.Recording?.stop?.(); } catch {}
+}
+
 // ── RECORDING ─────────────────────────────────────────────────────────────
+// Play kräver ett tydligt medgivande i appen innan känslig data samlas in —
+// att det står i integritetspolicyn räcker inte. Visas en gång.
+const SCONSENT = 'vs_audio_consent';
+function hasAudioConsent() { return store.get(SCONSENT) === '1'; }
+function askAudioConsent() {
+  $('disc-overlay').style.display = 'block';
+  $('disc-panel').style.display = 'block';
+}
+function closeAudioConsent() {
+  $('disc-overlay').style.display = 'none';
+  $('disc-panel').style.display = 'none';
+}
+
 async function startRecording() {
-  if (!s.key) {
+  if (proxyMode()) {
+    if (!s.idToken) { show('signin'); return; }
+    if (!s.subActive) { show('paywall'); return; }
+    if (!hasAudioConsent()) { askAudioConsent(); return; }
+  } else if (!s.key) {
     show('setup');
     toast('Ange din Gemini API-nyckel för att komma igång');
     return;
@@ -1699,6 +2048,7 @@ async function startRecording() {
   // Keep screen on + signal active audio to iOS (prevents page suspension)
   await acquireWakeLock();
   startKeepAlive();
+  recordingServiceStart();   // Android: hindrar systemet från att frysa appen
 
   // Detect if OS kills the microphone track (screen lock, background, interruption)
   s.stream.getTracks().forEach(track => {
@@ -1712,7 +2062,8 @@ async function startRecording() {
 
   s.mimeType = getMime();
   s.chunks = [];
-  const opts = { audioBitsPerSecond: 128000, channelCount: 1 };
+  // channelCount hör hemma i getUserMedia-villkoren ovan, inte här
+  const opts = { audioBitsPerSecond: bitrateFor(s.mimeType) };
   if (s.mimeType) opts.mimeType = s.mimeType;
   s.mediaRecorder = new MediaRecorder(s.stream, opts);
   s.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) s.chunks.push(e.data); };
@@ -1764,6 +2115,7 @@ function drawWave() {
 function stopRecording() {
   releaseWakeLock();
   stopKeepAlive();
+  recordingServiceStop();
   if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') s.mediaRecorder.stop();
   clearInterval(s.timerRef);
   cancelAnimationFrame(s.raf);
@@ -1822,8 +2174,31 @@ function switchToFallback(reason) {
   throw new Error(blocked + ' ' + reason + '. Diane har automatiskt bytt till ' + next + ' — tryck Försök igen.');
 }
 
-async function generate(base64, mime, attempt = 0) {
-  const r = await fetch(
+// Enda stället i dataflödet där lägena skiljer sig. Båda returnerar ett
+// oförändrat Gemini-svar — proxyn skickar tillbaka Googles svar rått — så all
+// svarsparsning nedanför är gemensam.
+function callModel(base64, mime) {
+  if (proxyMode()) {
+    return fetch(API_PROXY + '/summarize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + s.idToken
+      },
+      body: JSON.stringify({
+        prompt: buildPrompt(),
+        audio_base64: base64,
+        audio_mime: mime,
+        audio_seconds: Math.round((s.elapsed || 0) / 1000),
+        temperature: 0.3,
+        max_output_tokens: 16384,
+        // Utan tanketak tänker Gemini 3.x obegränsat på ljud — minuter av
+        // väntan och tomma svar. Samma tak som webbläget sätter direkt.
+        thinking_budget: 2048
+      })
+    });
+  }
+  return fetch(
     API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
     {
       method: 'POST',
@@ -1841,9 +2216,39 @@ async function generate(base64, mime, attempt = 0) {
       })
     }
   );
+}
+
+async function generate(base64, mime, attempt = 0) {
+  const r = await callModel(base64, mime);
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
+    // Proxyläge (app eller inloggad webb): servern äger modellvalet, så ingen
+    // fallback-kedja här. I stället är felen kontorelaterade — utloggad,
+    // obetald, kvot slut.
+    if (proxyMode()) {
+      if (r.status === 401) { signOutLocal(); show('signin'); throw new Error('Din inloggning har gått ut — logga in igen.'); }
+      if (r.status === 402) { show('paywall'); throw new Error('Din prenumeration är inte aktiv.'); }
+      if (r.status === 429) {
+        // Våra egna fel är strängar; Geminis fel skickas vidare oförändrat och
+        // är objekt. Utan den skillnaden göms uppströmsfelet bakom vårt eget.
+        const err = typeof e.error === 'string' ? e.error : '';
+        if (err === 'summary_cap_reached') throw new Error('Du har nått månadens gräns för sammanfattningar. Gränsen nollställs när ny period börjar.');
+        if (err === 'audio_cap_reached') throw new Error('Du har nått månadens gräns för inspelad tid. Gränsen nollställs när ny period börjar.');
+        if (err === 'rate_limited') throw new Error('För många förfrågningar just nu — vänta en stund och försök igen.');
+        if (apiMsg) throw new Error('Gemini nekade förfrågan: ' + apiMsg);
+        throw new Error('För många förfrågningar just nu — vänta en stund och försök igen.');
+      }
+      if (r.status === 503 || r.status === 529) {
+        if (attempt < 3) {
+          const delay = (attempt + 1) * 3000;
+          $('workSub').textContent = 'Servern är belastad — försöker igen om ' + (delay/1000) + 's… (' + (attempt+1) + '/3)';
+          await new Promise(res => setTimeout(res, delay));
+          return generate(base64, mime, attempt + 1);
+        }
+      }
+      throw new Error(apiMsg || 'Något gick fel (' + r.status + ').');
+    }
     if (r.status === 400) throw new Error('Ogiltig API-nyckel. Kontrollera att du kopierade hela nyckeln från aistudio.google.com och försök igen.');
     if (r.status === 404) {
       switchToFallback('är inte längre tillgänglig');
@@ -1891,25 +2296,50 @@ async function generate(base64, mime, attempt = 0) {
   return { html, suggestedTitle };
 }
 
-async function generateFromText(inputText, attempt = 0) {
-  const r = await fetch(
+// Alla Gemini-anrop utom huvudsammanfattningen går genom den här. Tar en
+// Gemini-native payload; i appläget översätts den till proxyns format,
+// eftersom klienten där inte har någon nyckel. Utan detta faller
+// omformatering, transkribering och Fråga om mötet tyst sönder i appen.
+function callGeminiRaw(payload, audioSeconds = 0) {
+  if (proxyMode()) {
+    return fetch(API_PROXY + '/summarize', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + s.idToken
+      },
+      body: JSON.stringify({
+        prompt: '',
+        contents: payload.contents,
+        audio_seconds: Math.round(audioSeconds),
+        temperature: payload.generationConfig?.temperature,
+        max_output_tokens: payload.generationConfig?.maxOutputTokens,
+        thinking_budget: payload.generationConfig?.thinkingConfig?.thinkingBudget
+      })
+    });
+  }
+  return fetch(
     API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [
-          { text: 'The following is content from a previous analysis:\n\n' + inputText },
-          { text: buildPrompt() }
-        ]}],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
-          thinkingConfig: { thinkingBudget: 2048 }
-        }
-      })
+      body: JSON.stringify(payload)
     }
   );
+}
+
+async function generateFromText(inputText, attempt = 0) {
+  const r = await callGeminiRaw({
+    contents: [{ parts: [
+      { text: 'The following is content from a previous analysis:\n\n' + inputText },
+      { text: buildPrompt() }
+    ]}],
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
+      thinkingConfig: { thinkingBudget: 2048 }
+    }
+  });
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
@@ -1966,18 +2396,25 @@ async function processFromText(text) {
     showResult(html, style);
   } catch(e) {
     if (reqId !== _reqId) return;
+    logError('app', 'Omformatering: ' + e.message, e.stack || '');
     show('result');
     toast('Fel: ' + e.message);
   }
 }
 
 // ── MAIN FLOW ──────────────────────────────────────────────────────────────
-async function process(blob, mime) {
+async function process(blob, mime, existingRecId) {
   // Clear stale result so old content can never bleed into a fresh recording
   s.resultText = '';
   s.resultHTML = '';
   s.transcript = '';
   s.qaHistory = [];
+  // Ljudet sparas innan analysen — går den fel ska inspelningen ändå finnas
+  // kvar. Samma id som historikposten, så de hör ihop. Vid omkörning (Försök
+  // igen eller Sammanfatta ur arkivet) återanvänds arkivposten — ingen dubblett.
+  const recId = existingRecId || Date.now();
+  s.recId = recId;
+  if (!existingRecId) saveAudio(recId, blob, { title: s.title, seconds: (s.elapsed || 0) / 1000 });
   const reqId = ++_reqId;
   const style = s.style; // capture before any await
   show('working');
@@ -2000,7 +2437,7 @@ async function process(blob, mime) {
     if (reqId !== _reqId) return; // stale — newer request already running
     if (suggestedTitle) { s.title = suggestedTitle; $('titleInput').value = suggestedTitle; }
     s.resultHTML = html;
-    s.historyId = saveToHistory(html, s.title);
+    s.historyId = saveToHistory(html, s.title, recId);
     showResult(html, style);
   } catch(e) {
     const isFetch = e.name === 'TypeError' && e.message.toLowerCase().includes('fetch');
@@ -2046,12 +2483,17 @@ const STYLE_META = {
   blog:       { label: 'Bloggpost klar',           badge: '✍️ Bloggpost' },
   letter:     { label: 'Formellt brev klart',      badge: 'Formellt brev' },
   vibecoder:  { label: 'Vibe Prompt klar',         badge: '⚡ Vibe Prompt' },
-  insandare:  { label: 'Insändare klar',            badge: '😤 Insändare' },
-  psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri' },
-  tal:        { label: 'Brandtal klart',             badge: '🎤 Politiskt tal' },
-  predikan:   { label: 'Predikan hållen',            badge: '✝️ Predikan' },
-  drama:      { label: 'Dramat är satt',             badge: '🎭 Drama Lab' },
-  konspiration: { label: 'Sanningen avslöjad',       badge: '🕵️ Konspiration' },
+  // fun: satirformat. Dolda som standard, se FUN_ENABLED nedan. Resultatet
+  // får alltid en synlig markering så ingen tar dem för äkta.
+  insandare:  { label: 'Insändare klar',            badge: '😤 Insändare', fun: true },
+  psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri', fun: true,
+                warn: 'Detta är ett skämt — inte en medicinsk bedömning. Inget här är skrivet av vårdpersonal.' },
+  tal:        { label: 'Brandtal klart',             badge: '🎤 Politiskt tal', fun: true },
+  predikan:   { label: 'Predikan hållen',            badge: '✝️ Predikan', fun: true },
+  drama:      { label: 'Dramat är satt',             badge: '🎭 Drama Lab', fun: true },
+  konspiration: { label: 'Sanningen avslöjad',       badge: '🕵️ Konspiration', fun: true,
+                warn: 'Påhittad konspirationsteori, skriven på skoj. Inget av detta är sant.' },
+  floskel:    { label: 'Visionen är förankrad',      badge: '💼 Floskler', fun: true },
 };
 
 function showResult(html, style) {
@@ -2091,6 +2533,17 @@ function showResult(html, style) {
   $('reformatRow').querySelectorAll('.reformat-pill').forEach(p => {
     p.classList.toggle('active', p.dataset.fmt === style);
   });
+  // Satirformat markeras tydligt i resultatet — ingen ska kunna missta
+  // en påhittad utredning för en riktig
+  const warn = $('funWarn');
+  if (isFunStyle(style)) {
+    $('funWarnText').textContent = meta.warn ||
+      'Innehållet är påhittat av AI för underhållningens skull och ska inte tas på allvar.';
+    warn.style.display = '';
+  } else {
+    warn.style.display = 'none';
+  }
+
   // Fråga om mötet — bara för format där svar på frågor är meningsfulla
   const isQA = QA_STYLES.includes(style);
   $('qaSection').style.display = isQA ? '' : 'none';
@@ -2115,20 +2568,13 @@ async function transcribeAudio() {
   try {
     const mime = (s.mimeType || 'audio/webm').split(';')[0];
     const base64 = await blobToBase64(blob);
-    const r = await fetch(
-      API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [
-            { inline_data: { mime_type: mime, data: base64 } },
-            { text: 'Transcribe this audio recording verbatim in the spoken language. Output plain text only — no formatting, no timestamps, no commentary. If several speakers are clearly distinguishable, prefix their lines with "Talare 1:", "Talare 2:" etc.' }
-          ]}],
-          generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 2048 } }
-        })
-      }
-    );
+    const r = await callGeminiRaw({
+      contents: [{ parts: [
+        { inline_data: { mime_type: mime, data: base64 } },
+        { text: 'Transcribe this audio recording verbatim in the spoken language. Output plain text only — no formatting, no timestamps, no commentary. If several speakers are clearly distinguishable, prefix their lines with "Talare 1:", "Talare 2:" etc.' }
+      ]}],
+      generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 2048 } }
+    }, (s.elapsed || 0) / 1000);
     if (!r.ok) throw new Error('transkribering misslyckades');
     const d = await r.json();
     const txt = (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
@@ -2137,7 +2583,11 @@ async function transcribeAudio() {
       s.transcript = txt;
       if (histId) updateHistoryTranscript(histId, txt);
     }
-  } catch { /* tyst */ }
+  } catch (e) {
+    // Tyst mot användaren — Q&A faller tillbaka på resultattexten — men
+    // loggas, annars är felet osynligt vid felsökning
+    logError('app', 'Transkribering: ' + (e && e.message || e), e && e.stack || '');
+  }
   finally {
     s.transcribing = false;
     $('qaStatus').style.display = 'none';
@@ -2156,17 +2606,10 @@ function qaContext() {
 }
 
 async function askGemini(contents, attempt = 0) {
-  const r = await fetch(
-    API_BASE + '/v1beta/models/' + s.model + ':generateContent?key=' + s.key,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: { temperature: 0.2, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 2048 } }
-      })
-    }
-  );
+  const r = await callGeminiRaw({
+    contents,
+    generationConfig: { temperature: 0.2, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 2048 } }
+  });
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     const apiMsg = e.error?.message || '';
@@ -2327,23 +2770,38 @@ async function copyMarkdown() {
 }
 
 // Kopierar resultatet som formaterad text (text/html + text/plain) så att
-// inklistring i Mail/Gmail/Outlook behåller rubriker, fetstil och listor
+// inklistring i Mail/Gmail/Outlook behåller rubriker, fetstil och listor,
+// och öppnar sedan mailklienten med titeln som ämnesrad. Urklipp kan aldrig
+// fylla i ämnesfältet — mailto: är enda vägen dit, och kroppen skickas inte
+// den vägen eftersom mailto varken klarar HTML eller långa texter.
 async function copyFormatted() {
   s.resultHTML = $('resultBox').innerHTML;
   const html = toEmailHtml(s.resultHTML, s.title || '');
   const plain = toRichText(s.resultHTML); // innehåller redan titeln
+  const subject = (s.title || $('resultBox').querySelector('h2')?.textContent || '').trim();
+  let copied = false;
   try {
     await navigator.clipboard.write([new ClipboardItem({
       'text/html': new Blob([html], { type: 'text/html' }),
       'text/plain': new Blob([plain], { type: 'text/plain' })
     })]);
-    toast('Formaterad text kopierad — klistra in i ditt mail ✓');
+    copied = true;
+    toast(subject ? 'Ämne ifyllt — klistra in texten i mailet ✓'
+                  : 'Formaterad text kopierad — klistra in i ditt mail ✓');
   } catch {
     // ClipboardItem stöds inte — fall tillbaka till ren text
     try {
       await navigator.clipboard.writeText(plain);
+      copied = true;
       toast('Kopierad som ren text (formatering stöds ej i denna webbläsare)');
     } catch { toast('Kunde inte kopiera — prova länge-tryck på texten'); }
+  }
+  if (copied && subject) {
+    // Ankarklick i stället för location.href — Capacitor fångar schemat och
+    // öppnar mailappen, och sidan navigeras inte bort i webbläsaren
+    const a = document.createElement('a');
+    a.href = 'mailto:?subject=' + encodeURIComponent(subject);
+    document.body.appendChild(a); a.click(); a.remove();
   }
 }
 
@@ -2511,7 +2969,7 @@ async function share() {
 
 // ── SHARE APP ──────────────────────────────────────────────────────────────
 async function shareApp() {
-  const url = 'https://skaneby.github.io/voicesummary/';
+  const url = APP_URL;
   const text = `🎙️ Diane – spela in möten och få AI-sammanfattningar direkt på mobilen!
 
 Så här kommer du igång:
@@ -2634,8 +3092,738 @@ async function createGHIssue(repo) {
   }
 }
 
+// ── LJUDARKIV (IndexedDB) ──────────────────────────────────────────────────
+// Inspelningarna sparas på enheten så att användaren kan lyssna igen, dela
+// dem vidare eller radera dem. De lämnar aldrig telefonen av sig själva —
+// se privacy.html. localStorage duger inte: en halvtimme är flera megabyte.
+const AUDIO_DB = 'diane_audio';
+const AUDIO_STORE = 'recordings';
+const AUDIO_KEEP = 10;   // äldre gallras automatiskt
+
+function audioDb() {
+  return new Promise((resolve, reject) => {
+    let req;
+    try { req = indexedDB.open(AUDIO_DB, 1); }
+    catch (e) { reject(e); return; }
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(AUDIO_STORE)) {
+        db.createObjectStore(AUDIO_STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function audioTx(mode, fn) {
+  return audioDb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(AUDIO_STORE, mode);
+    const out = fn(tx.objectStore(AUDIO_STORE));
+    tx.oncomplete = () => resolve(out && 'result' in out ? out.result : out);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  }));
+}
+
+// Allt här är best-effort: privat läge eller full disk får aldrig stoppa
+// en inspelning från att sammanfattas.
+async function saveAudio(id, blob, meta) {
+  try {
+    await audioTx('readwrite', st => st.put({
+      id, blob, mime: blob.type || '', size: blob.size,
+      date: new Date().toISOString(),
+      title: meta?.title || '', seconds: Math.round(meta?.seconds || 0),
+    }));
+    await pruneAudio();
+  } catch { /* utrymme saknas eller privat läge */ }
+}
+
+async function listAudio() {
+  try {
+    const all = await audioTx('readonly', st => st.getAll());
+    return (all || []).sort((a, b) => (a.date < b.date ? 1 : -1));
+  } catch { return []; }
+}
+
+async function getAudio(id) {
+  try { return await audioTx('readonly', st => st.get(id)); }
+  catch { return null; }
+}
+
+async function deleteAudio(id) {
+  try { await audioTx('readwrite', st => st.delete(id)); } catch {}
+}
+
+async function clearAudio() {
+  try { await audioTx('readwrite', st => st.clear()); } catch {}
+}
+
+// Behåll de tio senaste. Utan tak fylls telefonen i det tysta.
+async function pruneAudio() {
+  const all = await listAudio();
+  for (const rec of all.slice(AUDIO_KEEP)) await deleteAudio(rec.id);
+}
+
+function fmtBytes(n) {
+  if (!n) return '0 kB';
+  return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' kB';
+}
+
+// Renderar ljudarkivet i inställningarna. Delning går via systemets
+// delningsmeny; saknas den faller vi tillbaka på en nedladdningslänk.
+async function renderAudioList() {
+  const list = $('recList');
+  const all = await listAudio();
+  list.innerHTML = '';
+  const total = all.reduce((n, r) => n + (r.size || 0), 0);
+  $('recTotal').textContent = all.length
+    ? all.length + (all.length === 1 ? ' inspelning' : ' inspelningar') + ' · ' + fmtBytes(total)
+    : '';
+  $('recClearBtn').style.display = all.length ? '' : 'none';
+
+  if (!all.length) {
+    const p = document.createElement('p');
+    p.className = 'rec-empty';
+    p.textContent = 'Inga sparade inspelningar än.';
+    list.appendChild(p);
+    return;
+  }
+
+  all.forEach(rec => {
+    const row = document.createElement('div');
+    row.className = 'rec-row';
+
+    const info = document.createElement('div');
+    info.className = 'rec-info';
+    const name = document.createElement('b');
+    name.textContent = rec.title || 'Utan titel';
+    const sub = document.createElement('span');
+    sub.textContent = fmtDate(rec.date) + ' · ' + fmt(rec.seconds * 1000) + ' · ' + fmtBytes(rec.size);
+    info.appendChild(name); info.appendChild(sub);
+
+    const acts = document.createElement('div');
+    acts.className = 'rec-acts';
+    const act = (label, fn) => {
+      const b = document.createElement('button');
+      b.className = 'rec-act';
+      b.textContent = label;
+      b.onclick = fn;
+      acts.appendChild(b);
+      return b;
+    };
+    act(archPlayingId === rec.id ? 'Stoppa' : 'Lyssna', () => playArchived(rec.id));
+    act('Sammanfatta', () => summarizeArchived(rec.id));
+    act('Dela', () => shareAudio(rec.id));
+    act('Radera', async () => {
+      if (!confirm('Radera inspelningen? Sammanfattningen i historiken påverkas inte.')) return;
+      if (archPlayingId === rec.id) stopArchivedPlayback();
+      await deleteAudio(rec.id);
+      renderAudioList();
+      toast('Inspelningen raderad');
+    });
+
+    row.appendChild(info); row.appendChild(acts);
+    list.appendChild(row);
+  });
+}
+
+// ── Uppspelning ur arkivet — en inspelning i taget, via ett delat Audio-
+// element. Objekt-URL:en frigörs när uppspelningen stoppas eller tar slut.
+let archAudio = null, archPlayingId = null;
+
+function stopArchivedPlayback() {
+  if (archAudio) {
+    try { archAudio.pause(); URL.revokeObjectURL(archAudio.src); } catch {}
+    archAudio = null;
+  }
+  if (archPlayingId !== null) { archPlayingId = null; renderAudioList(); }
+}
+
+async function playArchived(id) {
+  if (archPlayingId === id) { stopArchivedPlayback(); return; }
+  stopArchivedPlayback();
+  const rec = await getAudio(id);
+  if (!rec || !rec.blob) { toast('Inspelningen kunde inte läsas'); return; }
+  archAudio = new Audio(URL.createObjectURL(rec.blob));
+  archPlayingId = id;
+  archAudio.onended = stopArchivedPlayback;
+  archAudio.onerror = () => { toast('Kunde inte spela upp inspelningen'); stopArchivedPlayback(); };
+  archAudio.play().catch(() => { toast('Kunde inte spela upp inspelningen'); stopArchivedPlayback(); });
+  renderAudioList();
+}
+
+// ── Sammanfatta igen ur arkivet. Säkerhetsnätet efter t.ex. nätbortfall:
+// ljudet sparas alltid FÖRE analysen, så varje arkivpost kan bli en (ny)
+// sammanfattning i efterhand — även efter att appen startats om. Samma
+// arkiv-id återanvänds så ingen dubblett skapas.
+async function summarizeArchived(id) {
+  const rec = await getAudio(id);
+  if (!rec || !rec.blob) { toast('Inspelningen kunde inte läsas'); return; }
+  // Samma gater som startRecording — fast utan mikrofon
+  if (proxyMode()) {
+    if (!s.idToken) { closeSettings(); show('signin'); return; }
+    if (!s.subActive) { closeSettings(); show('paywall'); return; }
+  } else if (!s.key) {
+    toast('Ange din Gemini API-nyckel först');
+    return;
+  }
+  stopArchivedPlayback();
+  closeSettings();
+  s.blob = rec.blob;
+  s.mimeType = rec.mime || 'audio/webm';
+  s.elapsed = (rec.seconds || 0) * 1000;
+  s.title = rec.title || '';
+  $('titleInput').value = s.title;
+  await process(rec.blob, (rec.mime || 'audio/webm').split(';')[0], rec.id);
+}
+
+function audioFileName(rec) {
+  const base = (rec.title || 'inspelning').replace(/[^a-zA-ZåäöÅÄÖ0-9 ]/g, '').trim() || 'inspelning';
+  const ext = /mp4|aac/i.test(rec.mime) ? 'm4a' : /ogg/i.test(rec.mime) ? 'ogg' : 'webm';
+  return base + '.' + ext;
+}
+
+async function shareAudio(id) {
+  const rec = await getAudio(id);
+  if (!rec || !rec.blob) { toast('Inspelningen kunde inte läsas'); return; }
+  const file = new File([rec.blob], audioFileName(rec), { type: rec.mime || 'audio/webm' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: rec.title || 'Inspelning' });
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;   // användaren ångrade sig
+  }
+  // Fallback: spara som fil
+  try {
+    const url = URL.createObjectURL(rec.blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = audioFileName(rec);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch { toast('Kunde inte dela inspelningen'); }
+}
+
+// ── LJUDARKIV SLUT ─────────────────────────────────────────────────────────
+
+// ── FELLOGG ────────────────────────────────────────────────────────────────
+// Fel sparas lokalt (ringbuffert i localStorage) så att de går att läsa i
+// efterhand eller dela vid felsökning under test. Allt är best-effort —
+// loggningen får aldrig själv orsaka fel eller stoppa flödet.
+const SERR = 'vs_errlog';
+const ERR_KEEP = 50;
+
+function logError(kind, msg, detail) {
+  try {
+    const log = store.json(SERR, []);
+    log.unshift({
+      t: new Date().toISOString(),
+      kind,
+      msg: String(msg || 'okänt fel').slice(0, 300),
+      detail: String(detail || '').slice(0, 1000),
+    });
+    store.set(SERR, JSON.stringify(log.slice(0, ERR_KEEP)));
+  } catch { /* full disk eller privat läge — släpp */ }
+}
+
+function getErrors() { return store.json(SERR, []); }
+function clearErrors() { store.del(SERR); }
+
+// Fångar det som ingen felväg i koden själv tar hand om
+window.addEventListener('error', e => {
+  logError('js', e.message, (e.filename || '') + ':' + (e.lineno || 0) +
+    '\n' + (e.error && e.error.stack || ''));
+});
+window.addEventListener('unhandledrejection', e => {
+  const r = e.reason;
+  logError('promise', (r && r.message) || String(r), (r && r.stack) || '');
+});
+
+function renderErrList() {
+  const list = $('errList');
+  if (!list) return;
+  const all = getErrors();
+  list.innerHTML = '';
+  $('errTotal').textContent = all.length
+    ? all.length + ' fel · senaste ' + fmtDate(all[0].t) : '';
+  $('errShareBtn').style.display = all.length ? '' : 'none';
+  $('errClearBtn').style.display = all.length ? '' : 'none';
+  if (!all.length) {
+    const p = document.createElement('p');
+    p.className = 'rec-empty';
+    p.textContent = 'Inga fel loggade — bra tecken.';
+    list.appendChild(p);
+    return;
+  }
+  all.forEach(err => {
+    const row = document.createElement('div');
+    row.className = 'rec-row';
+    const info = document.createElement('div');
+    info.className = 'rec-info';
+    const name = document.createElement('b');
+    name.textContent = fmtDate(err.t) + ' · ' + err.kind;
+    const sub = document.createElement('span');
+    sub.textContent = err.msg;
+    sub.style.whiteSpace = 'pre-line';
+    info.appendChild(name); info.appendChild(sub);
+    row.appendChild(info);
+    // Tryck på raden växlar full detalj (stack, radnummer)
+    let expanded = false;
+    row.onclick = () => {
+      expanded = !expanded && !!err.detail;
+      sub.textContent = expanded ? err.msg + '\n' + err.detail : err.msg;
+    };
+    list.appendChild(row);
+  });
+}
+
+// Textrapport för delning — komplett med miljöinfo så den kan klistras
+// rakt in i en felsökningskonversation
+function errReport() {
+  const head = 'Diane fellogg · ' + new Date().toISOString() +
+    '\n' + navigator.userAgent + '\nAPP_MODE: ' + APP_MODE + '\n';
+  const body = getErrors().map(e =>
+    '--- ' + e.t + ' [' + e.kind + ']\n' + e.msg + (e.detail ? '\n' + e.detail : '')
+  ).join('\n');
+  return head + '\n' + body + '\n';
+}
+
+async function shareErrors() {
+  const text = errReport();
+  try {
+    if (navigator.share) { await navigator.share({ title: 'Diane fellogg', text }); return; }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return; // användaren ångrade sig
+  }
+  try { await navigator.clipboard.writeText(text); toast('Felloggen kopierad'); }
+  catch { toast('Kunde inte dela felloggen'); }
+}
+// ── FELLOGG SLUT ───────────────────────────────────────────────────────────
+
+// ── DRIVE-SYNK (endast webben) ─────────────────────────────────────────────
+// Samma mönster som i Bokf-ring-repot: en enda JSON-fil i användarens dolda
+// appDataFolder på Google Drive (scope drive.appdata — appen ser ALDRIG
+// användarens övriga filer). Historiken och formatvalen synkas; ljudet
+// stannar på enheten. Ingenting rör våra servrar — filen ligger på
+// användarens egen Drive. Auto-push är debounced efter ändringar; hämtning
+// är alltid ett aktivt val. Avstängd i appläget: GIS-tokenklienten är inte
+// pålitlig i Capacitors webview.
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE = 'diane.json';
+const DRIVE_API = 'https://www.googleapis.com/drive/v3';
+const DRIVE_UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
+
+let driveToken = null, driveExpiry = 0, driveEmail = null;
+let driveTokenClient = null, drivePushTimer = null, driveLastSync = null;
+let drivePendingSignIns = [];
+
+function driveSignedIn() { return !!driveToken && Date.now() < driveExpiry; }
+
+function driveGetTokenClient() {
+  if (driveTokenClient) return driveTokenClient;
+  if (!window.google?.accounts?.oauth2?.initTokenClient) return null;
+  driveTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_OAUTH_CLIENT_ID,
+    scope: DRIVE_SCOPE,
+    callback: resp => {
+      if (resp.error) {
+        const err = new Error(resp.error_description || resp.error);
+        drivePendingSignIns.forEach(p => p.reject(err));
+        drivePendingSignIns = [];
+        renderDriveStatus();
+        return;
+      }
+      driveToken = resp.access_token;
+      driveExpiry = Date.now() + (resp.expires_in || 3600) * 1000;
+      fetch('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' + driveToken)
+        .then(r => r.json()).then(info => { driveEmail = info.email || null; })
+        .catch(() => {})
+        .finally(() => {
+          drivePendingSignIns.forEach(p => p.resolve());
+          drivePendingSignIns = [];
+          renderDriveStatus();
+        });
+    },
+  });
+  return driveTokenClient;
+}
+
+function driveSignIn() {
+  if (driveSignedIn()) return Promise.resolve();
+  const client = driveGetTokenClient();
+  if (!client) return Promise.reject(new Error('Google-tjänsterna kunde inte laddas — kontrollera nätet och försök igen'));
+  return new Promise((resolve, reject) => {
+    drivePendingSignIns.push({ resolve, reject });
+    // hint = Diane-inloggningens e-post: synken ska hamna på SAMMA Google-
+    // konto som användaren är inloggad med, inte ett annat konto de råkar
+    // välja i popupen. I nyckelläget finns ingen inloggning — då väljer
+    // användaren konto fritt.
+    client.requestAccessToken({ prompt: '', hint: s.email || '' });
+  });
+}
+
+function driveDisconnect() {
+  if (driveToken) { try { google.accounts.oauth2.revoke(driveToken, () => {}); } catch {} }
+  driveToken = null; driveExpiry = 0; driveEmail = null; driveLastSync = null;
+  if (drivePushTimer) { clearTimeout(drivePushTimer); drivePushTimer = null; }
+  renderDriveStatus();
+}
+
+function driveAuthHeader() { return { 'Authorization': 'Bearer ' + driveToken }; }
+
+async function driveFindFile() {
+  const r = await fetch(DRIVE_API + "/files?spaces=appDataFolder&q=name%3D'" + DRIVE_FILE + "'&fields=files(id)",
+    { headers: driveAuthHeader() });
+  if (!r.ok) throw new Error('Drive-sökning misslyckades (' + r.status + ')');
+  const d = await r.json();
+  return d.files?.[0]?.id || null;
+}
+
+async function driveUpload(content, existingId) {
+  const metadata = existingId ? { name: DRIVE_FILE } : { name: DRIVE_FILE, parents: ['appDataFolder'] };
+  const body = new FormData();
+  body.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+  body.append('file', new Blob([content], { type: 'application/json' }));
+  const url = existingId
+    ? DRIVE_UPLOAD + '/files/' + existingId + '?uploadType=multipart'
+    : DRIVE_UPLOAD + '/files?uploadType=multipart';
+  const r = await fetch(url, { method: existingId ? 'PATCH' : 'POST', headers: driveAuthHeader(), body });
+  if (!r.ok) throw new Error('Drive-uppladdning misslyckades (' + r.status + ')');
+}
+
+async function driveDownload(fileId) {
+  const r = await fetch(DRIVE_API + '/files/' + fileId + '?alt=media', { headers: driveAuthHeader() });
+  if (!r.ok) throw new Error('Drive-nedladdning misslyckades (' + r.status + ')');
+  return r.text();
+}
+
+// Det som synkas: historiken (med transkript) och formatvalen. Inte ljudet —
+// det är flera MB per inspelning och stannar i IndexedDB på enheten.
+function buildDriveBackup() {
+  return {
+    app: 'diane', version: 1, exported: new Date().toISOString(),
+    history: getHistory(),
+    style: store.get('vs_style', 'summary'),
+    fun: store.get(SFUN, '0'),
+  };
+}
+
+function applyDriveBackup(d) {
+  if (!d || d.app !== 'diane' || !Array.isArray(d.history)) throw new Error('Filen på Drive är inte en Diane-säkerhetskopia');
+  store.set(SH, JSON.stringify(d.history.slice(0, MAX_HISTORY)));
+  if (d.style) store.set('vs_style', d.style);
+  if (d.fun !== undefined) store.set(SFUN, d.fun);
+  applyFunVisibility();
+  updateHistoryBadge();
+}
+
+async function drivePush() {
+  if (!driveSignedIn()) return;
+  try {
+    const existingId = await driveFindFile();
+    await driveUpload(JSON.stringify(buildDriveBackup(), null, 2), existingId);
+    driveLastSync = new Date();
+    renderDriveStatus();
+  } catch (e) {
+    logError('drive', e.message || String(e));
+    renderDriveStatus(e.message);
+  }
+}
+
+async function drivePull() {
+  if (!driveSignedIn()) throw new Error('Inte ansluten till Google Drive');
+  const fileId = await driveFindFile();
+  if (!fileId) throw new Error('Ingen Diane-säkerhetskopia hittad på ditt Drive-konto');
+  applyDriveBackup(JSON.parse(await driveDownload(fileId)));
+  driveLastSync = new Date();
+  renderDriveStatus();
+}
+
+// Debounced auto-push — anropas från historikändringarna. En minut samlar
+// ihop närliggande ändringar (ny post + transkript-patch) till en uppladdning.
+function driveSchedulePush(delayMs = 60000) {
+  if (!driveSignedIn()) return;
+  if (drivePushTimer) clearTimeout(drivePushTimer);
+  drivePushTimer = setTimeout(() => { drivePushTimer = null; drivePush(); }, delayMs);
+}
+
+async function driveConnect() {
+  await driveSignIn();
+  // Inloggad i Diane: synken MÅSTE hamna på samma Google-konto. Fel konto i
+  // popupen ger annars en fil på ett Drive användaren inte tror sig använda.
+  if (s.email && driveEmail && driveEmail.toLowerCase() !== s.email.toLowerCase()) {
+    const other = driveEmail;
+    driveDisconnect();
+    throw new Error('Fel Google-konto valdes (' + other + '). Välj samma konto som du är inloggad i Diane med: ' + s.email);
+  }
+  // Första anslutningen: finns en kopia på Drive och lokal historik saknas,
+  // hämta den — annars ladda upp nuläget.
+  const fileId = await driveFindFile();
+  if (fileId && !getHistory().length) {
+    applyDriveBackup(JSON.parse(await driveDownload(fileId)));
+    driveLastSync = new Date();
+    toast('Historiken hämtad från Google Drive ✓');
+  } else {
+    await drivePush();
+    toast('Ansluten — historiken säkerhetskopieras till ditt Drive ✓');
+  }
+  renderDriveStatus();
+}
+
+function renderDriveStatus(errMsg) {
+  const status = $('driveStatus');
+  if (!status) return;
+  const on = driveSignedIn();
+  if (errMsg) status.textContent = 'Fel: ' + errMsg;
+  else if (on) status.textContent = 'Ansluten' + (driveEmail ? ' som ' + driveEmail : '') +
+    (driveLastSync ? ' · synkad ' + driveLastSync.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' }) : '');
+  else status.textContent = 'Inte ansluten.';
+  $('driveOnBtn').style.display = on ? 'none' : '';
+  $('drivePullBtn').style.display = on ? '' : 'none';
+  $('driveOffBtn').style.display = on ? '' : 'none';
+}
+// ── DRIVE-SYNK SLUT ────────────────────────────────────────────────────────
+
+// ── AUTH (endast appläge) ──────────────────────────────────────────────────
+// Två vägar väljs i runtime: i Capacitor driver @capgo/capacitor-social-login
+// den native Google-inloggningen; i webbläsare renderar Google Identity
+// Services knappen. Bägge ger en ID-token som backend verifierar.
+
+// I appen är lagringen sandlådad per app, så token får ligga kvar mellan
+// kallstarter — annars tvingas användaren logga in varje gång appen startas.
+// I en delad webbläsare håller vi den kortlivad.
+const tokenStore = {
+  // localStorage även i webben — inloggningen ska överleva att webbläsaren
+  // stängs. (Tidigare sessionStorage i webbläget; gamla nycklar städas i del.)
+  get() { try { return localStorage.getItem('vs_id_token') || sessionStorage.getItem('vs_id_token') || ''; } catch { return ''; } },
+  set(v) { try { localStorage.setItem('vs_id_token', v); } catch {} },
+  del() { try { localStorage.removeItem('vs_id_token'); sessionStorage.removeItem('vs_id_token'); } catch {} },
+};
+
+let socialLoginInitialized = false;
+async function ensureSocialLoginInit() {
+  if (socialLoginInitialized) return;
+  const SocialLogin = window.Capacitor?.Plugins?.SocialLogin;
+  if (!SocialLogin) return;
+  await SocialLogin.initialize({ google: { webClientId: GOOGLE_OAUTH_CLIENT_ID } });
+  socialLoginInitialized = true;
+}
+
+// Backend använder Googles `sub` som användar-id. RevenueCats appUserID måste
+// vara samma värde, annars kopplas köpet till fel rad. Läs den alltid ur
+// token i stället för ur profilobjektet, så kan de inte glida isär.
+// Måste matcha userIdFor() i backend/src/auth.ts
+function backendUserId() {
+  return s.googleSub ? 'google:' + s.googleSub : '';
+}
+
+function subFromToken(t) {
+  try {
+    return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).sub || '';
+  } catch { return ''; }
+}
+
+async function nativeGoogleSignIn() {
+  await ensureSocialLoginInit();
+  const SocialLogin = window.Capacitor.Plugins.SocialLogin;
+  // Skicka INTE scopes här. Plugin:et lägger redan till email, profile och
+  // openid som standard; skickar man en scopes-lista tolkas det som att man
+  // vill ha extra behörigheter, och då kräver plugin:et ändringar i
+  // MainActivity ("You CANNOT use scopes without modifying the main activity").
+  const out = await SocialLogin.login({ provider: 'google', options: {} });
+  const idToken = out?.result?.idToken;
+  if (!idToken) throw new Error('Inloggning misslyckades.');
+  s.idToken = idToken;
+  tokenStore.set(idToken);
+  s.email = out?.result?.profile?.email || '';
+  s.googleSub = subFromToken(idToken) || out?.result?.profile?.id || '';
+  await routeAfterAuth();
+}
+
+let gisInitialized = false;
+let gisRetries = 0;
+function initGoogleSignIn() {
+  const host = $('googleSignInBtn');
+  if (!host) return;
+  if (isCapacitor()) {
+    // Egen knapp; tryck öppnar systemets Google-inloggning
+    host.innerHTML = '';
+    const btn = document.createElement('button');
+    btn.className = 'btn-primary';
+    btn.style.cssText = 'min-width:240px;display:flex;align-items:center;justify-content:center;gap:10px';
+    btn.textContent = 'Logga in med Google';
+    btn.onclick = () => nativeGoogleSignIn().catch(e => toast(e.message || 'Inloggning misslyckades'));
+    host.appendChild(btn);
+    return;
+  }
+  if (gisInitialized) return;
+  if (!window.google?.accounts?.id) {
+    if (!document.getElementById('gis-script')) {
+      const sc = document.createElement('script');
+      sc.id = 'gis-script';
+      sc.src = 'https://accounts.google.com/gsi/client';
+      sc.async = true; sc.defer = true;
+      document.head.appendChild(sc);
+    }
+    // Ge upp efter ~10 s — offline ska inte ge en evig omförsökstimer
+    if (gisRetries++ < 50) setTimeout(initGoogleSignIn, 200);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: GOOGLE_OAUTH_CLIENT_ID,
+    callback: onGoogleCredential,
+    auto_select: false,
+    cancel_on_tap_outside: true,
+  });
+  google.accounts.id.renderButton(host,
+    { type: 'standard', theme: 'filled_blue', size: 'large', text: 'signin_with', shape: 'pill', logo_alignment: 'left' });
+  gisInitialized = true;
+}
+
+async function onGoogleCredential(response) {
+  s.idToken = response.credential;
+  tokenStore.set(s.idToken);
+  try {
+    const payload = JSON.parse(atob(s.idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    s.googleSub = payload.sub || '';
+    s.email = payload.email || '';
+  } catch { s.email = ''; }
+  await routeAfterAuth();
+}
+
+function signOutLocal() {
+  s.idToken = ''; s.googleSub = ''; s.email = '';
+  s.subActive = 0; s.periodEnd = null;
+  tokenStore.del();
+  if (window.google?.accounts?.id) google.accounts.id.disableAutoSelect();
+  const SocialLogin = window.Capacitor?.Plugins?.SocialLogin;
+  if (SocialLogin) SocialLogin.logout({ provider: 'google' }).catch(() => {});
+}
+
+// Hämtar aktuell rättighetsstatus från /me
+async function fetchMe() {
+  if (!s.idToken) return null;
+  try {
+    const r = await fetch(API_PROXY + '/me', { headers: { 'Authorization': 'Bearer ' + s.idToken } });
+    if (r.status === 401) { signOutLocal(); return null; }
+    if (!r.ok) return null;
+    const d = await r.json();
+    s.email = d.email || s.email;
+    s.subActive = d.sub_active || 0;
+    s.periodEnd = d.period_end;
+    s.summariesUsed = d.summaries_used || 0;
+    s.audioSecondsUsed = d.audio_seconds_used || 0;
+    s.caps = d.caps || s.caps;
+    return d;
+  } catch { return null; }
+}
+
+async function routeAfterAuth() {
+  applyAuthVisibility();
+  const me = await fetchMe();
+  if (!s.idToken) { applyAuthVisibility(); show('signin'); return; }
+  if (me && me.sub_active === 1) { show('idle'); }
+  else {
+    const em = $('paywallEmail');
+    if (em) em.textContent = s.email || '';
+    show('paywall');
+  }
+}
+
+async function deleteAccount() {
+  if (!confirm('Är du säker på att du vill radera ditt konto? Detta kan inte ångras. Din prenumeration måste avslutas separat i butiken.')) return;
+  try {
+    const r = await fetch(API_PROXY + '/account/delete', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + s.idToken },
+    });
+    if (!r.ok && r.status !== 401) { toast('Kunde inte radera kontot. Försök igen.'); return; }
+  } catch { toast('Kunde inte radera kontot. Försök igen.'); return; }
+  signOutLocal();
+  closeSettings();
+  applyAuthVisibility();
+  show(APP_MODE ? 'signin' : (s.key ? 'idle' : 'setup'));
+  toast('Kontot är raderat');
+}
+
+function manageSubscription() {
+  const url = isIOS()
+    ? 'https://apps.apple.com/account/subscriptions'
+    : 'https://play.google.com/store/account/subscriptions';
+  window.open(url, '_blank', 'noopener');
+}
+
+
+// ── KÖP (RevenueCat, endast appläge) ───────────────────────────────────────
+// Publik SDK-nyckel — säker att ha i klienten, till skillnad från API-nyckeln.
+const REVENUECAT_ANDROID_KEY = 'goog_REPLACE_WITH_PUBLIC_SDK_KEY';
+const REVENUECAT_IOS_KEY = 'appl_REPLACE_WITH_PUBLIC_SDK_KEY';
+
+let purchasesConfigured = false;
+async function ensurePurchases() {
+  const P = window.Capacitor?.Plugins?.Purchases;
+  if (!P) throw new Error('Köp fungerar bara i appen.');
+  if (purchasesConfigured) return P;
+  const apiKey = isIOS() ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+  if (apiKey.includes('REPLACE_WITH')) throw new Error('Köp är inte konfigurerat än.');
+  if (!s.googleSub) throw new Error('Logga in igen innan du köper.');
+  // appUserID måste vara exakt det id backend känner användaren som —
+  // namnrymdat per leverantör, se docs/decisions/0003-identitet-per-leverantor.md
+  await P.configure({ apiKey, appUserID: backendUserId() });
+  purchasesConfigured = true;
+  return P;
+}
+
+// Webhooken från RevenueCat når backend strax efter köpet, så rättigheten
+// dyker inte upp direkt. Fråga /me några gånger innan vi ger upp.
+async function waitForEntitlement(tries = 6) {
+  for (let i = 0; i < tries; i++) {
+    const me = await fetchMe();
+    if (me && me.sub_active === 1) return true;
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  return false;
+}
+
+// planType: 'ANNUAL' eller 'MONTHLY'. Faller tillbaka på första erbjudandet
+// om butiken inte har just den varianten uppsatt.
+async function startPurchase(planType) {
+  const btns = [$('paywallSubscribeBtn'), $('paywallMonthlyBtn')].filter(Boolean);
+  btns.forEach(b => { b.disabled = true; });
+  try {
+    const P = await ensurePurchases();
+    const offerings = await P.getOfferings();
+    const list = offerings?.current?.availablePackages || [];
+    const pkg = list.find(x => x.packageType === planType) || list[0];
+    if (!pkg) throw new Error('Hittade ingen prenumeration att köpa. Försök igen senare.');
+    await P.purchasePackage({ aPackage: pkg });
+    if (await waitForEntitlement()) { toast('Välkommen! Prenumerationen är aktiv ✓'); show('idle'); }
+    else toast('Köpet gick igenom men aktiveringen dröjer — prova att starta om appen om en stund.');
+  } catch (e) {
+    // Användaren avbröt köpet — inget fel att skrika om
+    const msg = String(e?.message || e);
+    if (!/cancel|avbr/i.test(msg)) toast(msg || 'Köpet kunde inte genomföras.');
+  } finally {
+    btns.forEach(b => { b.disabled = false; });
+  }
+}
+
+// Play kräver att en betalande användare kan återställa sitt köp på ny enhet
+async function restorePurchases() {
+  try {
+    const P = await ensurePurchases();
+    await P.restorePurchases();
+    if (await waitForEntitlement(4)) { toast('Prenumerationen är återställd ✓'); show('idle'); }
+    else toast('Hittade inget aktivt köp på det här kontot.');
+  } catch (e) {
+    toast(String(e?.message || e) || 'Kunde inte återställa köp.');
+  }
+}
+
 // ── ERROR ──────────────────────────────────────────────────────────────────
 function showError(msg, showSettings) {
+  logError('app', msg);
   $('errorMsg').textContent = msg;
   $('errSettingsBtn').style.display = showSettings ? '' : 'none';
   show('error');
@@ -2646,33 +3834,37 @@ const SH = 'vs_history';
 const MAX_HISTORY = 40;
 
 function getHistory() { return store.json(SH, []); }
-function saveToHistory(html, title) {
+function saveToHistory(html, title, forcedId) {
   const history = getHistory();
-  const id = Date.now();
+  const id = forcedId || Date.now();
   // Transkriptionen följer med posten (kapad för att inte spränga localStorage)
   const transcript = (s.transcript || '').slice(0, 120000);
   history.unshift({ id, title: title || '', date: new Date().toISOString(), html, style: s.style, transcript });
   if (history.length > MAX_HISTORY) history.splice(MAX_HISTORY);
   store.set(SH, JSON.stringify(history));
   updateHistoryBadge();
+  driveSchedulePush();
   return id;
 }
 // Bakgrundstranskriberingen blir klar efter att posten sparats — patcha in den
 function updateHistoryTranscript(id, transcript) {
   const history = getHistory().map(x => x.id === id ? { ...x, transcript: transcript.slice(0, 120000) } : x);
   store.set(SH, JSON.stringify(history));
+  driveSchedulePush();
 }
 function deleteFromHistory(id) {
   const history = getHistory().filter(x => x.id !== id);
   store.set(SH, JSON.stringify(history));
   renderHistoryList();
   updateHistoryBadge();
+  driveSchedulePush();
 }
 function clearHistory() {
   if (!getHistory().length) return;
   store.del(SH);
   renderHistoryList();
   updateHistoryBadge();
+  driveSchedulePush();
   toast('Historik rensad');
 }
 function updateHistoryBadge() {
@@ -2789,9 +3981,98 @@ function installApp() {
   }
 }
 
+// Läges- och inloggningsberoende synlighet. BYOK-fälten (nyckel/modell/
+// GitHub) hör till webbens nyckelläge; kontosektionen till proxyläget —
+// appen eller inloggad webb. Köpknapparna är RevenueCat och finns bara i
+// appen; webbens betalvägg hänvisar till appen. Anropas vid start och när
+// inloggningsläget ändras.
+function applyAuthVisibility() {
+  document.querySelectorAll('.web-only').forEach(el => { el.style.display = proxyMode() ? 'none' : ''; });
+  document.querySelectorAll('.app-only').forEach(el => { el.style.display = proxyMode() ? '' : 'none'; });
+  const webPaywall = !APP_MODE;
+  const planRow = document.querySelector('.plan-row');
+  if (planRow) planRow.style.display = webPaywall ? 'none' : '';
+  const restore = $('paywallRestoreBtn');
+  if (restore) restore.style.display = webPaywall ? 'none' : '';
+  const terms = $('paywallTerms');
+  if (terms) terms.style.display = webPaywall ? 'none' : '';
+  const note = $('paywallWebNote');
+  if (note) note.style.display = webPaywall ? '' : 'none';
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 function init() {
-  show(s.key ? 'idle' : 'setup');
+  pushBackSentinel();
+
+  s.idToken = tokenStore.get();
+  applyAuthVisibility();
+  if (APP_MODE) { const gh = $('githubBtn'); if (gh) gh.style.display = 'none'; }
+
+  if (APP_MODE) {
+    // Appläge: låt /me avgöra var användaren landar
+    show('signin');
+    initGoogleSignIn();
+    if (isIOS()) $('paywallTerms').textContent =
+      'Provperioden övergår automatiskt i en prenumeration på 40 kr/månad om du inte avslutar den. Avsluta när som helst i App Store.';
+    if (s.idToken) routeAfterAuth();
+  } else if (s.idToken) {
+    // Inloggad webbanvändare — samma kontoflöde som appen
+    initGoogleSignIn();
+    routeAfterAuth();
+  } else {
+    // Webbens nyckelläge, med inloggning som alternativ på setup-skärmen
+    show(s.key ? 'idle' : 'setup');
+    initGoogleSignIn();
+  }
+
+  // Konto-knappar (finns bara i appläge, men kopplas villkorslöst — de är
+  // dolda i webbläge och kostar inget att binda)
+  const bind = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+  // Utloggad i appen hamnar på inloggningen; i webben på nyckelskärmen
+  // (eller idle om en BYOK-nyckel finns sparad)
+  const afterSignOut = () => {
+    applyAuthVisibility();
+    show(APP_MODE ? 'signin' : (s.key ? 'idle' : 'setup'));
+  };
+  bind('setupSignInBtn', () => show('signin'));
+  bind('paywallSignOutBtn', () => { signOutLocal(); afterSignOut(); });
+  bind('paywallDeleteBtn', deleteAccount);
+  bind('settingsSignOutBtn', () => { signOutLocal(); closeSettings(); afterSignOut(); });
+  bind('settingsDeleteBtn', deleteAccount);
+  bind('manageSubBtn', manageSubscription);
+  bind('recClearBtn', async () => {
+    if (!confirm('Radera alla sparade inspelningar? Sammanfattningarna i historiken påverkas inte.')) return;
+    await clearAudio();
+    renderAudioList();
+    toast('Alla inspelningar raderade');
+  });
+  bind('errShareBtn', shareErrors);
+  bind('errClearBtn', () => {
+    clearErrors();
+    renderErrList();
+    toast('Felloggen rensad');
+  });
+  // Drive-synk finns bara i webben — GIS-tokenklienten är opålitlig i webview
+  if (APP_MODE) { const dg = $('driveGroup'); if (dg) dg.style.display = 'none'; }
+  bind('driveOnBtn', () => driveConnect().catch(e => { renderDriveStatus(e.message); toast(e.message || 'Anslutningen misslyckades'); }));
+  bind('drivePullBtn', () => {
+    if (getHistory().length && !confirm('Ersätta historiken på den här enheten med kopian från Google Drive?')) return;
+    drivePull().then(() => { renderHistoryList(); toast('Hämtat från Google Drive ✓'); })
+      .catch(e => { renderDriveStatus(e.message); toast(e.message || 'Hämtningen misslyckades'); });
+  });
+  bind('driveOffBtn', () => { driveDisconnect(); toast('Google Drive frånkopplat'); });
+  bind('formatHelpBtn', openFormatHelp);
+  bind('fh-overlay', closeFormatHelp);
+  bind('discCancelBtn', closeAudioConsent);
+  bind('disc-overlay', closeAudioConsent);
+  bind('discAcceptBtn', () => {
+    store.set(SCONSENT, '1');
+    closeAudioConsent();
+    startRecording();
+  });
+  bind('paywallSubscribeBtn', () => startPurchase('ANNUAL'));
+  bind('paywallMonthlyBtn', () => startPurchase('MONTHLY'));
+  bind('paywallRestoreBtn', restorePurchases);
 
   $('setupSaveBtn').onclick = () => {
     const k = $('setupKey').value.trim();
@@ -2820,33 +4101,38 @@ function init() {
   $('shareBtn').onclick = share;
   $('newBtn').onclick = () => show('idle');
   $('homeBtn').onclick = () => show('idle');
-  $('retryBtn').onclick = () => { if (s.blob) process(s.blob, (s.mimeType||'audio/webm').split(';')[0]); else show('idle'); };
+  $('retryBtn').onclick = () => { if (s.blob) process(s.blob, (s.mimeType||'audio/webm').split(';')[0], s.recId); else show('idle'); };
   $('errSettingsBtn').onclick = openSettings;
   $('settingsBtn').onclick = openSettings;
   $('s-overlay').onclick = closeSettings;
   $('sSaveBtn').onclick = saveSettings;
   $('shareAppBtn').onclick = shareApp;
-  $('forceUpdateBtn').onclick = async function() {
-    const btn = this;
-    btn.textContent = 'Uppdaterar…';
-    btn.disabled = true;
-    try {
-      if ('serviceWorker' in navigator) {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (reg) await reg.update();
-      }
-    } catch(e) { /* ignore */ }
-    window.location.reload();
-  };
   $('titleInput').addEventListener('input', e => { s.title = e.target.value; });
   document.querySelectorAll('.format-card').forEach(btn => {
     btn.onclick = () => setFormat(btn.dataset.fmt);
   });
   setFormat(s.style);
 
-  // Build re-format pills from STYLE_META
+  // Humorformat: läs sparat val, koppla reglaget, tillämpa
+  $('sFun').checked = funEnabled();
+  $('sFun').onchange = e => {
+    store.set(SFUN, e.target.checked ? '1' : '0');
+    applyFunVisibility();
+    toast(e.target.checked ? 'Humorformat påslagna' : 'Humorformat dolda');
+  };
+
+  // Build re-format pills from STYLE_META. Satirformaten ligger sist i
+  // tabellen och föregås av en "På skoj"-avdelare, samma gräns som i rutnätet.
   const reformatRow = $('reformatRow');
+  let funSepAdded = false;
   Object.entries(STYLE_META).forEach(([fmt, meta]) => {
+    if (meta.fun && !funSepAdded) {
+      const sep = document.createElement('span');
+      sep.className = 'reformat-sep';
+      sep.textContent = 'På skoj';
+      reformatRow.appendChild(sep);
+      funSepAdded = true;
+    }
     const pill = document.createElement('button');
     pill.className = 'reformat-pill';
     pill.dataset.fmt = fmt;
@@ -2854,6 +4140,7 @@ function init() {
     pill.onclick = () => reformatAs(fmt);
     reformatRow.appendChild(pill);
   });
+  applyFunVisibility();
   $('participantsInput').addEventListener('input', e => { s.participants = e.target.value; });
   $('helpBtn').onclick = openHelp;
   $('help-overlay').onclick = closeHelp;
@@ -2865,13 +4152,6 @@ function init() {
 
   // Show install button on iOS if not already installed as app
   if (isIOS() && !isStandalone()) $('installBtn').style.display = '';
-
-  // Theme picker — applies immediately on click, no need to save
-  document.querySelectorAll('.theme-card').forEach(btn => {
-    btn.onclick = () => setTheme(btn.dataset.theme);
-  });
-  // Apply saved theme on load
-  setTheme(store.get(STHEME, 'original'));
 
   // Find & Replace
   $('fnrPrev').onclick = () => fnrFindNext(true);

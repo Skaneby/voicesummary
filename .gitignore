@@ -1,1 +1,26 @@
 .DS_Store
+
+# Node / Capacitor
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Android build artifacts
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/app/release/
+# Android Studio skriver hit när projektet öppnas — per maskin, inte per projekt
+android/.idea/
+
+# Local secrets the user may have downloaded — never commit these to the repo
+json/
+*-client_secret*.json
+client_secret_*.json
+service-account-*.json
+.diane-api-key.txt
+
+# Byggd av scripts/sync-www.sh — enda sanningen är repo-roten
+www/

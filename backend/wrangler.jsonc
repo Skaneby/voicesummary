@@ -1,0 +1,42 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "diane-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-12-01",
+  "workers_dev": true,
+
+  "vars": {
+    "GOOGLE_OAUTH_CLIENT_ID": "732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com",
+    "USAGE_CAP_SUMMARIES": "100",
+    "USAGE_CAP_AUDIO_SECONDS": "3600",
+    "APPLE_BUNDLE_ID": "REPLACE_WITH_IOS_BUNDLE_ID",
+    "GEMINI_MODELS": "gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash-lite"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "diane-prod",
+      "database_id": "d451e3de-0579-4e4b-bd1c-40978a0a4725"
+    }
+  ],
+
+  // Per-user rate limiter, 30 req/min. Defends against compromised tokens or
+  // buggy clients draining Gemini budget. The monthly usage cap is still the
+  // primary cost control — this is just a burst guard.
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "RATE_LIMITER",
+        "type": "ratelimit",
+        "namespace_id": "1001",
+        "simple": { "limit": 30, "period": 60 }
+      }
+    ]
+  }
+
+  // Custom domain route (uncomment after DNS + zone are set up):
+  // "routes": [
+  //   { "pattern": "diane-api.skaneby.se/*", "zone_name": "skaneby.se" }
+  // ]
+}

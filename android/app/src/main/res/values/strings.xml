@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Diane</string>
+    <string name="title_activity_main">Diane</string>
+    <string name="package_name">se.skaneby.diane</string>
+    <string name="custom_url_scheme">se.skaneby.diane</string>
+    <string name="recording_channel_name">Pågående inspelning</string>
+    <string name="recording_channel_desc">Visas medan Diane spelar in, så att inspelningen inte avbryts av systemet.</string>
+    <string name="recording_notification_title">Diane spelar in</string>
+    <string name="recording_notification_text">Tryck för att öppna appen</string>
+</resources>

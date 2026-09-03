@@ -1,0 +1,23 @@
+{
+  "name": "diane-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "android:sync": "sh scripts/sync-www.sh && cap sync android",
+    "android:open": "cap open android",
+    "android:build": "cd android && ./gradlew bundleRelease",
+    "android:debug": "cd android && ./gradlew assembleDebug",
+    "sync": "sh scripts/sync-www.sh",
+    "test": "node tests/smoke.js"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.3.4",
+    "playwright-core": "^1.62.1"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@capgo/capacitor-social-login": "^8.3.22",
+    "@revenuecat/purchases-capacitor": "^13.1.1"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "appId": "se.skaneby.diane",
+  "appName": "Diane",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
