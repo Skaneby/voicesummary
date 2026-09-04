@@ -441,6 +441,13 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   max-height:80vh;overflow-y:auto}
 #s-panel.open{transform:translateY(0)}
 .s-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 24px}
+.panel-close{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:50%;
+  background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;
+  -webkit-tap-highlight-color:transparent}
+.panel-close:active{color:var(--accent);border-color:var(--accent)}
+aside[id$="-panel"]{position:fixed}
+#headerBackBtn{display:none}
 .s-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;letter-spacing:.03em}
 .s-form{display:flex;flex-direction:column;gap:14px}
 .s-save{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:10px;
@@ -531,6 +538,12 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 <body>
 <div id="app">
   <header>
+    <div style="display:flex;align-items:center;gap:4px">
+    <button class="icon-btn" id="headerBackBtn" aria-label="Tillbaka" onclick="handleBack()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
     <h1>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
@@ -540,6 +553,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
       </svg>
       Diane
     </h1>
+    </div>
     <div style="display:flex;gap:4px">
     <button class="icon-btn" id="helpBtn" aria-label="Hjälp Diane">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -928,6 +942,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 <div id="fh-overlay"></div>
 <aside id="fh-panel" role="dialog" aria-label="Om formaten">
   <div class="s-handle"></div>
+  <button class="panel-close" aria-label="Stäng" onclick="closeFormatHelp()">✕</button>
   <h2 class="s-title">Vad formaten gör</h2>
   <div id="fh-body"></div>
 </aside>
@@ -935,6 +950,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 <div id="disc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100"></div>
 <aside id="disc-panel" role="dialog" aria-label="Om ljudinspelning" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;max-height:80vh;overflow-y:auto">
   <div class="s-handle"></div>
+  <button class="panel-close" aria-label="Stäng" onclick="closeAudioConsent()">✕</button>
   <h2 class="s-title">Innan du spelar in</h2>
   <p style="font-size:.9rem;line-height:1.6;color:var(--text);margin:0 0 12px">
     Diane spelar in ljud via telefonens mikrofon och <strong>skickar inspelningen till Google Gemini</strong> för att skapa din sammanfattning.
@@ -952,6 +968,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 <div id="h-overlay"></div>
 <aside id="h-panel" role="dialog" aria-label="Historik">
   <div class="s-handle"></div>
+  <button class="panel-close" aria-label="Stäng" onclick="closeHistory()">✕</button>
   <div class="h-header">
     <h2 class="s-title" style="margin:0">Historik</h2>
     <button class="btn-sec" id="clearHistoryBtn" style="font-size:.8rem;padding:8px 12px">Rensa allt</button>
@@ -965,6 +982,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 <div id="cal-overlay"></div>
 <aside id="cal-panel" role="dialog" aria-label="Lägg i kalender">
   <div class="s-handle"></div>
+  <button class="panel-close" aria-label="Stäng" onclick="closeCalendarDialog()">✕</button>
   <h2 class="s-title">Lägg i kalender</h2>
   <div class="s-form">
     <div class="cal-row">
@@ -993,6 +1011,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 
 <aside id="s-panel" role="dialog" aria-label="Inställningar">
   <div class="s-handle"></div>
+  <button class="panel-close" aria-label="Stäng" onclick="closeSettings()">✕</button>
   <h2 class="s-title">Inställningar</h2>
   <div class="s-form">
     <div class="input-group web-only" style="max-width:none">
@@ -1114,6 +1133,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 <div id="gh-overlay"></div>
 <aside id="gh-panel" role="dialog" aria-label="Skapa GitHub Issue">
   <div class="s-handle"></div>
+  <button class="panel-close" aria-label="Stäng" onclick="closeGitHub()">✕</button>
   <h2 class="s-title">Skapa GitHub Issue</h2>
   <input id="ghSearch" placeholder="Sök repo…" autocomplete="off" autocapitalize="off" spellcheck="false"
     style="width:100%;padding:10px 12px;background:var(--card);border:1px solid var(--border);
@@ -1126,6 +1146,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 <div id="help-overlay"></div>
 <aside id="help-panel" role="dialog" aria-label="Hjälp Diane">
   <div class="s-handle"></div>
+  <button class="panel-close" aria-label="Stäng" onclick="closeHelp()">✕</button>
   <h2 class="s-title">Hjälp Diane</h2>
   <div class="s-form">
     <div style="text-align:center;padding:8px 0 16px">
@@ -1898,12 +1919,24 @@ document.addEventListener('visibilitychange', () => {
 const $ = id => document.getElementById(id);
 const screens = ['setup','signin','paywall','idle','recording','working','result','error'];
 
+// Speglar handleBack()s skärmvillkor (utan sidoeffekter) så headerns
+// bakåtknapp bara syns där ett tryck faktiskt gör något.
+function canGoBack(name) {
+  if (name === 'recording' || name === 'result' || name === 'error' || name === 'working') return true;
+  if (name === 'paywall') return true;
+  if (name === 'signin' && !APP_MODE) return true;
+  if (name === 'setup' && s.key) return true;
+  return false;
+}
+
 function show(name) {
   screens.forEach(n => {
     const el = $('screen-' + n);
     el.classList.toggle('active', n === name);
   });
   s.screen = name;
+  const backBtn = $('headerBackBtn');
+  if (backBtn) backBtn.style.display = canGoBack(name) ? 'flex' : 'none';
 }
 
 // ── BAKÅTNAVIGERING ────────────────────────────────────────────────────────
@@ -2061,6 +2094,9 @@ function closeAudioConsent() {
 }
 
 async function startRecording() {
+  // Skydd mot dubbeltryck som skulle kunna skapa två MediaRecorder-instanser
+  // för samma inspelning (t.ex. ett race innan skärmen hunnit byta).
+  if (s.mediaRecorder && s.mediaRecorder.state !== 'inactive') return;
   if (proxyMode()) {
     if (!s.idToken) { show('signin'); return; }
     if (!s.subActive) { show('paywall'); return; }
@@ -2279,7 +2315,7 @@ function callModel(base64, mime) {
   );
 }
 
-async function generate(base64, mime, attempt = 0) {
+async function generate(base64, mime, attempt = 0, triedRefresh = false) {
   const r = await callModel(base64, mime);
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
@@ -2288,7 +2324,16 @@ async function generate(base64, mime, attempt = 0) {
     // fallback-kedja här. I stället är felen kontorelaterade — utloggad,
     // obetald, kvot slut.
     if (proxyMode()) {
-      if (r.status === 401) { signOutLocal(); show('signin'); throw new Error('Din inloggning har gått ut — logga in igen.'); }
+      if (r.status === 401) {
+        // Innan vi kastar bort en sparad inspelning på en utgången token:
+        // ett tyst försök att förnya den. Bara en gång — misslyckas det
+        // också är sessionen verkligen slut, inte bara gammal.
+        if (!triedRefresh && await refreshIdTokenIfNeeded()) {
+          return generate(base64, mime, attempt, true);
+        }
+        signOutLocal(); show('signin');
+        throw new Error('Din inloggning har gått ut — logga in igen.');
+      }
       if (r.status === 402) { show('paywall'); throw new Error('Din prenumeration är inte aktiv.'); }
       if (r.status === 429) {
         // Våra egna fel är strängar; Geminis fel skickas vidare oförändrat och
@@ -2465,6 +2510,21 @@ async function processFromText(text) {
 
 // ── MAIN FLOW ──────────────────────────────────────────────────────────────
 async function process(blob, mime, existingRecId) {
+  // Reentrans-spärr: oavsett vad som orsakar ett dubbelt anrop (dubbeltryck
+  // på Sammanfatta/Försök igen innan skärmen hunnit byta, ett race vid
+  // återuppladdning) får aldrig två analyser av samma sorts händelse köras
+  // parallellt — det var så en misslyckad token gav flera identiska poster
+  // i historiken när användaren tryckte om efter varje fel.
+  if (s.processing) { toast('En sammanfattning bearbetas redan — vänta tills den är klar.'); return; }
+  s.processing = true;
+  try {
+    await processInner(blob, mime, existingRecId);
+  } finally {
+    s.processing = false;
+  }
+}
+
+async function processInner(blob, mime, existingRecId) {
   // Clear stale result so old content can never bleed into a fresh recording
   s.resultText = '';
   s.resultHTML = '';
@@ -3686,6 +3746,16 @@ function subFromToken(t) {
   } catch { return ''; }
 }
 
+function applyLoginResult(out) {
+  const idToken = out?.result?.idToken;
+  if (!idToken) return false;
+  s.idToken = idToken;
+  tokenStore.set(idToken);
+  s.email = out?.result?.profile?.email || s.email;
+  s.googleSub = subFromToken(idToken) || out?.result?.profile?.id || s.googleSub;
+  return true;
+}
+
 async function nativeGoogleSignIn() {
   await ensureSocialLoginInit();
   const SocialLogin = window.Capacitor.Plugins.SocialLogin;
@@ -3694,13 +3764,28 @@ async function nativeGoogleSignIn() {
   // vill ha extra behörigheter, och då kräver plugin:et ändringar i
   // MainActivity ("You CANNOT use scopes without modifying the main activity").
   const out = await SocialLogin.login({ provider: 'google', options: {} });
-  const idToken = out?.result?.idToken;
-  if (!idToken) throw new Error('Inloggning misslyckades.');
-  s.idToken = idToken;
-  tokenStore.set(idToken);
-  s.email = out?.result?.profile?.email || '';
-  s.googleSub = subFromToken(idToken) || out?.result?.profile?.id || '';
+  if (!applyLoginResult(out)) throw new Error('Inloggning misslyckades.');
   await routeAfterAuth();
+}
+
+// Googles ID-token lever bara i EN TIMME. Utan förnyelse blöder det: en lång
+// mötesinspelning eller appen bara öppen ett tag räcker för att /summarize
+// eller /me ska svara 401 fast användaren precis loggade in. Credential
+// Manager-flödet nedan är tyst så länge kontot redan är auktoriserat — ingen
+// popup, ingen ny inloggningsdialog. Anropas bara i appläget; webbens GIS-
+// knapp hanterar sin egen tokenlivslängd via Googles skript.
+async function refreshIdTokenIfNeeded() {
+  if (!APP_MODE) return false;
+  try {
+    await ensureSocialLoginInit();
+    const SocialLogin = window.Capacitor?.Plugins?.SocialLogin;
+    if (!SocialLogin) return false;
+    await SocialLogin.refresh({ provider: 'google', options: {} });
+    const out = await SocialLogin.login({ provider: 'google', options: {} });
+    return applyLoginResult(out);
+  } catch {
+    return false;
+  }
 }
 
 let gisInitialized = false;
@@ -3760,15 +3845,21 @@ function signOutLocal() {
   tokenStore.del();
   if (window.google?.accounts?.id) google.accounts.id.disableAutoSelect();
   const SocialLogin = window.Capacitor?.Plugins?.SocialLogin;
-  if (SocialLogin) SocialLogin.logout({ provider: 'google' }).catch(() => {});
+  // Best-effort: ett kraschande/saknat plugin-anrop får aldrig avbryta
+  // resten av utloggningen (t.ex. skärmbytet som anropar oss).
+  try { if (SocialLogin) SocialLogin.logout({ provider: 'google' }).catch(() => {}); } catch {}
 }
 
 // Hämtar aktuell rättighetsstatus från /me
-async function fetchMe() {
+async function fetchMe(triedRefresh) {
   if (!s.idToken) return null;
   try {
     const r = await fetch(API_PROXY + '/me', { headers: { 'Authorization': 'Bearer ' + s.idToken } });
-    if (r.status === 401) { signOutLocal(); return null; }
+    if (r.status === 401) {
+      if (!triedRefresh && await refreshIdTokenIfNeeded()) return fetchMe(true);
+      signOutLocal();
+      return null;
+    }
     if (!r.ok) return null;
     const d = await r.json();
     s.email = d.email || s.email;

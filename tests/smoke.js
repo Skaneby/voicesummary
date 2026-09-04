@@ -468,6 +468,119 @@ function check(name, ok, extra) {
   check('protokoll och säljmöte förblir opersonliga', await appPage.evaluate(() =>
     !/PERSPECTIVE/.test(PROMPTS.protocol) && !/PERSPECTIVE/.test(PROMPTS.sales)));
 
+  console.log('\n── 5d-2. Tyst tokenförnyelse — ett långt möte ska inte tvinga omlogg ──');
+  // Fejkat SocialLogin: refresh()+login() ger en FÄRSK token utan popup,
+  // exakt vad Credential Manager gör tyst för ett redan auktoriserat konto.
+  await appPage.evaluate(() => {
+    window.Capacitor.Plugins.SocialLogin = {
+      initialize: async () => {},
+      refresh: async () => {},
+      login: async () => ({ result: { idToken: 'farsk-token', profile: { email: 'ny@diane.se', id: 'sub-9' } } }),
+    };
+  });
+  check('refreshIdTokenIfNeeded hämtar och sparar en ny token', await appPage.evaluate(async () => {
+    s.idToken = 'gammal-token';
+    const ok = await refreshIdTokenIfNeeded();
+    return ok && s.idToken === 'farsk-token' && tokenStore.get() === 'farsk-token';
+  }));
+
+  // /summarize svarar 401 EN gång (utgången token) och sedan 200 (efter
+  // förnyelsen) — generate() ska tyst byta token och lyckas utan att logga ut.
+  let summarizeCalls = [];
+  await ctx.route('**/diane-api*/**', route => {
+    summarizeCalls.push(route.request().headers().authorization);
+    if (summarizeCalls.length === 1) { route.fulfill({ status: 401, contentType: 'application/json', body: '{"error":"invalid_token"}' }); return; }
+    route.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'TITLE: Ok\n<article><p>x</p></article>' }] }, finishReason: 'STOP' }] }) });
+  });
+  const refreshResult = await appPage.evaluate(async () => {
+    s.idToken = 'gammal-token'; s.subActive = 1; s.elapsed = 1000;
+    show('working');   // undvik att en riktig showError-övergång stör nästa test
+    const out = await generate('ZmFrZQ==', 'audio/webm');
+    return { ok: !!out.html, screen: document.querySelector('.screen.active')?.id, token: s.idToken };
+  });
+  check('första anropet bar den gamla, utgångna token', summarizeCalls[0] === 'Bearer gammal-token');
+  check('andra (lyckade) anropet bar den nya token', summarizeCalls[1] === 'Bearer farsk-token');
+  check('generate() lyckas tyst efter förnyelsen — ingen utloggning', refreshResult.ok && refreshResult.screen !== 'screen-signin');
+  await ctx.unroute('**/diane-api*/**');
+
+  // Misslyckas förnyelsen (verkligt utloggad session) ska det gamla, säkra
+  // beteendet stå kvar: logga ut och be om ny inloggning.
+  await appPage.evaluate(() => {
+    window.Capacitor.Plugins.SocialLogin.refresh = async () => { throw new Error('ingen session'); };
+  });
+  await ctx.route('**/diane-api*/**', route =>
+    route.fulfill({ status: 401, contentType: 'application/json', body: '{"error":"invalid_token"}' }));
+  check('misslyckad förnyelse loggar ut som förut', await appPage.evaluate(async () => {
+    s.idToken = 'gammal-token';
+    try { await generate('ZmFrZQ==', 'audio/webm'); } catch {}
+    return s.idToken === '' && document.querySelector('.screen.active')?.id === 'screen-signin';
+  }));
+  await ctx.unroute('**/diane-api*/**');
+
+  console.log('\n── 5d-3. Reentrans- och dubbeltrycksskydd ──');
+  await appPage.evaluate(() => {
+    window.Capacitor.Plugins.SocialLogin.refresh = async () => {};
+  });
+  let inFlightCalls = 0;
+  await ctx.route('**/diane-api*/**', async route => {
+    inFlightCalls++;
+    await new Promise(r => setTimeout(r, 300));   // simulerar en långsam analys
+    route.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'TITLE: Enkel\n<article><p>x</p></article>' }] }, finishReason: 'STOP' }] }) });
+  });
+  check('ett andra samtidigt anrop till process() vägras, skapar ingen dubblett', await appPage.evaluate(async () => {
+    localStorage.removeItem('vs_history');
+    s.idToken = 'test-token'; s.subActive = 1;
+    const blob = new Blob([new Uint8Array(8)], { type: 'audio/webm' });
+    const p1 = process(blob, 'audio/webm');
+    const p2 = process(blob, 'audio/webm');   // avfyras medan p1 fortfarande pågår
+    await Promise.all([p1, p2]);
+    return getHistory().length === 1;
+  }));
+  await ctx.unroute('**/diane-api*/**');
+  await appPage.evaluate(() => { localStorage.removeItem('vs_history'); updateHistoryBadge(); });
+
+  check('startRecording() ignorerar ett tryck medan en inspelning redan pågår', await appPage.evaluate(async () => {
+    s.mediaRecorder = { state: 'recording' };
+    s.idToken = '';   // skulle annars trigga screen-signin om spärren saknades
+    await startRecording();
+    const untouched = document.querySelector('.screen.active')?.id !== 'screen-signin';
+    s.mediaRecorder = null;
+    return untouched;
+  }));
+
+  console.log('\n── 5d-4. Synlig bakåtknapp och panelernas krysstängning ──');
+  check('bakåtknappen dold på startsidan (roten)', await appPage.evaluate(() => {
+    show('idle'); return getComputedStyle($('headerBackBtn')).display === 'none';
+  }));
+  check('bakåtknappen SYNS PÅ RIKTIGT (computed style) på skärmar med något att gå tillbaka till', await appPage.evaluate(() => {
+    const r = {};
+    for (const scr of ['recording', 'result', 'error', 'working', 'paywall']) {
+      show(scr); r[scr] = getComputedStyle($('headerBackBtn')).display !== 'none';
+    }
+    show('idle');
+    return Object.values(r).every(Boolean);
+  }));
+  check('bakåtknappen anropar samma handleBack som systemgesten', await appPage.evaluate(() => {
+    show('paywall');
+    $('headerBackBtn').click();
+    return document.querySelector('.screen.active')?.id === 'screen-signin';
+  }));
+  check('varje panel har en fungerande krysstängning', await appPage.evaluate(() => {
+    const cases = [
+      ['s-panel', openSettings, closeSettings],
+      ['h-panel', openHistory, closeHistory],
+      ['help-panel', openHelp, closeHelp],
+    ];
+    return cases.every(([id, open, close]) => {
+      open();
+      const opened = $(id).classList.contains('open');
+      document.querySelector('#' + id + ' .panel-close').click();
+      return opened && !$(id).classList.contains('open');
+    });
+  }));
+
   await appPage.close();
 
   console.log('\n── 5e. Play-krav: publika sidor ──');
