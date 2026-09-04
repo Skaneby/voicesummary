@@ -916,16 +916,18 @@ function check(name, ok, extra) {
   await page.evaluate(() => { localStorage.removeItem('vs_history'); updateHistoryBadge(); });
 
   console.log('\n── 5j. Paus och stopp under inspelning ──');
-  check('paus gör Fortsätt till primär och stoppar den blinkande pricken', await page.evaluate(() => {
+  check('paus gör Fortsätt till primär, tonar ner stopp och stoppar den blinkande pricken', await page.evaluate(() => {
     s.mediaRecorder = { state: 'recording', pause(){ this.state = 'paused'; }, resume(){ this.state = 'recording'; } };
     s.paused = false; s.elapsed = 0; s.start = Date.now();
     togglePause();
     return $('pauseBtn').classList.contains('is-primary') && $('recDot').classList.contains('is-paused')
+      && $('stopBtn').classList.contains('is-muted')
       && $('pauseBtn').querySelector('span').textContent === 'Fortsätt' && s.paused === true;
   }));
-  check('fortsätt återställer normalläget', await page.evaluate(() => {
+  check('fortsätt återställer normalläget, stopp blir röd igen', await page.evaluate(() => {
     togglePause();
     return !$('pauseBtn').classList.contains('is-primary') && !$('recDot').classList.contains('is-paused')
+      && !$('stopBtn').classList.contains('is-muted')
       && $('pauseBtn').querySelector('span').textContent === 'Pausa' && s.paused === false;
   }));
   check('stopp under aktiv inspelning kräver bara ett tryck', await page.evaluate(() => {
@@ -942,11 +944,13 @@ function check(name, ok, extra) {
     const orig = window.stopRecording;
     window.stopRecording = () => { stopped = true; };
     s.paused = true;
+    $('stopBtn').classList.add('is-muted');   // simulerar togglePause()s pausade visuella läge
     disarmStop();
     handleStopPress();
     const armed = $('stopBtn').classList.contains('armed');
+    const stillMuted = $('stopBtn').classList.contains('is-muted');   // nedtoningen och larmet ska kunna gälla samtidigt
     window.stopRecording = orig;
-    return !stopped && armed;
+    return !stopped && armed && stillMuted;
   }));
   check('andra trycket inom fönstret avslutar', await page.evaluate(() => {
     let stopped = false;

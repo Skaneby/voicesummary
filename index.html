@@ -121,6 +121,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 /* Kräver dubbeltryck att avsluta medan pausad — ett ofrivilligt tryck ska
    aldrig kunna avsluta en pausad inspelning */
 .stop-btn.armed{box-shadow:0 0 0 4px var(--warn,#f0c040)}
+/* Pausat läge: stoppknappen tonas ner så blicken går till Fortsätt i
+   stället. Bara färg — träffytan (storlek) är orörd. */
+.stop-btn.is-muted{background:var(--card);border:1px solid var(--border)}
+.stop-btn.is-muted svg rect{fill:var(--muted)}
 .rec-dot.is-paused{background:var(--muted);animation:none;opacity:1}
 /* Fortsätt-knappen blir den primära handlingen i pausat läge */
 #pauseBtn.is-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -2211,6 +2215,7 @@ function togglePause() {
     s.paused = false;
     $('recStatus').textContent = 'Spelar in';
     $('recDot').classList.remove('is-paused');
+    $('stopBtn').classList.remove('is-muted');
     $('pauseBtn').classList.remove('is-primary');
     $('pauseBtn').querySelector('span').textContent = 'Pausa';
     $('pauseBtn').querySelector('svg').innerHTML = '<line x1="6" y1="4" x2="6" y2="20"/><line x1="18" y1="4" x2="18" y2="20"/>';
@@ -2222,6 +2227,7 @@ function togglePause() {
     cancelAnimationFrame(s.raf);
     $('recStatus').textContent = 'Pausad';
     $('recDot').classList.add('is-paused');
+    $('stopBtn').classList.add('is-muted');
     $('pauseBtn').classList.add('is-primary');
     $('pauseBtn').querySelector('span').textContent = 'Fortsätt';
     $('pauseBtn').querySelector('svg').innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
