@@ -116,8 +116,14 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 #waveform{width:min(100%,300px);height:60px;border-radius:8px;flex-shrink:0}
 .stop-btn{width:96px;height:96px;border-radius:50%;background:var(--accent);border:none;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
-  -webkit-tap-highlight-color:transparent;transition:transform .15s}
+  -webkit-tap-highlight-color:transparent;transition:transform .15s,box-shadow .15s}
 .stop-btn:active{transform:scale(.9)}
+/* Kräver dubbeltryck att avsluta medan pausad — ett ofrivilligt tryck ska
+   aldrig kunna avsluta en pausad inspelning */
+.stop-btn.armed{box-shadow:0 0 0 4px var(--warn,#f0c040)}
+.rec-dot.is-paused{background:var(--muted);animation:none;opacity:1}
+/* Fortsätt-knappen blir den primära handlingen i pausat läge */
+#pauseBtn.is-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 
 /* WORKING */
 .working-title{font-size:1.1rem;font-weight:600}
@@ -396,6 +402,10 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .h-item-info{flex:1;min-width:0;text-align:left}
 .h-item-title{font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .h-item-date{font-size:.75rem;color:var(--muted);margin-top:2px}
+.h-item-resum{background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:8px;padding:5px 9px;font-size:.7rem;cursor:pointer;flex-shrink:0;
+  font-family:inherit;-webkit-tap-highlight-color:transparent}
+.h-item-resum:active{border-color:var(--accent);color:var(--accent)}
 .h-item-del,.h-item-edit{background:none;border:none;color:var(--muted);cursor:pointer;
   padding:6px;border-radius:6px;line-height:1;flex-shrink:0;
   -webkit-tap-highlight-color:transparent}
@@ -2146,14 +2156,26 @@ function stopRecording() {
   if (s.audioCtx) s.audioCtx.close().catch(() => {});
 }
 
+// Stoppknappen kräver dubbeltryck medan pausad, så ett ofrivilligt tryck
+// aldrig kan avsluta en pausad inspelning. Aktiv inspelning stoppas som förut
+// på ett tryck — det är redan den förväntade handlingen där.
+let stopArmedTimer = null;
+function disarmStop() {
+  clearTimeout(stopArmedTimer);
+  stopArmedTimer = null;
+  $('stopBtn').classList.remove('armed');
+}
+
 function togglePause() {
   if (!s.mediaRecorder || s.mediaRecorder.state === 'inactive') return;
+  disarmStop();
   if (s.paused) {
     s.mediaRecorder.resume();
     s.start = Date.now();
     s.paused = false;
     $('recStatus').textContent = 'Spelar in';
-    $('recDot').style.animationPlayState = 'running';
+    $('recDot').classList.remove('is-paused');
+    $('pauseBtn').classList.remove('is-primary');
     $('pauseBtn').querySelector('span').textContent = 'Pausa';
     $('pauseBtn').querySelector('svg').innerHTML = '<line x1="6" y1="4" x2="6" y2="20"/><line x1="18" y1="4" x2="18" y2="20"/>';
     drawWave();
@@ -2163,10 +2185,26 @@ function togglePause() {
     s.paused = true;
     cancelAnimationFrame(s.raf);
     $('recStatus').textContent = 'Pausad';
-    $('recDot').style.animationPlayState = 'paused';
+    $('recDot').classList.add('is-paused');
+    $('pauseBtn').classList.add('is-primary');
     $('pauseBtn').querySelector('span').textContent = 'Fortsätt';
     $('pauseBtn').querySelector('svg').innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
   }
+}
+
+// Anropas av stopBtn i stället för att gå direkt på stopRecording — se
+// disarmStop-kommentaren ovan för varför.
+function handleStopPress() {
+  if (!s.paused) { stopRecording(); return; }
+  const btn = $('stopBtn');
+  if (btn.classList.contains('armed')) {
+    disarmStop();
+    stopRecording();
+    return;
+  }
+  btn.classList.add('armed');
+  toast('Tryck igen för att avsluta inspelningen');
+  stopArmedTimer = setTimeout(disarmStop, 3000);
 }
 
 function onStop() {
@@ -3857,12 +3895,19 @@ const SH = 'vs_history';
 const MAX_HISTORY = 40;
 
 function getHistory() { return store.json(SH, []); }
-function saveToHistory(html, title, forcedId) {
+function saveToHistory(html, title, audioId) {
   const history = getHistory();
-  const id = forcedId || Date.now();
+  // Historikpostens egen id är ALLTID unik — den får aldrig återanvända
+  // audioId, annars kolliderar två sammanfattningar av samma inspelning i
+  // historiken (radering/redigering av den ena träffade tidigare båda).
+  // Date.now() ensam räcker inte: två anrop inom samma millisekund (t.ex.
+  // programmatiskt eller i tester) skulle annars ge samma id.
+  const existing = new Set(history.map(x => x.id));
+  let id = Date.now();
+  while (existing.has(id)) id++;
   // Transkriptionen följer med posten (kapad för att inte spränga localStorage)
   const transcript = (s.transcript || '').slice(0, 120000);
-  history.unshift({ id, title: title || '', date: new Date().toISOString(), html, style: s.style, transcript });
+  history.unshift({ id, audioId: audioId || null, title: title || '', date: new Date().toISOString(), html, style: s.style, transcript });
   if (history.length > MAX_HISTORY) history.splice(MAX_HISTORY);
   store.set(SH, JSON.stringify(history));
   updateHistoryBadge();
@@ -3901,27 +3946,44 @@ function fmtDate(iso) {
   return d.toLocaleDateString('sv-SE', { day:'numeric', month:'short', year:'numeric' }) +
     ' · ' + d.toLocaleTimeString('sv-SE', { hour:'2-digit', minute:'2-digit' });
 }
-function renderHistoryList() {
+async function renderHistoryList() {
   const history = getHistory();
   const list = $('historyList');
   const empty = $('historyEmpty');
   if (!history.length) { list.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
+  // "Sammanfatta igen" visas bara när ljudet faktiskt finns kvar (arkivet
+  // rymmer bara de tio senaste) — annars finns inget att köra om mot.
+  const availableAudio = new Set((await listAudio()).map(a => a.id));
   list.innerHTML = history.map(item => `
     <div class="h-item" data-id="${item.id}">
       <div class="h-item-info">
         <div class="h-item-title">${item.title ? escHtml(item.title) : '<em style="color:var(--muted);font-weight:400">Utan titel</em>'}</div>
         <div class="h-item-date">${fmtDate(item.date)}</div>
       </div>
+      ${item.audioId && availableAudio.has(item.audioId) ? '<button class="h-item-resum">Sammanfatta igen</button>' : ''}
       <button class="h-item-edit" aria-label="Redigera titel">✎</button>
       <button class="h-item-del" aria-label="Ta bort">✕</button>
     </div>`).join('');
   list.querySelectorAll('.h-item').forEach(el => {
     const id = Number(el.dataset.id);
     el.querySelector('.h-item-info').onclick = () => loadFromHistory(id);
+    const resumBtn = el.querySelector('.h-item-resum');
+    if (resumBtn) resumBtn.onclick = e => { e.stopPropagation(); resummarizeFromHistory(id); };
     el.querySelector('.h-item-edit').onclick = e => { e.stopPropagation(); editHistoryTitle(id, el.querySelector('.h-item-title')); };
     el.querySelector('.h-item-del').onclick = e => { e.stopPropagation(); deleteFromHistory(id); };
   });
+}
+
+// Kör om analysen mot samma sparade ljud som gav den här historikposten.
+// Skyddsnätet för nätverksfel och avkortade svar: kritiska inspelningar ska
+// alltid gå att sammanfatta om, utan att den gamla posten skrivs över eller
+// tas bort — misslyckas det nya försöket finns det förra kvar.
+function resummarizeFromHistory(id) {
+  const item = getHistory().find(x => x.id === id);
+  if (!item || !item.audioId) { toast('Ljudet finns inte längre sparat för den här posten.'); return; }
+  closeHistory();
+  summarizeArchived(item.audioId);
 }
 function updateHistoryTitle(id, newTitle) {
   const history = getHistory().map(x => x.id === id ? { ...x, title: newTitle } : x);
@@ -4109,7 +4171,7 @@ function init() {
 
   $('recordBtn').onclick = startRecording;
   $('pauseBtn').onclick = togglePause;
-  $('stopBtn').onclick = stopRecording;
+  $('stopBtn').onclick = handleStopPress;
   $('copyTxtBtn').onclick = copyText;
   $('calendarBtn').onclick = openCalendarDialog;
   $('cal-overlay').onclick = closeCalendarDialog;

@@ -802,6 +802,100 @@ function check(name, ok, extra) {
   await ctx.unroute('**/www.googleapis.com/**');
   await page.evaluate(() => { localStorage.removeItem('vs_history'); updateHistoryBadge(); });
 
+  console.log('\n── 5j. Paus och stopp under inspelning ──');
+  check('paus gör Fortsätt till primär och stoppar den blinkande pricken', await page.evaluate(() => {
+    s.mediaRecorder = { state: 'recording', pause(){ this.state = 'paused'; }, resume(){ this.state = 'recording'; } };
+    s.paused = false; s.elapsed = 0; s.start = Date.now();
+    togglePause();
+    return $('pauseBtn').classList.contains('is-primary') && $('recDot').classList.contains('is-paused')
+      && $('pauseBtn').querySelector('span').textContent === 'Fortsätt' && s.paused === true;
+  }));
+  check('fortsätt återställer normalläget', await page.evaluate(() => {
+    togglePause();
+    return !$('pauseBtn').classList.contains('is-primary') && !$('recDot').classList.contains('is-paused')
+      && $('pauseBtn').querySelector('span').textContent === 'Pausa' && s.paused === false;
+  }));
+  check('stopp under aktiv inspelning kräver bara ett tryck', await page.evaluate(() => {
+    let stopped = false;
+    const orig = window.stopRecording;
+    window.stopRecording = () => { stopped = true; };
+    s.paused = false;
+    handleStopPress();
+    window.stopRecording = orig;
+    return stopped;
+  }));
+  check('stopp i pausat läge kräver dubbeltryck — första trycket bara larmar', await page.evaluate(() => {
+    let stopped = false;
+    const orig = window.stopRecording;
+    window.stopRecording = () => { stopped = true; };
+    s.paused = true;
+    disarmStop();
+    handleStopPress();
+    const armed = $('stopBtn').classList.contains('armed');
+    window.stopRecording = orig;
+    return !stopped && armed;
+  }));
+  check('andra trycket inom fönstret avslutar', await page.evaluate(() => {
+    let stopped = false;
+    const orig = window.stopRecording;
+    window.stopRecording = () => { stopped = true; };
+    handleStopPress();   // redan armad sedan föregående test
+    window.stopRecording = orig;
+    return stopped && !$('stopBtn').classList.contains('armed');
+  }));
+  check('armningen faller bort av sig själv efter tre sekunder', await page.evaluate(async () => {
+    s.paused = true;
+    disarmStop();
+    handleStopPress();
+    const armedDirekt = $('stopBtn').classList.contains('armed');
+    await new Promise(r => setTimeout(r, 3200));
+    return armedDirekt && !$('stopBtn').classList.contains('armed');
+  }));
+
+  console.log('\n── 5k. Sammanfatta igen från historiken ──');
+  check('saveToHistory ger alltid en egen unik id, även med delad audioId', await page.evaluate(() => {
+    localStorage.removeItem('vs_history');
+    const id1 = saveToHistory('<article><p>v1</p></article>', 'Test', 555);
+    const id2 = saveToHistory('<article><p>v2</p></article>', 'Test', 555);
+    return id1 !== id2 && getHistory().length === 2 && getHistory().every(x => x.audioId === 555);
+  }));
+  check('radering med delad audioId tar bara bort den avsedda posten (regressionstest)', await page.evaluate(() => {
+    const before = getHistory().length;
+    const target = getHistory()[0].id;
+    const other = getHistory()[1].id;
+    deleteFromHistory(target);
+    return getHistory().length === before - 1 && !getHistory().some(x => x.id === target)
+      && getHistory().some(x => x.id === other);
+  }));
+  check('"Sammanfatta igen" visas bara när ljudet finns kvar', await page.evaluate(async () => {
+    await clearAudio();
+    await saveAudio(555, new Blob([new Uint8Array(8)], { type: 'audio/webm' }), { title: 't', seconds: 5 });
+    await renderHistoryList();
+    return $('historyList').querySelectorAll('.h-item-resum').length === 1;
+  }));
+  check('knappen försvinner när ljudet är borta ur arkivet', await page.evaluate(async () => {
+    await clearAudio();
+    await renderHistoryList();
+    return $('historyList').querySelectorAll('.h-item-resum').length === 0;
+  }));
+  check('resummarizeFromHistory stänger historiken och kör om via arkivets flöde', await page.evaluate(async () => {
+    await saveAudio(555, new Blob([new Uint8Array(8)], { type: 'audio/webm' }), { title: 't', seconds: 5 });
+    let called = null;
+    const orig = window.summarizeArchived;
+    window.summarizeArchived = id => { called = id; };
+    openHistory();
+    const item = getHistory().find(x => x.audioId === 555);
+    resummarizeFromHistory(item.id);
+    const closed = !$('h-panel').classList.contains('open');
+    window.summarizeArchived = orig;
+    return called === 555 && closed;
+  }));
+  check('post utan sparat ljud ger meddelande i stället för krasch', await page.evaluate(() => {
+    const id = saveToHistory('<article><p>x</p></article>', 'utan ljud');
+    try { resummarizeFromHistory(id); return true; } catch { return false; }
+  }));
+  await page.evaluate(async () => { localStorage.removeItem('vs_history'); updateHistoryBadge(); await clearAudio(); });
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
