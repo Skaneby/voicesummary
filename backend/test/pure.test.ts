@@ -120,7 +120,7 @@ test("CORS: webbversionen och apparnas origins släpps in, främmande nekas", ()
 // utan thinkingConfig tänker Gemini 3.x dynamiskt tills svarsbudgeten är slut.
 test("tanketaket sätts alltid — även när klienten inte skickar något", () => {
   const p = buildGeminiPayload({ prompt: "x", audio_seconds: 10 });
-  assert.equal(p.generationConfig.thinkingConfig.thinkingBudget, 2048);
+  assert.equal(p.generationConfig.thinkingConfig.thinkingBudget, 1024);
   assert.equal(p.generationConfig.maxOutputTokens, 16384);
 });
 

@@ -357,7 +357,10 @@ function check(name, ok, extra) {
   check('inget anrop går direkt till Google i appläge', direktTillGoogle === 0, 'direkta anrop: ' + direktTillGoogle);
   check('transkribering, Q&A och omformatering går via proxyn', proxyKroppar.length >= 3, 'anrop: ' + proxyKroppar.length);
   check('proxykroppen bär konversationen', proxyKroppar.every(b => Array.isArray(b.contents)));
-  check('tanketaket följer med varje proxyanrop', proxyKroppar.every(b => b.thinking_budget === 2048),
+  // Regressionsskyddet gäller att taket finns — inte vilket värde det har.
+  // Transkribering får medvetet ett lägre tak än sammanfattning.
+  check('tanketaket följer med varje proxyanrop',
+    proxyKroppar.every(b => Number.isInteger(b.thinking_budget) && b.thinking_budget > 0 && b.thinking_budget <= 2048),
     JSON.stringify(proxyKroppar.map(b => b.thinking_budget)));
   check('transkriberingen räknas mot ljudkvoten', proxyKroppar.some(b => b.audio_seconds === 60));
   await ctx.unroute('**/generativelanguage.googleapis.com/**');

@@ -7,8 +7,8 @@
 
   "vars": {
     "GOOGLE_OAUTH_CLIENT_ID": "732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com",
-    "USAGE_CAP_SUMMARIES": "100",
-    "USAGE_CAP_AUDIO_SECONDS": "3600",
+    "USAGE_CAP_SUMMARIES": "30",
+    "USAGE_CAP_AUDIO_SECONDS": "10800",
     "APPLE_BUNDLE_ID": "REPLACE_WITH_IOS_BUNDLE_ID",
     "GEMINI_MODELS": "gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash-lite"
   },

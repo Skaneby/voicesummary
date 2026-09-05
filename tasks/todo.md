@@ -442,3 +442,46 @@ och webbversionen är live — punkten om merge är därmed avklarad.
    installeras, `docs/runbooks/test-on-device.md` körs igenom — mikrofon,
    lång inspelning med släckt skärm, bakåtknappen, edge-to-edge, ljudarkivet
    (Lyssna/Sammanfatta), felloggen som skyddsnät om något strular.
+
+---
+
+## Kostnadstaken omräknade 2026-09-05
+
+Bakgrund: `gemini-3.7-flash` går på introduktionspris ($0,75/M in, $3,75/M ut)
+**till och med 31 december 2026**. Från 1 januari 2027 dubblas det till
+$1,50/$7,50. Marginalen räknades om mot det priset, inte mot dagens.
+
+Tanketokens debiteras till **output-pris** — 5× ljudet in. Vid det gamla taket
+på 100 sammanfattningar stod tanketokens för ~60 % av den värsta användarens
+hela Gemini-kostnad, trots att ingen ser dem.
+
+| | Före | Efter |
+|---|---|---|
+| `USAGE_CAP_AUDIO_SECONDS` | 3600 (60 min) | **10800 (180 min)** |
+| `USAGE_CAP_SUMMARIES` | 100 | **30** |
+| Tanketak, sammanfattning | 2048 | **1024** |
+| Tanketak, transkribering | 2048 | **512** |
+
+Ljudtaket **höjdes** medvetet trots kostnadsfokus: 60 min/månad räckte till två
+möten och var en större churn-risk än priset. Ljud in är den billiga delen
+(7 % av kostnaden) — det är sammanfattningstaket som styr notan.
+
+Värsta användaren efter ändringen, räknat på 2027-priset: ~10,8 kr/månad.
+Vid 47 kr (netto ~32 kr efter moms och Play-avgift) ger det ~21 kr marginal.
+
+Transkribering fick ett lägre tak än sammanfattning eftersom ordagrann
+avskrift vid `temperature: 0` är mekanisk och inte blir bättre av resonemang.
+
+### Kvar att göra
+
+- [ ] **`cd backend && npm run deploy`** — kvottaken är Worker-variabler och
+      träder INTE i kraft förrän Workern är omdeployad. Klientändringen går
+      live av sig själv via Pages.
+- [ ] Verifiera sammanfattningskvaliteten på en riktig 30–45-minutersinspelning
+      efter sänkningen till 1024. Blir svaren tunnare: höj till 1536, inte 2048.
+- [ ] Mät faktiska output-tokens via `usageMetadata` i Gemini-svaret och ersätt
+      uppskattningen ovan med riktiga siffror.
+- [ ] Beslut: Pro- och standardnivå? Rekommendationen är att INTE dela upp vid
+      lansering — utan användningsdata är gränsdragningen en gissning, och två
+      Play-produkter plus tier-kolumn i D1 lägger risk på en kritisk väg som
+      redan är lång. Lättare att lägga till Pro sedan än att ta bort den.

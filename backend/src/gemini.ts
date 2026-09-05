@@ -32,7 +32,9 @@ export function isSummarizeBody(x: unknown): x is SummarizeBody {
   return true;
 }
 
-const THINKING_BUDGET_DEFAULT = 2048;
+// Tanketokens debiteras till output-pris. Klienten skickar normalt sitt eget
+// tak; detta är skyddsnätet om fältet faller bort.
+const THINKING_BUDGET_DEFAULT = 1024;
 const THINKING_BUDGET_MAX = 8192;
 
 /** Gemini-payloaden byggs separat så att tester kan verifiera att tanketaket
