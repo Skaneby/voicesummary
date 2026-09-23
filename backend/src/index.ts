@@ -118,8 +118,8 @@ async function handleMe(request: Request, env: Env): Promise<Response> {
   const user = await upsertUser(env.DB, claims.userId, claims.claims.email ?? null);
 
   const caps = {
-    summaries: Number(env.USAGE_CAP_SUMMARIES) || 100,
-    audio_seconds: Number(env.USAGE_CAP_AUDIO_SECONDS) || 3600,
+    summaries: Number(env.USAGE_CAP_SUMMARIES) || 30,
+    audio_seconds: Number(env.USAGE_CAP_AUDIO_SECONDS) || 10800,
   };
 
   // Re-evaluate sub_active server-side instead of trusting the stored flag —
@@ -176,8 +176,8 @@ async function handleSummarize(
   const user = await upsertUser(env.DB, claims.userId, claims.claims.email ?? null);
 
   const caps: UsageCaps = {
-    audio: Number(env.USAGE_CAP_AUDIO_SECONDS) || 3600,
-    summaries: Number(env.USAGE_CAP_SUMMARIES) || 100,
+    audio: Number(env.USAGE_CAP_AUDIO_SECONDS) || 10800,
+    summaries: Number(env.USAGE_CAP_SUMMARIES) || 30,
   };
   const check = checkEntitlement(user, caps);
   if (!check.allowed) {

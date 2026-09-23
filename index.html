@@ -2297,7 +2297,10 @@ function callModel(base64, mime) {
         max_output_tokens: 16384,
         // Utan tanketak tänker Gemini 3.x obegränsat på ljud — minuter av
         // väntan och tomma svar. Samma tak som webbläget sätter direkt.
-        thinking_budget: 2048
+        // 1024 och inte mer: tanketokens debiteras till OUTPUT-pris, alltså
+        // 5x ljudet in. De är den största rörliga kostnaden per sammanfattning
+        // trots att ingen användare någonsin ser dem.
+        thinking_budget: 1024
       })
     });
   }
@@ -2314,7 +2317,7 @@ function callModel(base64, mime) {
         generationConfig: {
           temperature: 0.3,
           maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
-          thinkingConfig: { thinkingBudget: 2048 }
+          thinkingConfig: { thinkingBudget: 1024 }
         }
       })
     }
@@ -2700,7 +2703,9 @@ async function transcribeAudio() {
         { inline_data: { mime_type: mime, data: base64 } },
         { text: 'Transcribe this audio recording verbatim in the spoken language. Output plain text only — no formatting, no timestamps, no commentary. If several speakers are clearly distinguishable, prefix their lines with "Talare 1:", "Talare 2:" etc.' }
       ]}],
-      generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 2048 } }
+      // Lägre tanketak än sammanfattningen: ordagrann transkribering är en
+      // mekanisk uppgift vid temperature 0 och blir inte bättre av resonemang.
+      generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 512 } }
     }, (s.elapsed || 0) / 1000);
     if (!r.ok) throw new Error('transkribering misslyckades');
     const d = await r.json();
