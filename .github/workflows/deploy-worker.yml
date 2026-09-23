@@ -1,0 +1,44 @@
+# Deployar Cloudflare-Workern (backend/) automatiskt när backend ändras på main,
+# så att en ändring aldrig blir liggande odeployad. Kan även köras manuellt
+# från fliken Actions på GitHub ("Run workflow").
+#
+# Kräver repo-secreten CLOUDFLARE_API_TOKEN (se docs/runbooks/release.md).
+# Workerns egna hemligheter (Gemini-nyckel, webhook-hemlighet) ligger i
+# Cloudflare och påverkas inte av en deploy.
+name: Deploy Worker
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**']
+  workflow_dispatch:
+
+# Två snabba pushar ska inte deploya samtidigt — den senaste vinner
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Tester
+        run: npm test
+      - name: Typkontroll
+        run: npx tsc --noEmit
+      - name: Deploy
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Hälsokontroll
+        run: curl -fsS https://diane-api.johan-skaneby.workers.dev/health

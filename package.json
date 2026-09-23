@@ -8,7 +8,8 @@
     "android:build": "cd android && ./gradlew bundleRelease",
     "android:debug": "cd android && ./gradlew assembleDebug",
     "sync": "sh scripts/sync-www.sh",
-    "test": "node tests/smoke.js"
+    "test": "node tests/smoke.js",
+    "release": "sh scripts/release.sh"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.3.4",

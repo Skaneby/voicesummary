@@ -47,3 +47,15 @@ som ligger på kontot (console.cloud.google.com/billing/<id>/manage), sedan
 förbrukning per projekt under reports. AI Studios "Projects using this
 billing account" visar bara AI Studio-importerade projekt — Cloud Console
 är facit.
+
+## 2026-09-23 — En commit som bara hamnar på main når aldrig appen
+
+**Vad hände:** En annan session pushade kostnadstaken (b2e332e, 5 sept) enbart
+till `main`. Appgrenarna `mobile-app`/`web-app` saknade den i nästan tre veckor,
+och eftersom Workern deployades manuellt låg taken dessutom odeployade.
+
+**Regel:** Varje commit ska ut på alla tre grenarna (`main`, `mobile-app`,
+`web-app`) — med fast-forward eller merge, aldrig force. Innan push: `git fetch`
+och kontrollera att ingen gren har commits som saknas lokalt. Backend deployas
+nu automatiskt från `main` via GitHub Actions, så "glömd deploy" är borta —
+men bara om ändringen faktiskt når `main`.

@@ -24,3 +24,5 @@ service-account-*.json
 
 # Byggd av scripts/sync-www.sh — enda sanningen är repo-roten
 www/
+# Signerade appbyggen — laddas upp till Play, versionshanteras via git-taggar
+releases/

@@ -441,6 +441,10 @@ och webbversionen är live — punkten om merge är därmed avklarad.
    Google-konto som Play Console; då godkänns kopplingen automatiskt. Annars:
    lägg till Play-kontot som ägare i Search Console. Ta inte bort den
    befintliga TXT-posten.
+3e. [ ] **Releaseflödet igång** (byggt 2026-09-23, se docs/runbooks/release.md):
+   - [ ] `sh scripts/create-upload-key.sh` — skapa uppladdningsnyckeln, säkerhetskopiera den
+   - [ ] Cloudflare API-token + `gh secret set CLOUDFLARE_API_TOKEN` — aktiverar automatisk Worker-deploy
+   - [ ] Första releasen: `npm run release -- 1.0.0` → ladda upp AAB:n i Play Console (välj Play App Signing)
 3d. [ ] **Merchant-konto för prenumerationerna** (Settings → Payments profile).
    Organisationens uppgifter och bankkonto. **Kopplingen Play Console ↔
    betalprofil kan aldrig ändras i efterhand** (answer/3092739) — dubbelkolla
