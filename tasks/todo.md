@@ -419,18 +419,34 @@ och webbversionen är live — punkten om merge är därmed avklarad.
 2. [ ] **Lägg till testanvändare** på samma sida (`+ Add users`, max 100 i
    Testing-läge) — samma personer som ska ingå i Play Consolets stängda
    testning nedan, så de kan logga in i Diane och testa på riktigt.
-3. [ ] **Play Console-kontot.** Johan har ett DUNS-nummer och kan registrera
-   ett organisationskonto i stället för personligt. **OVERIFIERAT PÅSTÅENDE
-   FRÅN 2026-09-03, TA INTE FÖR SANT:** att org-konton med DUNS skulle vara
-   undantagna från kravet på 20 testare i 14 sammanhängande dagar. Det
-   kravet är dokumenterat för *personliga* konton
-   (`docs/runbooks/play-store-checklist.md`) — huruvida det gäller
-   organisationskonton med DUNS-verifiering med, framgår inte av något vi
-   faktiskt kollat. **Verifiera i Play Console själv** vid registreringen
-   (konsolen visar kraven för den valda kontotypen) innan detta planeras
-   som en genväg. Registrera i god tid oavsett: organisationsverifieringen
-   hos Google tar egen tid. https://play.google.com/console/signup —
-   25 USD engångsavgift.
+3. [x] **Play Console-kontot — skapat 2026-09 som ORGANISATION** (D-U-N-S,
+   webbplats digitalaverkligheter.se). Utvecklarikon + sidhuvud uppladdade
+   som tillfälliga bilder (ljudvågen, `docs/brand/developer-icon/`) — kan
+   bytas när som helst, ändringen syns inom en timme.
+   **Testkravet gäller INTE oss — verifierat 2026-09-23:** kravet på 12
+   testare × 14 dagar (sänkt från 20 i dec 2024) gäller bara *personliga*
+   konton skapade efter 13 nov 2023. Källa: Googles artikel "App testing
+   requirements for new personal developer accounts",
+   support.google.com/googleplay/android-developer/answer/14151465.
+   Det tidigare overifierade påståendet (commit ddc03be) är därmed bekräftat.
+3b. [ ] **Kontots verifieringar klara** — Play Console-startsidan ska inte visa
+   något väntande. Kontrollera under Developer account → About you: namn och
+   adress EXAKT som hos Dun & Bradstreet, kontakt- och utvecklar-e-post
+   (6-siffrig kod), webbplats, och sist telefonnummer (går först när
+   identitet + webbplats är verifierade).
+3c. [ ] **Webbplatsverifiering: digitalaverkligheter.se.** Obligatorisk för
+   organisationskonton sedan feb 2024 (answer/13205715). Domänen har redan en
+   `google-site-verification`-TXT (DNS hos one.com, hosting på Firebase) —
+   kontrollera i search.google.com/search-console att egendomen ägs av SAMMA
+   Google-konto som Play Console; då godkänns kopplingen automatiskt. Annars:
+   lägg till Play-kontot som ägare i Search Console. Ta inte bort den
+   befintliga TXT-posten.
+3d. [ ] **Merchant-konto för prenumerationerna** (Settings → Payments profile).
+   Organisationens uppgifter och bankkonto. **Kopplingen Play Console ↔
+   betalprofil kan aldrig ändras i efterhand** (answer/3092739) — dubbelkolla
+   innan du bekräftar.
+   (Android developer verification: ingen åtgärd — paketnamnet registreras
+   automatiskt när appen skapas. Deadline 30 sep 2026 gäller bara BR/ID/SG/TH.)
 4. [ ] **RevenueCat publika SDK-nycklar.** Fortfarande platshållare i
    klienten — köpflödet kastar "Köp är inte konfigurerat än" tills de är
    satta. Blockerar all betalväggstestning i appen.
