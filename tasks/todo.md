@@ -439,7 +439,9 @@ firman (Skatteverket) → D&B/DUNS → Google-betalprofilen → dokumenten i Pla
 | Firman | ✅ känd | Enskild firma, F-skatt hos Skatteverket, EJ registrerad hos Bolagsverket. Juridiskt namn = Johan Skaneby |
 | DUNS (D&B) | ✅ känd | Registrerat på Johan Skaneby — stämmer med firman |
 | Google-betalprofil | ❓ okänd | Typ, namn och adress ska kontrolleras (steg 2). Misstänkt felkälla om den säger "Digitala Verkligheter" |
-| Play Console | ❌ avslagen | Ber om ny verifiering. Körkort uppladdat flera gånger — organisationsdokument har troligen saknats |
+| Play Console-kontot | ✅ känd | Organisationskonto "Johan Skaneby" (konto-id 8872357637404889857) — namnet stämmer med DUNS |
+| Identitetsverifiering | ❌ "Åtgärd krävs" | Körkort uppladdat flera gånger, avslås/återställs efter några dagar. Det är den PERSONLIGA identiteten som fastnar, inte firman. Misstanke: namnet på körkortet (alla förnamn) ≠ betalprofilen. Kolla avslagsskälet i Play Console-inkorgen; prova pass |
+| Telefonverifiering | ⏸ väntar | Kan inte göras förrän identiteten är godkänd |
 
 Juridiskt namn (verifieras) ≠ utvecklarnamn (visas i Play, fritt valbart). Utvecklarnamnet
 kan vara "Digitala Verkligheter" även om det juridiska namnet är Johan Skaneby.
