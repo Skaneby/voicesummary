@@ -429,6 +429,25 @@ och webbversionen är live — punkten om merge är därmed avklarad.
    requirements for new personal developer accounts",
    support.google.com/googleplay/android-developer/answer/14151465.
    Det tidigare overifierade påståendet (commit ddc03be) är därmed bekräftat.
+### Registreringsstatus — felsökning av identitetsverifieringen (2026-09-24)
+
+Google jämför fyra källor som måste säga EXAKT samma namn och adress:
+firman (Skatteverket) → D&B/DUNS → Google-betalprofilen → dokumenten i Play Console.
+
+| Källa | Status | Anteckning |
+|---|---|---|
+| Firman | ✅ känd | Enskild firma, F-skatt hos Skatteverket, EJ registrerad hos Bolagsverket. Juridiskt namn = Johan Skaneby |
+| DUNS (D&B) | ✅ känd | Registrerat på Johan Skaneby — stämmer med firman |
+| Google-betalprofil | ❓ okänd | Typ, namn och adress ska kontrolleras (steg 2). Misstänkt felkälla om den säger "Digitala Verkligheter" |
+| Play Console | ❌ avslagen | Ber om ny verifiering. Körkort uppladdat flera gånger — organisationsdokument har troligen saknats |
+
+Juridiskt namn (verifieras) ≠ utvecklarnamn (visas i Play, fritt valbart). Utvecklarnamnet
+kan vara "Digitala Verkligheter" även om det juridiska namnet är Johan Skaneby.
+
+Organisationsdokument för en enskild firma utan Bolagsverket: sannolikt Skatteverkets
+registrering för F-skatt — bekräfta med Google via
+support.google.com/googleplay/android-developer/contact/idv_form.
+
 3b. [ ] **Kontots verifieringar klara** — Play Console-startsidan ska inte visa
    något väntande. Kontrollera under Developer account → About you: namn och
    adress EXAKT som hos Dun & Bradstreet, kontakt- och utvecklar-e-post
