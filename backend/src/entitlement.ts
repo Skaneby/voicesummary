@@ -63,6 +63,17 @@ export interface UsageCaps {
   summaries: number; // count
 }
 
+/**
+ * Ägare/admin släpps alltid igenom — utan prenumeration och utan kvottak.
+ * Listan är en kommaseparerad Worker-hemlighet (ADMIN_USER_IDS) med samma
+ * namnrymdade id som users.id, t.ex. "google:1234". Förbrukningen räknas
+ * ändå, så kostnaden syns i databasen.
+ */
+export function isAdmin(userId: string, adminIds: string | undefined): boolean {
+  if (!adminIds) return false;
+  return adminIds.split(",").map((s) => s.trim()).filter(Boolean).includes(userId);
+}
+
 export function checkEntitlement(
   user: User,
   caps: UsageCaps,

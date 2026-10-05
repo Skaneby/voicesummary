@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { eventToUpdate } from "../src/webhook.ts";
-import { checkEntitlement } from "../src/entitlement.ts";
+import { checkEntitlement, isAdmin } from "../src/entitlement.ts";
 
 const NOW = Math.floor(Date.now() / 1000);
 const CAPS = { audio: 3600, summaries: 100 };
@@ -168,4 +168,13 @@ test("lyckade svar och klientfel går inte vidare i kedjan", () => {
   assert.equal(shouldTryNextModel(200), false);
   assert.equal(shouldTryNextModel(400), false);
   assert.equal(shouldTryNextModel(401), false);
+});
+
+test("admin-listan släpper igenom exakta id, inget annat", () => {
+  assert.equal(isAdmin("google:1", "google:1"), true);
+  assert.equal(isAdmin("google:1", " apple:9 , google:1 "), true);
+  assert.equal(isAdmin("google:12", "google:1"), false, "inget prefix-match");
+  assert.equal(isAdmin("google:1", undefined), false);
+  assert.equal(isAdmin("google:1", ""), false);
+  assert.equal(isAdmin("", ","), false, "tomt id släpps aldrig in");
 });
