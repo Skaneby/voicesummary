@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22224a"/><stop offset="1" stop-color="#11112a"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- Pratbubbla (samtal/möte) med ljudvåg inuti -->
+  <path d="M512 268c-148 0-256 92-256 214 0 64 30 120 80 160l-26 94 110-52c28 8 60 12 92 12 148 0 256-92 256-214S660 268 512 268z" fill="#e94560"/>
+  <g fill="#ffffff">
+    <rect x="378" y="452" width="40" height="64" rx="20"/>
+    <rect x="442" y="408" width="40" height="152" rx="20"/>
+    <rect x="506" y="380" width="40" height="208" rx="20"/>
+    <rect x="570" y="420" width="40" height="128" rx="20"/>
+    <rect x="634" y="456" width="40" height="56" rx="20"/>
+  </g>
+</svg>

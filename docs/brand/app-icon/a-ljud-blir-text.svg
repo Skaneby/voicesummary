@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22224a"/><stop offset="1" stop-color="#11112a"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- Ljud (staplar) som övergår i text (rader): inspelning → sammanfattning -->
+  <g fill="#e94560">
+    <rect x="292" y="432" width="56" height="160" rx="28"/>
+    <rect x="380" y="352" width="56" height="320" rx="28"/>
+    <rect x="468" y="408" width="56" height="208" rx="28"/>
+  </g>
+  <g fill="#e8e8f0">
+    <rect x="556" y="404" width="176" height="56" rx="28"/>
+    <rect x="556" y="484" width="132" height="56" rx="28"/>
+    <rect x="556" y="564" width="160" height="56" rx="28"/>
+  </g>
+</svg>

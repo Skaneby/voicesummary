@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22224a"/><stop offset="1" stop-color="#11112a"/></linearGradient></defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- Dokument (sammanfattningen) med mikrofon framför -->
+  <rect x="404" y="300" width="300" height="384" rx="40" fill="#e8e8f0"/>
+  <g fill="#9d9dbd"><rect x="460" y="364" width="188" height="28" rx="14"/><rect x="460" y="420" width="150" height="28" rx="14"/><rect x="460" y="476" width="170" height="28" rx="14"/></g>
+  <rect x="302" y="436" width="132" height="216" rx="66" fill="#e94560" stroke="#11112a" stroke-width="24"/>
+  <path d="M262 600q0 120 106 120t106-120" fill="none" stroke="#e94560" stroke-width="30" stroke-linecap="round"/>
+  <path d="M368 720v52" stroke="#e94560" stroke-width="30" stroke-linecap="round"/>
+</svg>
