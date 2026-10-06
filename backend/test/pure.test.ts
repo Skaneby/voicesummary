@@ -170,11 +170,18 @@ test("lyckade svar och klientfel går inte vidare i kedjan", () => {
   assert.equal(shouldTryNextModel(401), false);
 });
 
-test("admin-listan släpper igenom exakta id, inget annat", () => {
-  assert.equal(isAdmin("google:1", "google:1"), true);
-  assert.equal(isAdmin("google:1", " apple:9 , google:1 "), true);
-  assert.equal(isAdmin("google:12", "google:1"), false, "inget prefix-match");
-  assert.equal(isAdmin("google:1", undefined), false);
-  assert.equal(isAdmin("google:1", ""), false);
-  assert.equal(isAdmin("", ","), false, "tomt id släpps aldrig in");
+test("admin: exakt id släpps in, inget prefix-match", () => {
+  assert.equal(isAdmin({ userId: "google:1" }, "google:1"), true);
+  assert.equal(isAdmin({ userId: "google:1" }, " apple:9 , google:1 "), true);
+  assert.equal(isAdmin({ userId: "google:12" }, "google:1"), false);
+  assert.equal(isAdmin({ userId: "google:1" }, undefined), false);
+  assert.equal(isAdmin({ userId: "google:1" }, ""), false);
+});
+
+test("admin: e-post räknas bara om leverantören intygat den", () => {
+  const list = "Agare@Example.se";
+  assert.equal(isAdmin({ userId: "google:5", email: "agare@example.se", emailVerified: true }, list), true, "skiftlägesokänslig");
+  assert.equal(isAdmin({ userId: "google:5", email: "agare@example.se", emailVerified: false }, list), false, "ointygad e-post");
+  assert.equal(isAdmin({ userId: "google:5", email: "agare@example.se" }, list), false, "saknar intyg");
+  assert.equal(isAdmin({ userId: "google:5", email: "annan@example.se", emailVerified: true }, list), false);
 });

@@ -25,7 +25,7 @@ interface Env {
   GEMINI_MODELS?: string;
   REVENUECAT_WEBHOOK_SECRET?: string;
   RATE_LIMITER: RateLimit;
-  ADMIN_USER_IDS?: string;
+  ADMINS?: string;
 }
 
 
@@ -42,6 +42,13 @@ function audiencesFor(env: Env): AudienceConfig {
 function anyProviderConfigured(env: Env): boolean {
   const a = audiencesFor(env);
   return !!(a.google || a.apple);
+}
+
+function adminCheck(claims: { userId: string; claims: { email?: string; email_verified?: boolean } }, env: Env): boolean {
+  return isAdmin(
+    { userId: claims.userId, email: claims.claims.email, emailVerified: claims.claims.email_verified },
+    env.ADMINS,
+  );
 }
 
 const VERSION = "0.6.0";
@@ -129,7 +136,7 @@ async function handleMe(request: Request, env: Env): Promise<Response> {
   // hasn't arrived yet.
   const now = Math.floor(Date.now() / 1000);
   const subActive =
-    isAdmin(user.id, env.ADMIN_USER_IDS) ? 1 :
+    adminCheck(claims, env) ? 1 :
     user.sub_active === 1 &&
     (user.period_end == null || user.period_end > now)
       ? 1
@@ -182,7 +189,7 @@ async function handleSummarize(
     audio: Number(env.USAGE_CAP_AUDIO_SECONDS) || 10800,
     summaries: Number(env.USAGE_CAP_SUMMARIES) || 30,
   };
-  const check = isAdmin(user.id, env.ADMIN_USER_IDS)
+  const check = adminCheck(claims, env)
     ? { allowed: true }
     : checkEntitlement(user, caps);
   if (!check.allowed) {

@@ -65,13 +65,20 @@ export interface UsageCaps {
 
 /**
  * Ägare/admin släpps alltid igenom — utan prenumeration och utan kvottak.
- * Listan är en kommaseparerad Worker-hemlighet (ADMIN_USER_IDS) med samma
- * namnrymdade id som users.id, t.ex. "google:1234". Förbrukningen räknas
- * ändå, så kostnaden syns i databasen.
+ * ADMINS är en kommaseparerad lista där varje post är antingen ett
+ * namnrymdat användar-id ("google:1234") eller en e-postadress. E-post räknas
+ * bara om leverantören intygat den (email_verified i den signerade token) —
+ * annars skulle vem som helst kunna ange någon annans adress. Förbrukningen
+ * räknas ändå, så kostnaden syns i databasen.
  */
-export function isAdmin(userId: string, adminIds: string | undefined): boolean {
-  if (!adminIds) return false;
-  return adminIds.split(",").map((s) => s.trim()).filter(Boolean).includes(userId);
+export function isAdmin(
+  who: { userId: string; email?: string; emailVerified?: boolean },
+  admins: string | undefined,
+): boolean {
+  if (!admins) return false;
+  const list = admins.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  if (who.userId && list.includes(who.userId.toLowerCase())) return true;
+  return !!(who.email && who.emailVerified === true && list.includes(who.email.toLowerCase()));
 }
 
 export function checkEntitlement(

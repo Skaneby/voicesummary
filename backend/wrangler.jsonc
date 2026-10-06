@@ -12,6 +12,9 @@
     "USAGE_CAP_SUMMARIES": "30",
     "USAGE_CAP_AUDIO_SECONDS": "10800",
     "APPLE_BUNDLE_ID": "REPLACE_WITH_IOS_BUNDLE_ID",
+    // Ägare släpps alltid förbi betalvägg och kvoter. Id ("google:…") eller
+    // Google-intygad e-post, kommaseparerat.
+    "ADMINS": "johan.skaneby@gmail.com",
     "GEMINI_MODELS": "gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash-lite"
   },
 
