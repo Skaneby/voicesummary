@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+@.claude/rules/apple-hig.md
+
 ## Workflow Orchestration
 
 ### 1. Plan Node Default
