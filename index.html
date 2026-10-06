@@ -194,12 +194,21 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
 .participants-wrap input::placeholder{color:var(--muted);font-size:.82rem}
 
 /* FORMAT GRID */
-.format-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+.format-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,9rem),1fr));
   gap:8px;width:min(100%,500px)}
 .format-card{background:var(--card);border:1px solid var(--border);border-left:3px solid transparent;
   padding:10px 12px;border-radius:10px;cursor:pointer;text-align:left;
   transition:all .15s;-webkit-tap-highlight-color:transparent}
 .format-card .fc-name{color:var(--text);font-weight:600;font-size:.84rem;margin-bottom:3px}
+.ic{width:1.15em;height:1.15em;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+.ic-xl{width:40px;height:40px;stroke-width:1.75}
+.format-card .fc-name{display:flex;align-items:center;gap:6px}
+/* Stor systemtext: långa svenska ord får brytas i stället för att flöda ut */
+.format-card{min-width:0}
+.format-card .fc-name,.format-card .fc-desc{overflow-wrap:anywhere;hyphens:auto}
+.keep-open-hint,.step-hint{display:flex;align-items:center;justify-content:center;gap:6px}
+.step-hint{justify-content:flex-start}
 .format-card .fc-desc{color:var(--muted);font-size:.75rem;line-height:1.4}
 
 /* Formatfärger — en ton per format. Texten blandas mot --text (--fc-mix
@@ -469,7 +478,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;o
   display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none}
 
 /* ERROR */
-.error-icon{font-size:2.5rem}
+.error-icon{font-size:2.5rem;color:var(--warn);line-height:1}
 .error-msg{color:var(--muted);font-size:.9rem;max-width:300px}
 
 /* TOAST */
@@ -581,9 +590,40 @@ aside[id$="-panel"]{position:fixed}
     transform:translate(-50%,0)}
   #disc-panel{left:50% !important;right:auto !important;width:100%;max-width:640px;transform:translateX(-50%)}
 }
+
+/* Reduce Motion (Apple HIG): pulsring, blinkning, snurra och panelernas glid
+   stängs av. Tillståndet bärs ändå av text ("Pausad", "Gemini analyserar"). */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important}
+}
 </style>
 </head>
 <body>
+<!-- Ikoner: inline-sprite, inga beroenden. Används som <svg class="ic"><use href="#i-…"/></svg> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-summary" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+<symbol id="i-protocol" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol>
+<symbol id="i-brief" viewBox="0 0 24 24"><path d="M21 6H3"/><path d="M15 12H3"/><path d="M17 18H3"/></symbol>
+<symbol id="i-detailed" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+<symbol id="i-sales" viewBox="0 0 24 24"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></symbol>
+<symbol id="i-social" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+<symbol id="i-blog" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+<symbol id="i-letter" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+<symbol id="i-vibecoder" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+<symbol id="i-insandare" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol>
+<symbol id="i-psyk" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+<symbol id="i-tal" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></symbol>
+<symbol id="i-predikan" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+<symbol id="i-drama" viewBox="0 0 24 24"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+<symbol id="i-konspiration" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-floskel" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+</defs></svg>
 <div id="app">
   <header>
     <div style="display:flex;align-items:center;gap:4px">
@@ -661,7 +701,7 @@ aside[id$="-panel"]{position:fixed}
             <div class="input-group" style="margin-top:8px;max-width:none">
               <input type="text" id="setupKey" placeholder="AIza…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc">
             </div>
-            <div class="step-hint" style="margin-top:6px">💡 Spara nyckeln i din lösenordshanterare — webbläsare kan rensa lagrad data.</div>
+            <div class="step-hint" style="margin-top:6px"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-bulb"/></svg>Spara nyckeln i din lösenordshanterare — webbläsare kan rensa lagrad data.</div>
           </div>
         </div>
         <div class="setup-step">
@@ -774,68 +814,68 @@ aside[id$="-panel"]{position:fixed}
         </div>
         <div class="format-grid" id="formatRow">
           <button class="format-card" data-fmt="summary">
-            <div class="fc-name">Sammanfattning</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-summary"/></svg>Sammanfattning</div>
             <div class="fc-desc">Övergripande sammanfattning med nyckelpoints</div>
           </button>
           <button class="format-card" data-fmt="protocol">
-            <div class="fc-name">Protokoll</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-protocol"/></svg>Protokoll</div>
             <div class="fc-desc">Formellt mötesprotokoll med beslut</div>
           </button>
           <button class="format-card" data-fmt="brief">
-            <div class="fc-name">Kort</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-brief"/></svg>Kort</div>
             <div class="fc-desc">Kortfattad executive summary</div>
           </button>
           <button class="format-card" data-fmt="detailed">
-            <div class="fc-name">Detaljerad</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-detailed"/></svg>Detaljerad</div>
             <div class="fc-desc">Komplett analys med full kontext</div>
           </button>
           <button class="format-card" data-fmt="sales">
-            <div class="fc-name">Säljmöte</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sales"/></svg>Säljmöte</div>
             <div class="fc-desc">Kundinfo, situation &amp; nästa steg</div>
           </button>
           <button class="format-card" data-fmt="social">
-            <div class="fc-name">Sociala medier</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-social"/></svg>Sociala medier</div>
             <div class="fc-desc">Personligt inlägg, max 500 ord</div>
           </button>
           <button class="format-card" data-fmt="blog">
-            <div class="fc-name">✍️ Bloggpost</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-blog"/></svg>Bloggpost</div>
             <div class="fc-desc">Personligt och inspirerat inlägg med tydlig struktur</div>
           </button>
           <button class="format-card" data-fmt="letter">
-            <div class="fc-name">Formellt brev</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-letter"/></svg>Formellt brev</div>
             <div class="fc-desc">Sakligt brev till myndighet eller organisation</div>
           </button>
           <button class="format-card" data-fmt="vibecoder">
-            <div class="fc-name">⚡ Vibe Prompt</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-vibecoder"/></svg>Vibe Prompt</div>
             <div class="fc-desc">Prompt för Lovable, Bolt, v0, Cursor</div>
           </button>
           <div class="format-divider" id="funDivider" style="display:none">På skoj</div>
           <button class="format-card" data-fmt="insandare">
-            <div class="fc-name">😤 Arg insändare</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-insandare"/></svg>Arg insändare</div>
             <div class="fc-desc">Engagerat inlägg till lokaltidningen</div>
           </button>
           <button class="format-card" data-fmt="psyk">
-            <div class="fc-name">🧠 Psykiatrisk utredning</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-psyk"/></svg>Psykiatrisk utredning</div>
             <div class="fc-desc">Fullständig psykiatrisk diagnos med ordination</div>
           </button>
           <button class="format-card" data-fmt="tal">
-            <div class="fc-name">🎤 Politiskt tal</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-tal"/></svg>Politiskt tal</div>
             <div class="fc-desc">Eldigt brandtal med paroll</div>
           </button>
           <button class="format-card" data-fmt="predikan">
-            <div class="fc-name">✝️ Predikan</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-predikan"/></svg>Predikan</div>
             <div class="fc-desc">Religiöst brandtal med välsignelse och moral</div>
           </button>
           <button class="format-card" data-fmt="drama">
-            <div class="fc-name">🎭 Drama Lab</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-drama"/></svg>Drama Lab</div>
             <div class="fc-desc">Vardagliga händelser som episkt teater</div>
           </button>
           <button class="format-card" data-fmt="konspiration">
-            <div class="fc-name">🕵️ Konspiration</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-konspiration"/></svg>Konspiration</div>
             <div class="fc-desc">Den dolda sanningen bakom det uppenbara</div>
           </button>
           <button class="format-card" data-fmt="floskel">
-            <div class="fc-name">💼 Floskler</div>
+            <div class="fc-name"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-floskel"/></svg>Floskler</div>
             <div class="fc-desc">Mötet i tom konsultsvenska</div>
           </button>
         </div>
@@ -847,7 +887,7 @@ aside[id$="-panel"]{position:fixed}
       <div class="recording-badge"><div class="rec-dot" id="recDot"></div> <span id="recStatus">Spelar in</span></div>
       <div class="timer" id="timer">00:00</div>
       <canvas id="waveform" width="300" height="60"></canvas>
-      <p class="keep-open-hint">⚠️ Håll skärmen aktiv under inspelningen</p>
+      <p class="keep-open-hint"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>Håll skärmen aktiv under inspelningen</p>
       <div style="display:flex;gap:20px;align-items:center;justify-content:center">
         <button class="btn-sec" id="pauseBtn" style="min-width:120px;justify-content:center">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -871,7 +911,7 @@ aside[id$="-panel"]{position:fixed}
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-fill" id="progressFill"></div>
       </div>
-      <p class="keep-open-hint">⚠️ Håll appen öppen tills klart</p>
+      <p class="keep-open-hint"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>Håll appen öppen tills klart</p>
     </section>
 
     <!-- RESULT -->
@@ -883,7 +923,7 @@ aside[id$="-panel"]{position:fixed}
       </div>
       <p id="resultTitle" style="display:none;font-weight:700;font-size:1rem;width:100%;max-width:680px;text-align:left"></p>
       <div class="fun-warn" id="funWarn" style="display:none">
-        <span aria-hidden="true">🎭</span>
+        <svg class="ic" aria-hidden="true" focusable="false"><use href="#i-drama"/></svg>
         <span><b>På skoj.</b> <span id="funWarnText"></span></span>
       </div>
       <div class="result-box" id="resultBox"></div>
@@ -896,7 +936,7 @@ aside[id$="-panel"]{position:fixed}
         <div class="qa-thread" id="qaThread"></div>
         <div class="qa-row">
           <input class="qa-input" id="qaInput" placeholder="Ställ en fråga om mötet…" autocomplete="off" enterkeyhint="send">
-          <button class="qa-send" id="qaSendBtn" aria-label="Skicka fråga">➤</button>
+          <button class="qa-send" id="qaSendBtn" aria-label="Skicka fråga"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-send"/></svg></button>
         </div>
         <div class="qa-status" id="qaStatus" style="display:none">Transkriberar ljudet i bakgrunden för bättre svar…</div>
       </div>
@@ -974,7 +1014,7 @@ aside[id$="-panel"]{position:fixed}
 
     <!-- ERROR -->
     <section class="screen" id="screen-error">
-      <div class="error-icon">⚠️</div>
+      <div class="error-icon"><svg class="ic ic-xl" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg></div>
       <h2>Något gick fel</h2>
       <p class="error-msg" id="errorMsg"></p>
       <button class="btn-primary" id="retryBtn">Försök igen</button>
@@ -990,7 +1030,7 @@ aside[id$="-panel"]{position:fixed}
 <div id="fh-overlay"></div>
 <aside id="fh-panel" role="dialog" aria-label="Om formaten">
   <div class="s-handle"></div>
-  <button class="panel-close" aria-label="Stäng" onclick="closeFormatHelp()">✕</button>
+  <button class="panel-close" aria-label="Stäng" onclick="closeFormatHelp()"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
   <h2 class="s-title">Vad formaten gör</h2>
   <div id="fh-body"></div>
 </aside>
@@ -998,7 +1038,7 @@ aside[id$="-panel"]{position:fixed}
 <div id="disc-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100"></div>
 <aside id="disc-panel" role="dialog" aria-label="Om ljudinspelning" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px;padding-bottom:calc(24px + var(--sb));z-index:101;max-height:80vh;overflow-y:auto">
   <div class="s-handle"></div>
-  <button class="panel-close" aria-label="Stäng" onclick="closeAudioConsent()">✕</button>
+  <button class="panel-close" aria-label="Stäng" onclick="closeAudioConsent()"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
   <h2 class="s-title">Innan du spelar in</h2>
   <p style="font-size:.9rem;line-height:1.6;color:var(--text);margin:0 0 12px">
     Diane spelar in ljud via telefonens mikrofon och <strong>skickar inspelningen till Google Gemini</strong> för att skapa din sammanfattning.
@@ -1016,7 +1056,7 @@ aside[id$="-panel"]{position:fixed}
 <div id="h-overlay"></div>
 <aside id="h-panel" role="dialog" aria-label="Historik">
   <div class="s-handle"></div>
-  <button class="panel-close" aria-label="Stäng" onclick="closeHistory()">✕</button>
+  <button class="panel-close" aria-label="Stäng" onclick="closeHistory()"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
   <div class="h-header">
     <h2 class="s-title" style="margin:0">Historik</h2>
     <button class="btn-sec" id="clearHistoryBtn" style="font-size:.8rem;padding:8px 12px">Rensa allt</button>
@@ -1030,7 +1070,7 @@ aside[id$="-panel"]{position:fixed}
 <div id="cal-overlay"></div>
 <aside id="cal-panel" role="dialog" aria-label="Lägg i kalender">
   <div class="s-handle"></div>
-  <button class="panel-close" aria-label="Stäng" onclick="closeCalendarDialog()">✕</button>
+  <button class="panel-close" aria-label="Stäng" onclick="closeCalendarDialog()"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
   <h2 class="s-title">Lägg i kalender</h2>
   <div class="s-form">
     <div class="cal-row">
@@ -1059,7 +1099,7 @@ aside[id$="-panel"]{position:fixed}
 
 <aside id="s-panel" role="dialog" aria-label="Inställningar">
   <div class="s-handle"></div>
-  <button class="panel-close" aria-label="Stäng" onclick="closeSettings()">✕</button>
+  <button class="panel-close" aria-label="Stäng" onclick="closeSettings()"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
   <h2 class="s-title">Inställningar</h2>
   <div class="s-form">
     <div class="input-group web-only" style="max-width:none">
@@ -1181,7 +1221,7 @@ aside[id$="-panel"]{position:fixed}
 <div id="gh-overlay"></div>
 <aside id="gh-panel" role="dialog" aria-label="Skapa GitHub Issue">
   <div class="s-handle"></div>
-  <button class="panel-close" aria-label="Stäng" onclick="closeGitHub()">✕</button>
+  <button class="panel-close" aria-label="Stäng" onclick="closeGitHub()"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
   <h2 class="s-title">Skapa GitHub Issue</h2>
   <input id="ghSearch" placeholder="Sök repo…" autocomplete="off" autocapitalize="off" spellcheck="false"
     style="width:100%;min-height:44px;padding:10px 12px;background:var(--card);border:1px solid var(--border);
@@ -1194,7 +1234,7 @@ aside[id$="-panel"]{position:fixed}
 <div id="help-overlay"></div>
 <aside id="help-panel" role="dialog" aria-label="Hjälp Diane">
   <div class="s-handle"></div>
-  <button class="panel-close" aria-label="Stäng" onclick="closeHelp()">✕</button>
+  <button class="panel-close" aria-label="Stäng" onclick="closeHelp()"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
   <h2 class="s-title">Hjälp Diane</h2>
   <div class="s-form">
     <div style="text-align:center;padding:8px 0 16px">
@@ -2657,20 +2697,20 @@ const STYLE_META = {
   detailed: { label: 'Detaljerad analys klar',   badge: 'Detaljerad' },
   sales:    { label: 'Säljmöte sammanfattat',    badge: 'Säljmöte' },
   social:     { label: 'Inlägg klart',             badge: 'Sociala medier' },
-  blog:       { label: 'Bloggpost klar',           badge: '✍️ Bloggpost' },
+  blog:       { label: 'Bloggpost klar',           badge: 'Bloggpost' },
   letter:     { label: 'Formellt brev klart',      badge: 'Formellt brev' },
-  vibecoder:  { label: 'Vibe Prompt klar',         badge: '⚡ Vibe Prompt' },
+  vibecoder:  { label: 'Vibe Prompt klar',         badge: 'Vibe Prompt' },
   // fun: satirformat. Dolda som standard, se FUN_ENABLED nedan. Resultatet
   // får alltid en synlig markering så ingen tar dem för äkta.
-  insandare:  { label: 'Insändare klar',            badge: '😤 Insändare', fun: true },
-  psyk:       { label: 'Psykiatrisk utredning klar', badge: '🧠 Psykiatri', fun: true,
+  insandare:  { label: 'Insändare klar',            badge: 'Insändare', fun: true },
+  psyk:       { label: 'Psykiatrisk utredning klar', badge: 'Psykiatri', fun: true,
                 warn: 'Detta är ett skämt — inte en medicinsk bedömning. Inget här är skrivet av vårdpersonal.' },
-  tal:        { label: 'Brandtal klart',             badge: '🎤 Politiskt tal', fun: true },
-  predikan:   { label: 'Predikan hållen',            badge: '✝️ Predikan', fun: true },
-  drama:      { label: 'Dramat är satt',             badge: '🎭 Drama Lab', fun: true },
-  konspiration: { label: 'Sanningen avslöjad',       badge: '🕵️ Konspiration', fun: true,
+  tal:        { label: 'Brandtal klart',             badge: 'Politiskt tal', fun: true },
+  predikan:   { label: 'Predikan hållen',            badge: 'Predikan', fun: true },
+  drama:      { label: 'Dramat är satt',             badge: 'Drama Lab', fun: true },
+  konspiration: { label: 'Sanningen avslöjad',       badge: 'Konspiration', fun: true,
                 warn: 'Påhittad konspirationsteori, skriven på skoj. Inget av detta är sant.' },
-  floskel:    { label: 'Visionen är förankrad',      badge: '💼 Floskler', fun: true },
+  floskel:    { label: 'Visionen är förankrad',      badge: 'Floskler', fun: true },
 };
 
 function showResult(html, style) {
@@ -4111,8 +4151,8 @@ async function renderHistoryList() {
         <div class="h-item-date">${fmtDate(item.date)}</div>
       </div>
       ${item.audioId && availableAudio.has(item.audioId) ? '<button class="h-item-resum">Sammanfatta igen</button>' : ''}
-      <button class="h-item-edit" aria-label="Redigera titel">✎</button>
-      <button class="h-item-del" aria-label="Ta bort">✕</button>
+      <button class="h-item-edit" aria-label="Redigera titel"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-pencil"/></svg></button>
+      <button class="h-item-del" aria-label="Ta bort"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
     </div>`).join('');
   list.querySelectorAll('.h-item').forEach(el => {
     const id = Number(el.dataset.id);
