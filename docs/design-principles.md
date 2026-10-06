@@ -95,13 +95,25 @@ kontrollera att den *faktiskt* pågår utan att öppna appen.
 stoppmöjlighet. Det är också vad `FOREGROUND_SERVICE_MICROPHONE` kräver för att
 Android inte ska avbryta inspelningen.
 
-## 8. Ett tema — appen ska kännas som en produkt, inte en leksak
+## 8. Ett varumärke, två lägen som följer systemet
 
 Beslut 2026-09-02: temaväljaren är borttagen. Diane har ett visuellt uttryck
-(det mörka indigo-temat) och inställningarna hålls fria från utsmyckning som
-inte hjälper kärnflödet inspelning → sammanfattning. Twin Peaks- och
-Panasonic-temana levde kvar från hobbyfasen och togs bort tillsammans med
-Google Fonts-beroendet de drog in.
+— indigo och korall — och inställningarna hålls fria från utsmyckning som
+inte hjälper kärnflödet inspelning → sammanfattning.
+
+Beslut 2026-10-06 (Apple HIG, `.claude/rules/apple-hig.md`): uttrycket finns
+i ett **mörkt och ett ljust läge** som följer telefonens inställning — ingen
+väljare. Allt färgas via semantiska tokens i `html{}` i index.html; ljust läge
+definierar om samma tokens under `prefers-color-scheme: light`. Komponenter
+får aldrig hårdkoda färger. Formatens färger är en `--fc`-token per format,
+och deras text blandas mot `--text` så att kontrasten håller i båda lägena.
+
+Ikoner är SVG ur en inline-sprite (`#i-…`), aldrig emojis. Appikonen
+("Ljud blir text") genereras av `scripts/make-icons.js`.
+
+`tests/hig.js` mäter träffytor, textstorlek, kontrast, namn och Reduce Motion
+i båda lägena vid varje `npm test`. Medvetna avvikelser listas där med
+motivering.
 
 ## 9. Tillgänglighet är inte en efterhandsfråga
 
