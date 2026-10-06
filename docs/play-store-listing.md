@@ -50,7 +50,7 @@ PRIS
 7 dagar gratis. Därefter 47 kr per månad, eller 470 kr per år — då får
 du två månader på köpet. Provperioden övergår automatiskt i den
 prenumeration du valt om du inte avslutar den, och du avslutar när som
-helst i Google Play. Ingår gör 100 sammanfattningar och 60 minuter ljud
+helst i Google Play. Ingår gör 30 sammanfattningar och 3 timmar ljud
 varje månad.
 
 INTEGRITET

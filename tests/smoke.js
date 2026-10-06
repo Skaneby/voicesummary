@@ -450,6 +450,16 @@ function check(name, ok, extra) {
   }));
 
   // Planval
+  // Betalväggens utlovade kvoter måste matcha backendens verkliga tak —
+  // de gled isär när taken ändrades 2026-09-05 (Play kräver korrekta villkor)
+  {
+    const wr = fs.readFileSync(path.join(ROOT, 'backend/wrangler.jsonc'), 'utf8');
+    const sum = Number(wr.match(/"USAGE_CAP_SUMMARIES":\s*"(\d+)"/)[1]);
+    const hours = Number(wr.match(/"USAGE_CAP_AUDIO_SECONDS":\s*"(\d+)"/)[1]) / 3600;
+    const txt = await appPage.evaluate(() => $('screen-paywall').textContent);
+    check('betalväggens kvoter matchar backendens tak (' + sum + ' st, ' + hours + ' h)',
+      txt.includes(sum + ' sammanfattningar') && txt.includes(hours + ' timmar'));
+  }
   check('betalväggen visar år och månad', await appPage.evaluate(() =>
     /470 kr/.test($('paywallSubscribeBtn').textContent) && /47 kr/.test($('paywallMonthlyBtn').textContent)));
   check('köpflödet väljer paket efter plan', await appPage.evaluate(async () => {
