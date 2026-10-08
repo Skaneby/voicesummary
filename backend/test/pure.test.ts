@@ -185,3 +185,47 @@ test("admin: e-post räknas bara om leverantören intygat den", () => {
   assert.equal(isAdmin({ userId: "google:5", email: "agare@example.se" }, list), false, "saknar intyg");
   assert.equal(isAdmin({ userId: "google:5", email: "annan@example.se", emailVerified: true }, list), false);
 });
+
+// ── Inbjudningar: gratis åtkomst i 10 dagar eller för alltid ───────────────
+import { normalizeEmail, isValidEmail, isGrantDuration, expiryFor, grantActive, usageWindowExpired, USAGE_WINDOW_SECONDS } from "../src/grants.ts";
+
+const grant = (expires_at: number | null) => ({ email: "a@b.se", expires_at, note: null, created_by: "admin@b.se", created_at: NOW });
+
+test("e-post normaliseras och rimlighetskontrolleras", () => {
+  assert.equal(normalizeEmail("  Anna@Exempel.SE "), "anna@exempel.se");
+  assert.equal(isValidEmail("anna@exempel.se"), true);
+  assert.equal(isValidEmail("anna@exempel"), false);
+  assert.equal(isValidEmail("anna exempel.se"), false);
+  assert.equal(isValidEmail(""), false);
+});
+
+test("bara 10d och forever är giltiga varaktigheter", () => {
+  assert.equal(isGrantDuration("10d"), true);
+  assert.equal(isGrantDuration("forever"), true);
+  assert.equal(isGrantDuration("30d"), false);
+  assert.equal(isGrantDuration(undefined), false);
+});
+
+test("10 dagar ger utgång om 10 dygn, för alltid ger ingen utgång", () => {
+  assert.equal(expiryFor("10d", NOW), NOW + 10 * 86400);
+  assert.equal(expiryFor("forever", NOW), null);
+});
+
+test("inbjudan gäller till utgången, för alltid gäller alltid, saknad gäller inte", () => {
+  assert.equal(grantActive(grant(NOW + 60), NOW), true);
+  assert.equal(grantActive(grant(NOW - 1), NOW), false);
+  assert.equal(grantActive(grant(null), NOW), true);
+  assert.equal(grantActive(null, NOW), false);
+});
+
+test("kvotfönstret för inbjudna nollställs efter 30 dagar", () => {
+  assert.equal(usageWindowExpired({ period_started: null }, NOW), true, "inget fönster ännu");
+  assert.equal(usageWindowExpired({ period_started: NOW - 86400 }, NOW), false);
+  assert.equal(usageWindowExpired({ period_started: NOW - USAGE_WINDOW_SECONDS }, NOW), true);
+});
+
+test("inbjuden användare stoppas av samma kvottak som betalande", () => {
+  // Så ser användaren ut efter withGrant(): sub_active=1, period_end=inbjudans utgång
+  assert.equal(checkEntitlement(user({ period_end: null, summaries_used: 29 }), { audio: 10800, summaries: 30 }).allowed, true);
+  assert.equal(checkEntitlement(user({ period_end: null, summaries_used: 30 }), { audio: 10800, summaries: 30 }).reason, "summary_cap_reached");
+});

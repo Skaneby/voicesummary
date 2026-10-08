@@ -597,6 +597,19 @@ aside[id$="-panel"]{position:fixed}
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
     transition-duration:.01ms !important;scroll-behavior:auto !important}
 }
+
+/* Inbjudningar (admin) och inbjudans status */
+.grant-info{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--accent-dim);
+  color:var(--text);font-size:.85rem}
+.admin-group{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.admin-hint{font-size:.78rem;color:var(--muted);line-height:1.45;margin:0}
+.admin-dur{display:flex;gap:8px}
+.admin-dur label{text-transform:none;letter-spacing:normal;margin:0;font-weight:500;position:relative;flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:.9rem;cursor:pointer}
+/* Det riktiga radioknappsfältet täcker hela segmentet (osynligt) — träffytan blir hela knappen */
+.admin-dur input{position:absolute;inset:-1px;width:auto;min-height:0;padding:0;margin:0;opacity:0;cursor:pointer}
+.admin-dur label:has(input:checked){border-color:var(--accent-fill);background:var(--accent-dim);font-weight:600}
+.admin-dur label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -1198,11 +1211,23 @@ aside[id$="-panel"]{position:fixed}
           <span id="settingsEmail" style="color:var(--muted)"></span>
         </div>
       </div>
+      <p class="grant-info" id="grantInfo" style="display:none"></p>
       <button class="btn-sec" id="manageSubBtn" style="width:100%;justify-content:center;margin-top:10px">Hantera prenumeration</button>
       <button class="btn-sec" id="settingsSignOutBtn" style="width:100%;justify-content:center;margin-top:8px">Logga ut</button>
-      <button class="btn-sec" id="settingsDeleteBtn" style="width:100%;justify-content:center;margin-top:8px;color:var(--accent)">Radera konto</button>
+      <button class="btn-sec" id="settingsDeleteBtn" style="width:100%;justify-content:center;margin-top:8px;color:var(--accent-text)">Radera konto</button>
+      <div class="input-group admin-group" id="adminGroup" style="display:none;max-width:none">
+        <label for="adminEmail" style="margin-bottom:4px">Administratör — bjud in</label>
+        <p class="admin-hint">Inbjudna får gratis åtkomst med samma månadskvot som betalande. De loggar in med Google på adressen du anger — i webben eller appen.</p>
+        <input type="email" id="adminEmail" placeholder="namn@exempel.se" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send">
+        <div class="admin-dur" role="radiogroup" aria-label="Hur länge åtkomsten gäller">
+          <label><input type="radio" name="adminDur" value="10d" checked><span>10 dagar</span></label>
+          <label><input type="radio" name="adminDur" value="forever"><span>För alltid</span></label>
+        </div>
+        <button class="btn-primary" id="adminInviteBtn" style="max-width:none">Bjud in</button>
+        <div class="rec-list" id="adminList" aria-live="polite"></div>
+      </div>
       <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:12px">
-        <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted)">Integritetspolicy</a>
+        <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);display:inline-block;padding:15px 10px;margin:-15px -10px">Integritetspolicy</a>
       </p>
     </div>
     <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
@@ -1922,7 +1947,7 @@ const s = {
   audioCtx: null, analyser: null, raf: null,
   resultHTML: '', participants: '', title: '',
   // Appläge: konto och prenumerationsstatus (tomma i webbläge)
-  idToken: '', googleSub: '', email: '', subActive: 0, periodEnd: null,
+  idToken: '', googleSub: '', email: '', subActive: 0, periodEnd: null, isAdmin: false, grant: null,
   summariesUsed: 0, audioSecondsUsed: 0, caps: null,
   transcript: '', transcribing: false, qaHistory: [], qaPending: false, historyId: 0
 };
@@ -2130,6 +2155,7 @@ function openSettings() {
   renderAudioList();
   renderErrList();
   renderDriveStatus();
+  renderAccountExtras();
   $('sKey').value = s.key;
   $('sModel').value = s.model;
   $('sGHToken').value = store.get(SGH);
@@ -3939,7 +3965,7 @@ async function onGoogleCredential(response) {
 
 function signOutLocal() {
   s.idToken = ''; s.googleSub = ''; s.email = '';
-  s.subActive = 0; s.periodEnd = null;
+  s.subActive = 0; s.periodEnd = null; s.isAdmin = false; s.grant = null;
   tokenStore.del();
   if (window.google?.accounts?.id) google.accounts.id.disableAutoSelect();
   const SocialLogin = window.Capacitor?.Plugins?.SocialLogin;
@@ -3949,6 +3975,104 @@ function signOutLocal() {
 }
 
 // Hämtar aktuell rättighetsstatus från /me
+// ── INBJUDNINGAR ───────────────────────────────────────────────────────────
+// Admin (ADMINS i backend) kan ge gratis åtkomst i 10 dagar eller för alltid
+// per e-postadress. Inbjudna ser sin status i stället för "Hantera
+// prenumeration". Servern är facit — klienten visar bara det /me svarar.
+function fmtDay(unix) {
+  return new Date(unix * 1000).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function renderAccountExtras() {
+  const info = $('grantInfo');
+  if (info) {
+    info.style.display = s.grant ? '' : 'none';
+    if (s.grant) info.textContent = s.grant.expires_at === null
+      ? 'Gratis åtkomst — för alltid'
+      : 'Gratis åtkomst till ' + fmtDay(s.grant.expires_at);
+  }
+  const manage = $('manageSubBtn');
+  if (manage) manage.style.display = s.grant ? 'none' : '';
+  const admin = $('adminGroup');
+  if (admin) admin.style.display = s.isAdmin ? '' : 'none';
+  if (s.isAdmin) loadGrants();
+}
+
+async function adminFetch(path, body) {
+  const r = await fetch(API_PROXY + path, {
+    method: body ? 'POST' : 'GET',
+    headers: Object.assign({ 'Authorization': 'Bearer ' + s.idToken }, body ? { 'Content-Type': 'application/json' } : {}),
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const msg = { invalid_email: 'Ogiltig e-postadress', forbidden: 'Du är inte administratör', invalid_token: 'Logga in igen' }[d.error];
+    throw new Error(msg || 'Något gick fel (' + r.status + ')');
+  }
+  return d;
+}
+
+async function loadGrants() {
+  const list = $('adminList');
+  try { renderGrants((await adminFetch('/admin/grants')).grants || []); }
+  catch (e) { list.textContent = e.message; logError('admin', e.message); }
+}
+
+function renderGrants(grants) {
+  const list = $('adminList');
+  list.innerHTML = '';
+  if (!grants.length) {
+    const p = document.createElement('p'); p.className = 'rec-empty';
+    p.textContent = 'Inga inbjudningar än.'; list.appendChild(p); return;
+  }
+  const now = Date.now() / 1000;
+  grants.forEach(g => {
+    const row = document.createElement('div'); row.className = 'rec-row';
+    const info = document.createElement('div'); info.className = 'rec-info';
+    const name = document.createElement('b'); name.textContent = g.email;
+    const sub = document.createElement('span');
+    const status = g.expires_at === null ? 'För alltid'
+      : g.expires_at > now ? 'Gäller till ' + fmtDay(g.expires_at) : 'Utgången ' + fmtDay(g.expires_at);
+    sub.textContent = status + ' · ' + (g.signed_in
+      ? 'inloggad, ' + (g.summaries_used || 0) + ' sammanfattningar denna period'
+      : 'har inte loggat in än');
+    info.appendChild(name); info.appendChild(sub);
+    const acts = document.createElement('div'); acts.className = 'rec-acts';
+    const copy = document.createElement('button'); copy.className = 'rec-act';
+    copy.textContent = 'Kopiera inbjudan'; copy.onclick = () => copyInvite(g.email);
+    const del = document.createElement('button'); del.className = 'rec-act';
+    del.textContent = 'Ta bort'; del.onclick = () => revokeGrant(g.email);
+    acts.appendChild(copy); acts.appendChild(del);
+    row.appendChild(info); row.appendChild(acts); list.appendChild(row);
+  });
+}
+
+async function inviteGrant() {
+  const email = $('adminEmail').value.trim();
+  const duration = (document.querySelector('input[name="adminDur"]:checked') || {}).value || '10d';
+  if (!email) { toast('Skriv en e-postadress'); return; }
+  try {
+    await adminFetch('/admin/grants', { email, duration });
+    $('adminEmail').value = '';
+    toast(email + (duration === 'forever' ? ' har gratis åtkomst för alltid' : ' har gratis åtkomst i 10 dagar'));
+    loadGrants();
+  } catch (e) { toast(e.message); }
+}
+
+async function revokeGrant(email) {
+  if (!confirm('Ta bort gratisåtkomsten för ' + email + '?')) return;
+  try { await adminFetch('/admin/grants/revoke', { email }); toast('Åtkomsten borttagen'); loadGrants(); }
+  catch (e) { toast(e.message); }
+}
+
+async function copyInvite(email) {
+  const text = 'Hej! Du är inbjuden till Diane — spela in möten och få dem sammanfattade.\n\n'
+    + 'Öppna https://skaneby.github.io/voicesummary/ och välj "Logga in med Google — för prenumeranter" '
+    + 'med ' + email + '.';
+  try { await navigator.clipboard.writeText(text); toast('Inbjudan kopierad'); }
+  catch { toast('Kunde inte kopiera inbjudan'); }
+}
+
 async function fetchMe(triedRefresh) {
   if (!s.idToken) return null;
   try {
@@ -3966,6 +4090,8 @@ async function fetchMe(triedRefresh) {
     s.summariesUsed = d.summaries_used || 0;
     s.audioSecondsUsed = d.audio_seconds_used || 0;
     s.caps = d.caps || s.caps;
+    s.isAdmin = !!d.is_admin;
+    s.grant = d.grant || null;
     return d;
   } catch { return null; }
 }
@@ -4309,6 +4435,8 @@ function init() {
     show(APP_MODE ? 'signin' : (s.key ? 'idle' : 'setup'));
   };
   bind('setupSignInBtn', () => show('signin'));
+  bind('adminInviteBtn', inviteGrant);
+  { const ae = $('adminEmail'); if (ae) ae.onkeydown = e => { if (e.key === 'Enter') inviteGrant(); }; }
   bind('settingsSignInBtn', () => { closeSettings(); show('signin'); });
   bind('paywallSignOutBtn', () => { signOutLocal(); afterSignOut(); });
   bind('paywallDeleteBtn', deleteAccount);

@@ -472,6 +472,10 @@ support.google.com/googleplay/android-developer/contact/idv_form.
    - [ ] `sh scripts/create-upload-key.sh` — skapa uppladdningsnyckeln, säkerhetskopiera den
    - [ ] Cloudflare API-token + `gh secret set CLOUDFLARE_API_TOKEN` — aktiverar automatisk Worker-deploy
    - [ ] Första releasen: `npm run release -- 1.0.0` → ladda upp AAB:n i Play Console (välj Play App Signing)
+3f. [ ] **Admin-inbjudningar** (byggt 2026-10-08, docs/runbooks/admin-inbjudningar.md):
+   - [ ] Migrering: `cd backend && npx wrangler d1 execute diane-prod --remote --file=migrations/002-grants.sql`
+   - [ ] Deploy: `npx wrangler deploy`
+   - [ ] Publicera Googles samtyckesskärm (console.cloud.google.com/auth/audience?project=diane-prod-skaneby → Publish app)
 3d. [ ] **Merchant-konto för prenumerationerna** (Settings → Payments profile).
    Organisationens uppgifter och bankkonto. **Kopplingen Play Console ↔
    betalprofil kan aldrig ändras i efterhand** (answer/3092739) — dubbelkolla

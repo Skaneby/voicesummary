@@ -1026,6 +1026,66 @@ function check(name, ok, extra) {
   }));
   await page.evaluate(async () => { localStorage.removeItem('vs_history'); updateHistoryBadge(); await clearAudio(); });
 
+  console.log('\n── 5l. Inbjudningar (admin) ──');
+  // Mockad backend: listan, skapa och ta bort
+  let adminCalls = [];
+  const mockGrants = [
+    { email: 'anna@exempel.se', expires_at: null, signed_in: 1, summaries_used: 4 },
+    { email: 'bo@exempel.se', expires_at: Math.floor(Date.now() / 1000) + 5 * 86400, signed_in: 0, summaries_used: null },
+    { email: 'cia@exempel.se', expires_at: Math.floor(Date.now() / 1000) - 86400, signed_in: 1, summaries_used: 30 },
+  ];
+  await ctx.route('**/diane-api*/admin/**', route => {
+    const req = route.request();
+    adminCalls.push({ url: req.url(), method: req.method(), body: req.postData() ? JSON.parse(req.postData()) : null, auth: req.headers().authorization });
+    const body = req.url().endsWith('/admin/grants') && req.method() === 'GET' ? { grants: mockGrants } : { ok: true };
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+  });
+  check('admin-sektionen döljs för vanliga användare', await page.evaluate(() => {
+    s.idToken = 'tok'; s.isAdmin = false; s.grant = null; applyAuthVisibility(); openSettings();
+    const hidden = $('adminGroup').style.display === 'none';
+    closeSettings(); return hidden;
+  }));
+  check('admin ser sektionen och listan laddas med status', await page.evaluate(async () => {
+    s.idToken = 'tok'; s.isAdmin = true; applyAuthVisibility(); openSettings();
+    await new Promise(r => setTimeout(r, 150));
+    const txt = $('adminList').textContent;
+    return $('adminGroup').style.display !== 'none' && /anna@exempel\.se/.test(txt) && /För alltid/.test(txt)
+      && /Gäller till/.test(txt) && /Utgången/.test(txt) && /har inte loggat in än/.test(txt);
+  }));
+  check('listan hämtas med admins token', adminCalls.some(c => c.method === 'GET' && c.auth === 'Bearer tok'));
+  check('Bjud in skickar e-post och "för alltid"', await page.evaluate(async () => {
+    $('adminEmail').value = 'Ny@Exempel.se';
+    document.querySelector('input[name="adminDur"][value="forever"]').checked = true;
+    await inviteGrant();
+    return $('adminEmail').value === '';
+  }) && adminCalls.some(c => c.method === 'POST' && c.url.endsWith('/admin/grants') && c.body.email === 'Ny@Exempel.se' && c.body.duration === 'forever'));
+  check('Ta bort anropar revoke för rätt adress', await page.evaluate(async () => {
+    const orig = window.confirm; window.confirm = () => true;
+    await revokeGrant('bo@exempel.se'); window.confirm = orig; return true;
+  }) && adminCalls.some(c => c.url.endsWith('/admin/grants/revoke') && c.body.email === 'bo@exempel.se'));
+  check('e-postadresser renderas som text, aldrig HTML', await page.evaluate(() => {
+    renderGrants([{ email: '<img src=x onerror=alert(1)>@x.se', expires_at: null, signed_in: 0 }]);
+    return !$('adminList').querySelector('img') && /<img/.test($('adminList').textContent);
+  }));
+  check('inbjuden ser sin gratisåtkomst i stället för Hantera prenumeration', await page.evaluate(() => {
+    closeSettings(); s.isAdmin = false; s.grant = { expires_at: null }; openSettings();
+    const ok = $('grantInfo').style.display !== 'none' && /för alltid/.test($('grantInfo').textContent)
+      && $('manageSubBtn').style.display === 'none';
+    s.grant = { expires_at: Math.floor(Date.now() / 1000) + 86400 * 10 }; renderAccountExtras();
+    const dated = /Gratis åtkomst till/.test($('grantInfo').textContent);
+    s.grant = null; renderAccountExtras(); closeSettings();
+    return ok && dated && $('manageSubBtn').style.display !== 'none';
+  }));
+  check('fetchMe läser is_admin och grant från /me', await page.evaluate(async () => {
+    const orig = window.fetch;
+    window.fetch = async () => new Response(JSON.stringify({ email: 'x@y.se', sub_active: 1, is_admin: true, grant: { expires_at: null } }), { status: 200 });
+    s.idToken = 'tok'; await fetchMe(); window.fetch = orig;
+    const ok = s.isAdmin === true && s.grant && s.grant.expires_at === null;
+    s.isAdmin = false; s.grant = null; s.idToken = ''; applyAuthVisibility();
+    return ok;
+  }));
+  await ctx.unroute('**/diane-api*/admin/**');
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');

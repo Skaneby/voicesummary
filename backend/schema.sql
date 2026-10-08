@@ -42,3 +42,13 @@ CREATE TABLE IF NOT EXISTS subscription_events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_sub_events_user ON subscription_events(user_id, received_at DESC);
+
+-- Gratis åtkomst som admin delar ut per e-postadress (migrations/002-grants.sql).
+-- Matchas mot Google-intygad e-post; expires_at NULL = för alltid.
+CREATE TABLE IF NOT EXISTS grants (
+  email       TEXT PRIMARY KEY,   -- gemener
+  expires_at  INTEGER,            -- unix-sekunder; NULL = för alltid
+  note        TEXT,
+  created_by  TEXT NOT NULL,      -- adminens e-post
+  created_at  INTEGER NOT NULL
+);

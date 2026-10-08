@@ -97,6 +97,17 @@ const SCREENS = {
   'inställningar': () => { show('idle'); openSettings(); },
   'historik': () => { closeSettings(); saveToHistory('<article><p>x</p></article>', 'Veckomöte'); openHistory(); },
   'formathjälp': () => { closeHistory(); openFormatHelp(); },
+  // Inloggad admin: kontosektion + inbjudningar (listan matas utan nätverk)
+  'inställningar som admin': () => {
+    closeFormatHelp(); s.idToken = 'tok'; s.isAdmin = true; s.email = 'admin@exempel.se';
+    window.loadGrants = () => renderGrants([
+      { email: 'anna@exempel.se', expires_at: null, signed_in: 1, summaries_used: 4 },
+      { email: 'bo@exempel.se', expires_at: Math.floor(Date.now() / 1000) + 5 * 86400, signed_in: 0 },
+    ]);
+    applyAuthVisibility(); openSettings();
+    document.querySelector('#s-panel').scrollTop = 0;
+    $('adminGroup').scrollIntoView({ block: 'start' });
+  },
 };
 
 (async () => {
