@@ -59,3 +59,14 @@ och eftersom Workern deployades manuellt låg taken dessutom odeployade.
 och kontrollera att ingen gren har commits som saknas lokalt. Backend deployas
 nu automatiskt från `main` via GitHub Actions, så "glömd deploy" är borta —
 men bara om ändringen faktiskt når `main`.
+
+## 2026-10-08 — Påstod ur minnet att drive.appdata ger "overifierad app"-varning
+
+**Vad hände:** Runbooken och svaret till Johan sa att Drive-synken visar en
+varning tills Google granskat `drive.appdata`. Googles Drive-dokumentation
+klassar `drive.appdata` som *Non-sensitive* — ingen sådan varning.
+
+**Regel:** Scope-klassning, granskningskrav och konsolvägar slås upp i Googles
+aktuella dokumentation innan de skrivs i svar eller runbook — aldrig ur minnet.
+Kontrollera också produktionsläget (deployments list, tabeller) innan man
+säger vad som återstår; Johan kan ha gjort steget själv.

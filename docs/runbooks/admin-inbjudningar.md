@@ -29,8 +29,12 @@ för alltid).
 Så länge Googles samtyckesskärm står i **testläge** kan bara tillagda
 testanvändare logga in. Samtyckesskärmen ska vara **publicerad**:
 console.cloud.google.com/auth/audience?project=diane-prod-skaneby →
-Publish app. Vanlig inloggning kräver ingen granskning; Drive-synken visar
-en varning om overifierad app tills Google granskat `drive.appdata`.
+Publish app. Diane begär bara icke-känsliga scopes (openid, e-post, profil och
+`drive.appdata`, som Google klassar som *Non-sensitive* i
+developers.google.com/workspace/drive/api/guides/api-specific-auth), så
+ingen granskning eller varning för overifierad app krävs. Varumärkes-
+verifiering (namn och logga i inloggningsrutan) är ett separat, frivilligt
+steg som kräver en egen domän verifierad i Search Console.
 
 ## Teknik
 
