@@ -2043,6 +2043,12 @@ function canGoBack(name) {
 }
 
 function show(name) {
+  // Från ett resultat (eller fel) tillbaka till start = ny inspelning: förra
+  // titeln får inte följa med. Den skickas annars till Gemini som kontext och
+  // hamnar som ämne och rubrik i nästa mail. Avbruten inspelning behåller den.
+  if (name === 'idle' && (s.screen === 'result' || s.screen === 'error')) {
+    s.title = ''; $('titleInput').value = '';
+  }
   screens.forEach(n => {
     const el = $('screen-' + n);
     el.classList.toggle('active', n === name);

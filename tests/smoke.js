@@ -1086,6 +1086,26 @@ function check(name, ok, extra) {
   }));
   await ctx.unroute('**/diane-api*/admin/**');
 
+  console.log('\n── 5m. Titeln följer inte med till nästa inspelning ──');
+  check('Ny inspelning nollställer förra titeln (ämne, rubrik och Gemini-kontext)', await page.evaluate(() => {
+    closeSettings();
+    s.title = 'Gammalt vibemöte'; $('titleInput').value = s.title;
+    showResult('<article><p>x</p></article>', 'vibecoder');
+    $('newBtn').click();
+    return s.title === '' && $('titleInput').value === '' && !buildPrompt().includes('Gammalt vibemöte');
+  }));
+  check('avbruten inspelning behåller titeln man skrivit', await page.evaluate(() => {
+    s.title = 'Säljmöte'; $('titleInput').value = s.title;
+    show('recording'); show('idle');
+    const ok = s.title === 'Säljmöte' && $('titleInput').value === 'Säljmöte';
+    s.title = ''; $('titleInput').value = '';
+    return ok;
+  }));
+  check('fel → tillbaka till start nollställer också titeln', await page.evaluate(() => {
+    s.title = 'Misslyckat möte'; showError('Nätverksfel', true); $('homeBtn').click();
+    return s.title === '';
+  }));
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
