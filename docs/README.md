@@ -13,6 +13,7 @@ Läs-först-karta över projektet. Varje fil är självständig: du ska kunna l�
 | [design-principles.md](design-principles.md) | designa gränssnitt för appen |
 | [conventions.md](conventions.md) | skriva kod eller commits i repot |
 | [runbooks/test-on-device.md](runbooks/test-on-device.md) | testa appen på din egen telefon |
+| [runbooks/felsokning.md](runbooks/felsokning.md) | ta reda på vad som gick fel för en användare |
 | [runbooks/play-store-checklist.md](runbooks/play-store-checklist.md) | veta vad Play kräver innan publicering |
 | [play-store-listing.md](play-store-listing.md) | fylla i butiksposten |
 | [decisions/](decisions/) | förstå *varför* något är som det är |

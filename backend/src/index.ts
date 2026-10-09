@@ -23,6 +23,15 @@ import {
   type Grant,
 } from "./grants";
 import type { User } from "./entitlement";
+import {
+  classifyGeminiBody,
+  isShortKey,
+  logError,
+  parseClientError,
+  purgeOldErrors,
+  upstreamMessage,
+  type ErrorEntry,
+} from "./errors";
 
 interface RateLimit {
   limit(opts: { key: string }): Promise<{ success: boolean }>;
@@ -93,7 +102,7 @@ async function withGrant(user: User, grant: Grant | null, env: Env, now: number)
 const VERSION = "0.6.0";
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
@@ -125,8 +134,11 @@ export default {
 
       case "/summarize":
         return methodGuard(request, "POST", () =>
-          handleSummarize(request, env),
+          handleSummarize(request, env, ctx),
         );
+
+      case "/log-error":
+        return methodGuard(request, "POST", () => handleLogError(request, env, ctx));
 
       case "/webhook/revenuecat":
         return methodGuard(request, "POST", () =>
@@ -148,6 +160,12 @@ export default {
       default:
         return cors(request, json({ error: "not_found" }, 404));
     }
+  },
+
+  // Daglig cron (wrangler.jsonc → triggers.crons): gallra felloggen.
+  async scheduled(_event: ScheduledController, env: Env): Promise<void> {
+    const deleted = await purgeOldErrors(env.DB, Math.floor(Date.now() / 1000));
+    console.log(JSON.stringify({ event: "errors_purged", deleted }));
   },
 } satisfies ExportedHandler<Env>;
 
@@ -211,6 +229,7 @@ async function handleMe(request: Request, env: Env): Promise<Response> {
 async function handleSummarize(
   request: Request,
   env: Env,
+  ctx: ExecutionContext,
 ): Promise<Response> {
   if (!anyProviderConfigured(env)) {
     return cors(request, json({ error: "server_misconfigured" }, 503));
@@ -233,10 +252,18 @@ async function handleSummarize(
   // catches buggy clients and stolen tokens before they drain the budget.
   const rl = await env.RATE_LIMITER.limit({ key: claims.userId });
   if (!rl.success) {
+    // Bara Workers Logs, inte D1: över gränsen finns inget tak, och en
+    // läckt token ska inte kunna fylla tabellen.
+    console.warn(JSON.stringify({ event: "rate_limited", user_id: claims.userId }));
     return cors(request, json({ error: "rate_limited" }, 429));
   }
 
   const now = Math.floor(Date.now() / 1000);
+  // Formatet är inte känt förrän kroppen lästs — fylls i nedan
+  const fail = (e: Omit<ErrorEntry, "user_id" | "email" | "source">) =>
+    ctx.waitUntil(logError(env.DB, {
+      user_id: claims.userId, email: claims.claims.email ?? null, source: "server", ...e,
+    }, now));
   const user = await withGrant(
     await upsertUser(env.DB, claims.userId, claims.claims.email ?? null),
     await grantFor(claims, env), env, now,
@@ -254,6 +281,7 @@ async function handleSummarize(
       check.reason === "not_subscribed" || check.reason === "expired"
         ? 402
         : 429;
+    fail({ kind: check.reason ?? "denied", status });
     return cors(request, json({ error: check.reason }, status));
   }
 
@@ -264,10 +292,14 @@ async function handleSummarize(
     return cors(request, json({ error: "invalid_json" }, 400));
   }
   if (!isSummarizeBody(body)) {
+    fail({ kind: "invalid_body", status: 400 });
     return cors(request, json({ error: "invalid_body" }, 400));
   }
+  // Bara metadata för felloggen: ett konstigt värde ignoreras i stället för
+  // att fälla sammanfattningen.
+  const format = isShortKey(body.format) ? body.format : null;
 
-  const { response: upstream } = await callGeminiWithFallback(
+  const { response: upstream, model } = await callGeminiWithFallback(
     env.GEMINI_API_KEY,
     env.GEMINI_MODELS || env.GEMINI_MODEL,
     body,
@@ -275,6 +307,7 @@ async function handleSummarize(
 
   if (!upstream.ok) {
     const errText = await upstream.text();
+    fail({ kind: "upstream_error", status: upstream.status, format, model, message: upstreamMessage(errText) });
     return cors(
       request,
       new Response(errText, {
@@ -290,6 +323,10 @@ async function handleSummarize(
   );
 
   const respText = await upstream.text();
+  // 200 betyder inte att det gick bra — säkerhetsfilter och tomma svar
+  // kommer också som 200. Svaret skickas ändå vidare oförändrat.
+  const problem = classifyGeminiBody(respText);
+  if (problem) fail({ ...problem, status: 200, format, model });
   return cors(
     request,
     new Response(respText, {
@@ -362,8 +399,49 @@ async function handleAccountDelete(
     ),
     env.DB.prepare("DELETE FROM users WHERE id = ?").bind(claims.userId),
   ]);
+  // Separat och tolerant: saknas tabellen (migrering 003 inte körd) får det
+  // inte stoppa en kontoradering. Gallringen tar resten inom 30 dagar.
+  await env.DB.prepare("DELETE FROM errors WHERE user_id = ?").bind(claims.userId).run()
+    .catch((e) => console.error("delete errors failed", claims.userId, String(e)));
 
   return cors(request, json({ ok: true, deleted: true }));
+}
+
+// Fel som appen visat för användaren. Kräver inloggning — utan identitet
+// går raden inte att koppla till någon. Delar rate limit med /summarize.
+async function handleLogError(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  if (!anyProviderConfigured(env)) {
+    return cors(request, json({ error: "server_misconfigured" }, 503));
+  }
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return cors(request, json({ error: "missing_auth" }, 401));
+  }
+  let claims: Claims;
+  try {
+    claims = await verifyToken(authHeader.slice("Bearer ".length).trim(), audiencesFor(env));
+  } catch {
+    return cors(request, json({ error: "invalid_token" }, 401));
+  }
+  const rl = await env.RATE_LIMITER.limit({ key: claims.userId });
+  if (!rl.success) return cors(request, json({ error: "rate_limited" }, 429));
+
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return cors(request, json({ error: "invalid_json" }, 400));
+  }
+  const body = parseClientError(raw);
+  if (!body) return cors(request, json({ error: "invalid_body" }, 400));
+
+  ctx.waitUntil(logError(env.DB, {
+    user_id: claims.userId,
+    email: claims.claims.email ?? null,
+    source: "client",
+    ...body,
+  }, Math.floor(Date.now() / 1000)));
+  return cors(request, json({ ok: true }));
 }
 
 async function countUsers(db: D1Database): Promise<number> {

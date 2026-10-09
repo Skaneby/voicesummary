@@ -121,11 +121,14 @@ Find code by name, not line number — line numbers rot: `PROMPTS`, `sanitizeHtm
 
 Every commit goes to **all three** branches (fast-forward or merge, never force) — see lessons.md 2026-09-23. D1 migrations in `backend/migrations/` are **not** automated: run them with `wrangler d1 execute diane-prod --remote --file=...` before deploying code that needs them.
 
-## Observability — current gap
+## Error logging
 
-Errors are **not stored anywhere** today. The D1 tables are `users`, `subscription_events` and `grants`; failed calls don't touch them, and Worker logs aren't retained (only live via `wrangler tail`). A user's past error can't be reconstructed — ask for the exact message and a screenshot. Per-user error logging is planned in [tasks/todo.md](tasks/todo.md).
+Per-user errors live in the D1 table `errors` (30 days) and in Workers Logs. **When a user reports a problem, look there first:** [docs/runbooks/felsokning.md](docs/runbooks/felsokning.md) has the SQL.
 
-Note: a Gemini response blocked by safety filters arrives as HTTP **200** — only the client sees that it failed.
+- `source = 'server'` — what `/summarize` saw (Gemini status, model, our own blocks). `source = 'client'` — what the app showed, via `/log-error`.
+- A Gemini response blocked by safety filters arrives as HTTP **200** — `classifyGeminiBody()` in `backend/src/errors.ts` catches it.
+- Not covered: web users with their own API key (no identity).
+- Client side: `logError()` in `index.html` saves locally *and* calls `reportError()` (signed-in only, max 5/min, deduped, never throws).
 
 ## Conventions / gotchas
 

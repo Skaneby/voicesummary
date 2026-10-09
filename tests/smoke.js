@@ -182,7 +182,7 @@ function check(name, ok, extra) {
   // Ny sida där window.Capacitor finns innan skriptet körs → APP_MODE = true
   const appPage = await ctx.newPage();
   await appPage.addInitScript(() => {
-    window.Capacitor = { isNativePlatform: () => true, Plugins: {} };
+    window.Capacitor = { isNativePlatform: () => true, getPlatform: () => 'android', Plugins: {} };
   });
   const appErrors = [];
   appPage.on('pageerror', e => appErrors.push(e.message));
@@ -227,6 +227,7 @@ function check(name, ok, extra) {
   check('Bearer-token skickas med', (proxyReq?.headers?.authorization || '') === 'Bearer test-token');
   check('kroppen har prompt + ljud + längd', !!proxyReq?.body?.prompt && !!proxyReq?.body?.audio_base64 && proxyReq?.body?.audio_seconds === 90);
   check('ingen Gemini-nyckel läcker i appläge', !JSON.stringify(proxyReq?.body || {}).includes('key='));
+  check('formatet skickas med för felloggen', proxyReq?.body?.format === await appPage.evaluate(() => s.style), proxyReq?.body?.format);
 
   // Kontofelen ska styra användaren rätt
   await ctx.unroute('**/diane-api*/**');
@@ -237,6 +238,40 @@ function check(name, ok, extra) {
     try { await generate('ZmFrZQ==', 'audio/webm'); } catch {}
     return $('screen-paywall').classList.contains('active');
   }));
+
+  // Felrapporter till backendens fellogg (/log-error)
+  await ctx.unroute('**/diane-api*/**');
+  const reports = [];
+  await ctx.route('**/diane-api*/**', route => {
+    if (/\/log-error$/.test(route.request().url())) {
+      reports.push(JSON.parse(route.request().postData() || '{}'));
+      // Ett trasigt svar får inte bli ett nytt fel
+      return route.fulfill({ status: 500, body: 'boom' });
+    }
+    route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+  });
+  const flush = () => appPage.waitForTimeout(150);
+  await appPage.evaluate(() => { _reports = []; s.idToken = 'test-token'; s.style = 'tal'; showError('Testfel A', false); });
+  await flush();
+  check('felet rapporteras till /log-error', reports.length === 1 && reports[0].message === 'Testfel A');
+  check('rapporten har kind, format och plattform',
+    reports[0]?.kind === 'app' && reports[0]?.format === 'tal' && reports[0]?.platform === 'android',
+    JSON.stringify(reports[0]));
+  await appPage.evaluate(() => showError('Testfel A', false));
+  await flush();
+  check('samma fel rapporteras inte två gånger i rad', reports.length === 1, String(reports.length));
+  await appPage.evaluate(() => { for (let i = 0; i < 20; i++) logError('js', 'storm ' + i); });
+  await flush();
+  check('högst 5 rapporter per minut', reports.length === 5, String(reports.length));
+  const before = reports.length;
+  await appPage.evaluate(() => { _reports = []; s.idToken = ''; showError('Utloggad', false); });
+  await flush();
+  check('ingen rapport utan inloggning', reports.length === before);
+  await appPage.evaluate(() => { _reports = []; s.idToken = 'test-token'; showError('Avbröts', true, false); });
+  await flush();
+  check('avbrott rapporteras inte', reports.length === before);
+  check('felet sparas ändå lokalt', await appPage.evaluate(() => getErrors().some(e => e.msg === 'Avbröts')));
+  await ctx.unroute('**/diane-api*/**');
 
   // Funktionerna från webbversionen ska finnas kvar även i appen
   check('Q&A finns kvar i appläge', await appPage.evaluate(() => typeof askQuestion === 'function' && !!$('qaSection')));

@@ -13,6 +13,9 @@ export interface SummarizeBody {
       kan äta hela svarsbudgeten på en ljuduppgift — svaret blir tomt efter
       flera minuter. Servern sätter därför alltid ett tak, även utan fältet. */
   thinking_budget?: number;
+  /** PROMPTS-nyckeln (t.ex. 'tal'). Skickas inte till Gemini — bara för
+      felloggen, och valideras där (isShortKey) i stället för här. */
+  format?: unknown;
 }
 
 export function isSummarizeBody(x: unknown): x is SummarizeBody {

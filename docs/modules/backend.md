@@ -9,11 +9,13 @@ Kod: `backend/src/`. Deploy: `wrangler deploy`. Se
 |---|---|---|---|
 | GET | `/`, `/health` | nej | konfigurationsstatus, `user_count` |
 | GET | `/me` | Bearer | upsertar användaren, returnerar rättighet + kvot |
-| POST | `/summarize` | Bearer | rate limit → rättighet → proxa till Gemini → räkna kvot |
+| POST | `/summarize` | Bearer | rate limit → rättighet → proxa till Gemini → räkna kvot; fel loggas i `errors` |
+| POST | `/log-error` | Bearer | appen rapporterar fel den visat (`{ kind, message, format?, platform? }`) |
 | POST | `/webhook/revenuecat` | delad hemlighet | speglar prenumerationsstatus till D1 |
-| POST | `/account/delete` | Bearer | hård radering av användare + händelser (GDPR) |
+| POST | `/account/delete` | Bearer | hård radering av användare, händelser och felloggar (GDPR) |
+| cron | `0 3 * * *` | — | `scheduled()`: gallrar `errors` äldre än 30 dagar |
 
-`/summarize` tar `{ prompt, audio_base64, audio_mime, audio_seconds }` och
+`/summarize` tar `{ prompt, audio_base64, audio_mime, audio_seconds, format? }` och
 returnerar **Geminis svar oförändrat**. Se [../architecture.md](../architecture.md).
 
 ## Filer
@@ -24,6 +26,7 @@ returnerar **Geminis svar oförändrat**. Se [../architecture.md](../architectur
 | `entitlement.ts` | `upsertUser`, `checkEntitlement`, `incrementUsage` |
 | `webhook.ts` | `eventToUpdate` — RevenueCat-händelse → databasändring |
 | `gemini.ts` | anropet uppströms mot Gemini |
+| `errors.ts` | felloggen: `logError`, `classifyGeminiBody` (200-svar som är fel), gallring |
 | `index.ts` | router, CORS, rate limit |
 
 `eventToUpdate()` och `checkEntitlement()` är rena funktioner utan I/O —
@@ -70,14 +73,18 @@ cd backend && npm test
 identitetslogiken — de rena funktioner som styr pengar och rättigheter.
 Körs med Nodes inbyggda testkörare, inga beroenden.
 
+## Felloggning
+
+Tabellen `errors` (`migrations/003-errors.sql`) + Workers Logs
+(`observability` i `wrangler.jsonc`). `logError` kastar aldrig — loggning får
+inte fälla en begäran. Hur man läser felen:
+[../runbooks/felsokning.md](../runbooks/felsokning.md).
+
 ## Kända skulder
 
-- **Inga fel sparas.** Misslyckade anrop rör inte D1, och Worker-loggar
-  behålls inte (bara live via `wrangler tail`). Ett fel en användare fått
-  går inte att återskapa i efterhand. Gemini-svar som blockerats av
-  säkerhetsfilter kommer dessutom som HTTP 200 — Workern ser dem som lyckade.
-  Plan för felloggning per användare: [tasks/todo.md](../../tasks/todo.md).
-
+- Blockerade och tomma 200-svar loggas som fel men **räknas ändå mot kvoten**
+  (`incrementUsage` körs på all 200). Användaren betalar för ett svar den
+  inte fick.
 - `incrementUsage` är icke-atomär och anropas med tyst `.catch()` — kvot kan
   tappas vid samtidiga anrop.
 - `TRANSFER` och `SUBSCRIBER_ALIAS` från RevenueCat ignoreras; de behövs när en

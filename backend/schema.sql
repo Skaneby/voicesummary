@@ -52,3 +52,22 @@ CREATE TABLE IF NOT EXISTS grants (
   created_by  TEXT NOT NULL,      -- adminens e-post
   created_at  INTEGER NOT NULL
 );
+
+-- Felloggning per användare (migrations/003-errors.sql). Gallras efter 30 dagar.
+CREATE TABLE IF NOT EXISTS errors (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at   INTEGER NOT NULL,
+  user_id      TEXT,
+  email        TEXT,
+  source       TEXT NOT NULL,      -- 'server' | 'client'
+  kind         TEXT NOT NULL,
+  status       INTEGER,
+  format       TEXT,
+  model        TEXT,
+  message      TEXT,
+  platform     TEXT,
+  app_version  TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_errors_email   ON errors(email, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_errors_created ON errors(created_at);

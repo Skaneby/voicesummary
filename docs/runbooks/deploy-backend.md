@@ -36,6 +36,9 @@ npx wrangler d1 execute diane-prod --local  --file=schema.sql   # testa först
 npx wrangler d1 execute diane-prod --remote --file=schema.sql
 ```
 
+Migreringar i `migrations/` körs på samma sätt (`--file=migrations/00X-….sql`)
+och **före** den deploy som behöver dem — GitHub Actions kör dem inte.
+
 Det finns ingen separat staging-databas. Kör alltid `--local` först, och ta en
 export före migreringar som rör `users`.
 
@@ -45,8 +48,8 @@ export före migreringar som rör `users`.
 npx wrangler tail
 ```
 
-Bara live — Workers Logs är inte påslaget, så inget sparas. Det som hände
-före `tail` startades går inte att se.
+Live. Det som redan hänt finns i felloggen — se
+[felsokning.md](felsokning.md).
 
 ## Vanliga lägen
 

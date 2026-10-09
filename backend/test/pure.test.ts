@@ -229,3 +229,74 @@ test("inbjuden användare stoppas av samma kvottak som betalande", () => {
   assert.equal(checkEntitlement(user({ period_end: null, summaries_used: 29 }), { audio: 10800, summaries: 30 }).allowed, true);
   assert.equal(checkEntitlement(user({ period_end: null, summaries_used: 30 }), { audio: 10800, summaries: 30 }).reason, "summary_cap_reached");
 });
+
+// ── Felloggning ──────────────────────────────────────────────────────────────
+import { classifyGeminiBody, parseClientError, upstreamMessage, clip, isShortKey } from "../src/errors.ts";
+import { isSummarizeBody } from "../src/gemini.ts";
+
+const ok = (text: string, finishReason = "STOP") =>
+  JSON.stringify({ candidates: [{ finishReason, content: { parts: [{ text }] } }] });
+
+test("ett vanligt svar klassas inte som fel", () => {
+  assert.equal(classifyGeminiBody(ok("TITLE: X\n<article></article>")), null);
+});
+
+test("200-svar som egentligen är fel fångas", () => {
+  // Säkerhetsfiltret stoppar prompten — inga candidates alls
+  assert.deepEqual(
+    classifyGeminiBody(JSON.stringify({ promptFeedback: { blockReason: "PROHIBITED_CONTENT" } })),
+    { kind: "blocked", message: "prompt: PROHIBITED_CONTENT" },
+  );
+  assert.equal(classifyGeminiBody(ok("x", "SAFETY"))?.kind, "blocked");
+  assert.equal(classifyGeminiBody(ok("x", "RECITATION"))?.kind, "blocked");
+  assert.equal(classifyGeminiBody(ok("x", "MAX_TOKENS"))?.kind, "max_tokens");
+  assert.equal(classifyGeminiBody(ok("   "))?.kind, "empty");
+  assert.equal(classifyGeminiBody(JSON.stringify({ candidates: [] }))?.kind, "empty");
+  assert.equal(classifyGeminiBody("<html>")?.kind, "invalid_response");
+});
+
+test("bara tankedelar räknas som tomt svar", () => {
+  const body = JSON.stringify({ candidates: [{ finishReason: "STOP",
+    content: { parts: [{ text: "tänker…", thought: true }] } }] });
+  assert.equal(classifyGeminiBody(body)?.kind, "empty");
+});
+
+test("Geminis felmeddelande plockas ur felkroppen", () => {
+  assert.equal(upstreamMessage(JSON.stringify({ error: { message: "overloaded" } })), "overloaded");
+  assert.equal(upstreamMessage("Bad Gateway"), "Bad Gateway");
+});
+
+test("klientfel valideras och kortas", () => {
+  const good = parseClientError({ kind: "network", message: "x".repeat(900), format: "tal", platform: "android", app_version: "1.0", status: 503 });
+  assert.equal(good?.message.length, 500);
+  assert.equal(good?.format, "tal");
+  assert.equal(parseClientError({ kind: "network" }), null, "meddelande krävs");
+  assert.equal(parseClientError({ kind: "har mellanslag", message: "x" }), null);
+  // Konstiga valfria fält släpps — raden sparas ändå
+  const odd = parseClientError({ kind: "a", message: "x", format: "<script>", status: "503" });
+  assert.equal(odd?.message, "x");
+  assert.equal(odd?.format, undefined);
+  assert.equal(odd?.status, undefined);
+  assert.equal(parseClientError(null), null);
+});
+
+test("clip trimmar, kortar och gör tomt till null", () => {
+  assert.equal(clip("  abc  ", 2), "ab");
+  assert.equal(clip("   ", 10), null);
+  assert.equal(clip(undefined, 10), null);
+});
+
+test("ett konstigt format fäller aldrig sammanfattningen", () => {
+  const base = { prompt: "p", audio_seconds: 1 };
+  for (const format of ["tal", undefined, "a b", 1, "<x>"])
+    assert.equal(isSummarizeBody({ ...base, format }), true, String(format));
+  // …men det loggas inte heller
+  assert.equal(isShortKey("tal"), true);
+  assert.equal(isShortKey("a b"), false);
+  assert.equal(isShortKey(1), false);
+});
+
+test("format skickas aldrig vidare till Gemini", () => {
+  const payload = buildGeminiPayload({ prompt: "p", audio_seconds: 1, format: "tal" });
+  assert.equal(JSON.stringify(payload).includes('"format"'), false);
+});

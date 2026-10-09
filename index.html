@@ -2419,7 +2419,9 @@ function callModel(base64, mime) {
         // 1024 och inte mer: tanketokens debiteras till OUTPUT-pris, alltså
         // 5x ljudet in. De är den största rörliga kostnaden per sammanfattning
         // trots att ingen användare någonsin ser dem.
-        thinking_budget: 1024
+        thinking_budget: 1024,
+        // Bara för backendens fellogg — skickas inte till Gemini
+        format: s.style
       })
     });
   }
@@ -2699,7 +2701,8 @@ async function processInner(blob, mime, existingRecId) {
     } else {
       msg = e.message || 'Okänt fel';
     }
-    showError(msg, true);
+    // Användaren avbröt själv — inget att felsöka
+    showError(msg, true, !isAbort);
   }
 }
 
@@ -3566,7 +3569,7 @@ async function shareAudio(id) {
 const SERR = 'vs_errlog';
 const ERR_KEEP = 50;
 
-function logError(kind, msg, detail) {
+function logError(kind, msg, detail, report = true) {
   try {
     const log = store.json(SERR, []);
     log.unshift({
@@ -3577,6 +3580,36 @@ function logError(kind, msg, detail) {
     });
     store.set(SERR, JSON.stringify(log.slice(0, ERR_KEEP)));
   } catch { /* full disk eller privat läge — släpp */ }
+  if (report) reportError(kind, msg);
+}
+
+// Skickar felet till backendens fellogg (tabellen `errors`), så att det går
+// att felsöka per användare. Bara inloggade — utan identitet går raden inte
+// att koppla till någon. Högst REPORT_MAX per minut och inga dubbletter:
+// /log-error delar rate limit med /summarize, och en felstorm får inte
+// stoppa sammanfattningarna. Kastar aldrig — ett misslyckat anrop här skulle
+// annars bli en unhandledrejection, som loggas, som rapporteras …
+const REPORT_MAX = 5;
+let _reports = [];
+function reportError(kind, msg) {
+  try {
+    if (!proxyMode() || !s.idToken) return;
+    const message = String(msg || 'okänt fel').slice(0, 500);
+    const now = Date.now();
+    _reports = _reports.filter(r => now - r.t < 60000);
+    if (_reports.length >= REPORT_MAX || _reports.some(r => r.message === message)) return;
+    _reports.push({ t: now, message });
+    fetch(API_PROXY + '/log-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + s.idToken },
+      body: JSON.stringify({
+        kind,
+        message,
+        format: s.style,
+        platform: window.Capacitor?.getPlatform?.() || 'web',
+      }),
+    }).catch(() => {});
+  } catch { /* rapportering får aldrig bli ett nytt fel */ }
 }
 
 function getErrors() { return store.json(SERR, []); }
@@ -4204,8 +4237,8 @@ async function restorePurchases() {
 }
 
 // ── ERROR ──────────────────────────────────────────────────────────────────
-function showError(msg, showSettings) {
-  logError('app', msg);
+function showError(msg, showSettings, report = true) {
+  logError('app', msg, '', report);
   $('errorMsg').textContent = msg;
   $('errSettingsBtn').style.display = showSettings ? '' : 'none';
   show('error');

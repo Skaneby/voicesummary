@@ -1,6 +1,6 @@
 # Felloggning per användare
 
-Skapad 2026-10-09. Status: **väntar på godkännande — implementera inte förrän bekräftat.**
+Skapad 2026-10-09. Status: **implementerad 2026-10-09 — väntar på migrering och deploy.** Godkänd av Johan 2026-10-09.
 
 Bakgrund: en användare fick ett tillfälligt fel vid "Politiskt brandtal" och
 det gick inte att se vad som hänt — inga fel sparas idag, och Worker-loggar
@@ -16,47 +16,48 @@ behålls inte.
 ## Plan
 
 ### Backend
-- [ ] `migrations/003-errors.sql` + `schema.sql`: tabell `errors`
+- [x] `migrations/003-errors.sql` + `schema.sql`: tabell `errors`
       (id, created_at, user_id, email, source `server|client`, kind, status,
       format, model, message ≤ 500 tecken, platform, app_version).
       Index på (email, created_at) och (created_at).
-- [ ] `src/errors.ts`:
+- [x] `src/errors.ts`:
   - `logError(db, entry)` — trunkerar, kastar aldrig (loggning får inte
     fälla en lyckad begäran), skriver även strukturerad `console.error`
   - `classifyGeminiBody(json)` — hittar 200-svar som egentligen är fel:
     `promptFeedback.blockReason`, `finishReason` ≠ `STOP`, tom text
   - `purgeOldErrors(db, now)` — raderar rader äldre än 30 dagar
-- [ ] `/summarize`: logga spärrar (402, kvottak, rate_limited), uppströmsfel
+- [x] `/summarize`: logga spärrar (402, kvottak, rate_limited), uppströmsfel
       (status + Geminis meddelande + modell) och blockerade/tomma 200-svar.
       Nytt valfritt fält `format` i kroppen (t.ex. `tal`).
-- [ ] Ny `POST /log-error`: kräver inloggning, samma rate limit, längdtak
+- [x] Ny `POST /log-error`: kräver inloggning, samma rate limit, längdtak
       på alla fält.
-- [ ] `/account/delete`: radera även användarens rader i `errors`.
-- [ ] `wrangler.jsonc`: `"observability": { "enabled": true }` och en daglig
+- [x] `/account/delete`: radera även användarens rader i `errors`.
+- [x] `wrangler.jsonc`: `"observability": { "enabled": true }` och en daglig
       cron (`0 3 * * *`) + `scheduled()`-hanterare som gallrar.
-- [ ] Tester i `test/pure.test.ts` för klassificering, trunkering och
+- [x] Tester i `test/pure.test.ts` för klassificering, trunkering och
       validering av `/log-error`-kroppen.
 
 ### Klient (`index.html`)
-- [ ] Skicka `format: s.style` med i `/summarize`.
-- [ ] I felgrenen i `summarize()`: `reportError()` — fire-and-forget, bara
+- [x] Skicka `format: s.style` med i `/summarize`.
+- [x] I felgrenen i `summarize()`: `reportError()` — fire-and-forget, bara
       i proxyläge, inte vid Avbryt. Skickar kind, meddelandet användaren såg,
       format, plattform (android/web) och appversion.
       Serverfel loggas då två gånger — en `server`-rad med orsaken och en
       `client`-rad med vad användaren såg. Det är avsiktligt.
-- [ ] `npm run android:sync` (se lessons.md).
+- [x] `npm run android:sync` — inget att committa: `www/` är gitignorerad och byggs vid release.
 
 ### Integritet och docs
-- [ ] `privacy.html`: felloggar (e-post, format, felmeddelande — aldrig ljud
+- [x] `privacy.html`: felloggar (e-post, format, felmeddelande — aldrig ljud
       eller text) sparas i 30 dagar för felsökning.
-- [ ] `docs/felsokning.md`: SQL-frågor, t.ex. senaste felen för en e-post,
+- [x] `docs/felsokning.md`: SQL-frågor, t.ex. senaste felen för en e-post,
       fel per format senaste dygnet, migrering och `wrangler tail`.
 
 ### Verifiering
-- [ ] `npm test` + `tsc` i backend, `npm test` i roten
-- [ ] `wrangler dev --local`: provocera fel (ogiltig modell, blockerat svar,
-      kvottak) och kontrollera raderna i lokal D1
-- [ ] Kontrollera att en lyckad sammanfattning inte påverkas om D1-skrivningen
+- [x] `npm test` + `tsc` i backend, `npm test` i roten
+- [x] Lokal D1: migrering (x2), logError, gemener, trunkering, gallring, saknad tabell.
+      `wrangler dev`: /log-error och /summarize utan token → 401, cron kör.
+      **Ej testat:** inloggade vägar — kräver riktig Google-token
+- [x] Kontrollera att en lyckad sammanfattning inte påverkas om D1-skrivningen
       misslyckas
 
 ### Driftsättning (du kör, kräver Cloudflare-åtkomst)
@@ -70,6 +71,28 @@ behålls inte.
 - BYOK-webbanvändare (ingen användaridentitet)
 - Admin-vy i appen
 - Lagring av prompt, ljud eller genererad text
+
+
+## Granskning
+
+**Avvikelser från planen**
+- Klientrapporteringen sitter i den befintliga `logError()` i stället för bara
+  i `summarize()`. Täcker då även omformatering, transkribering, Drive och
+  ohanterade JS-fel. Skydd: max 5/min, inga dubbletter, kastar aldrig
+  (annars loop via `unhandledrejection`).
+- `rate_limited` sparas bara i Workers Logs, inte i D1 — över gränsen finns
+  inget tak.
+- Ett ogiltigt `format` ignoreras i stället för att avvisa begäran — ett
+  metadatafält får aldrig fälla en sammanfattning.
+- Ingen `app_version`: klienten kan inte läsa `versionName` utan pluginet
+  `@capacitor/app`. Fältet finns i tabellen för senare.
+
+**Resultat:** backend 44/44, klient 191/191, HIG 90/90, `tsc` grönt,
+`wrangler deploy --dry-run` grönt. Mutationstest: utan strypning går
+"högst 5 rapporter per minut" rött.
+
+**Upptäckt på vägen:** blockerade/tomma 200-svar räknas mot kvoten.
+Dokumenterat som skuld i docs/modules/backend.md — inte åtgärdat här.
 
 ---
 
