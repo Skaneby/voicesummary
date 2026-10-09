@@ -113,11 +113,11 @@ Find code by name, not line number — line numbers rot: `PROMPTS`, `sanitizeHtm
 
 | Branch | Purpose |
 |---|---|
-| `main` | Default branch. The Worker deploys from here (GitHub Actions, on changes under `backend/**`). |
+| `main` | Default branch. GitHub Pages serves the web from here (verified 2026-10-09). The Worker *should* deploy from here via GitHub Actions on changes under `backend/**` — see below. |
 | `mobile-app` | Mobile version. Android releases via `npm run release` — it git-tags each release (none exist yet as of 2026-10-09). |
 | `web-app` | Web version. |
 
-**Unverified:** which branch GitHub Pages serves — [docs/runbooks/deploy-web.md](docs/runbooks/deploy-web.md) says `main`. Check GitHub → Settings → Pages before relying on it.
+**The automatic Worker deploy has never succeeded** (every run since 2026-09-23 failed): the repo secret `CLOUDFLARE_API_TOKEN` is missing. Until Johan adds it, the Worker is deployed by hand (`cd backend && npx wrangler deploy`). After pushing backend changes, check the "Deploy Worker" run — don't assume it shipped.
 
 Every commit goes to **all three** branches (fast-forward or merge, never force) — see lessons.md 2026-09-23. D1 migrations in `backend/migrations/` are **not** automated: run them with `wrangler d1 execute diane-prod --remote --file=...` before deploying code that needs them.
 

@@ -1,7 +1,9 @@
 # Runbook — släppa en ny version av Diane
 
 Diane levereras på tre vägar. Bara webben går live av sig själv; appen kräver
-ett aktivt beslut, och backend deployas automatiskt från `main`.
+ett aktivt beslut, och backend deployas automatiskt från `main` — **när**
+repo-secreten `CLOUDFLARE_API_TOKEN` är satt (steg nedan). Per 2026-10-09 är
+den inte det, och varje körning har misslyckats.
 
 | Del | Hur en ändring når användarna |
 |---|---|

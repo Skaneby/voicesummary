@@ -57,8 +57,8 @@ och eftersom Workern deployades manuellt låg taken dessutom odeployade.
 **Regel:** Varje commit ska ut på alla tre grenarna (`main`, `mobile-app`,
 `web-app`) — med fast-forward eller merge, aldrig force. Innan push: `git fetch`
 och kontrollera att ingen gren har commits som saknas lokalt. Backend deployas
-nu automatiskt från `main` via GitHub Actions, så "glömd deploy" är borta —
-men bara om ändringen faktiskt når `main`.
+från `main` via GitHub Actions — *när* `CLOUDFLARE_API_TOKEN` finns som
+repo-secret (se 2026-10-09 nedan).
 
 ## 2026-10-08 — Påstod ur minnet att drive.appdata ger "overifierad app"-varning
 
@@ -105,3 +105,15 @@ ett skydd för *hans* AI-budget.
 **Regel:** Bedöm allt som rör `/summarize`, kvot och modellval utifrån
 ägarens kostnad per prenumerant. Fråga: vad kostar det i Gemini-tokens, och
 kan en användare (eller en ändrad klient) driva upp den kostnaden?
+
+## 2026-10-09 — "Automatisk deploy" hade aldrig fungerat
+
+**Vad hände:** Docs och lessons.md sa att Workern deployas automatiskt från
+`main`. Samtliga fem körningar av "Deploy Worker" sedan 2026-09-23 hade
+misslyckats — repo-secreten `CLOUDFLARE_API_TOKEN` saknas. Workern hade hela
+tiden deployats för hand, och ingen märkte det eftersom felet bara syns i
+Actions.
+
+**Regel:** Efter varje push som rör `backend/**`: kontrollera att körningen
+"Deploy Worker" blev grön innan du säger att något är live. Skriv aldrig
+"deployas automatiskt" i docs utan att ha sett en lyckad körning.
