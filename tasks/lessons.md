@@ -94,3 +94,14 @@ tagits bort (teman, wake lock, GitHub Issues).
 **Regel:** CLAUDE.md pekar på kod med namn, aldrig radnummer, och hänvisar
 till `docs/` för detaljer. Ändras arkitekturen uppdateras CLAUDE.md i samma
 commit som `docs/` (regeln i docs/README.md).
+
+## 2026-10-09 — Kvottaket är ägarens kostnadsskydd, inte något användaren betalar
+
+**Vad hände:** Jag beskrev blockerade svar som att "användaren betalar för ett
+svar den inte fick". Johan rättade: användarna betalar en fast prenumeration
+och Gemini-kostnaden är hans. Kvottaket (30 sammanfattningar / 3 h ljud) är
+ett skydd för *hans* AI-budget.
+
+**Regel:** Bedöm allt som rör `/summarize`, kvot och modellval utifrån
+ägarens kostnad per prenumerant. Fråga: vad kostar det i Gemini-tokens, och
+kan en användare (eller en ändrad klient) driva upp den kostnaden?

@@ -82,9 +82,15 @@ inte fälla en begäran. Hur man läser felen:
 
 ## Kända skulder
 
-- Blockerade och tomma 200-svar loggas som fel men **räknas ändå mot kvoten**
-  (`incrementUsage` körs på all 200). Användaren betalar för ett svar den
-  inte fick.
+- **Kvottaket skyddar ägarens AI-kostnad** — användaren betalar en fast
+  prenumeration, Gemini-kostnaden bärs av Diane. Taket är inte en tjänst
+  användaren köper, utan ett kostnadsskydd. Svagheter i det skyddet:
+  - `audio_seconds` kommer från klienten och litas på — en ändrad klient kan
+    skicka 0 och få obegränsat med ljud. Ljud är den största kostnaden.
+  - Varje lyckat anrop räknas som en "sammanfattning": även en fråga i
+    Fråga om mötet, en omformatering och en transkribering.
+  - Blockerade och tomma 200-svar räknas mot taket och belastar kostnaden.
+  - Den verkliga kostnaden (`usageMetadata` i Geminis svar) sparas inte.
 - `incrementUsage` är icke-atomär och anropas med tyst `.catch()` — kvot kan
   tappas vid samtidiga anrop.
 - `TRANSFER` och `SUBSCRIBER_ALIAS` från RevenueCat ignoreras; de behövs när en
