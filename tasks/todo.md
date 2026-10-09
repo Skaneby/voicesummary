@@ -1,3 +1,78 @@
+# Felloggning per användare
+
+Skapad 2026-10-09. Status: **väntar på godkännande — implementera inte förrän bekräftat.**
+
+Bakgrund: en användare fick ett tillfälligt fel vid "Politiskt brandtal" och
+det gick inte att se vad som hänt — inga fel sparas idag, och Worker-loggar
+behålls inte.
+
+## Låsta beslut
+
+- [x] Lagring: tabell `errors` i D1 **och** Cloudflare Workers Logs
+- [x] Omfång: backendfel + fel som appen rapporterar (bara inloggade; ej BYOK)
+- [x] Gallring: 30 dagar
+- [x] Läsning: SQL via wrangler — färdiga frågor i docs
+
+## Plan
+
+### Backend
+- [ ] `migrations/003-errors.sql` + `schema.sql`: tabell `errors`
+      (id, created_at, user_id, email, source `server|client`, kind, status,
+      format, model, message ≤ 500 tecken, platform, app_version).
+      Index på (email, created_at) och (created_at).
+- [ ] `src/errors.ts`:
+  - `logError(db, entry)` — trunkerar, kastar aldrig (loggning får inte
+    fälla en lyckad begäran), skriver även strukturerad `console.error`
+  - `classifyGeminiBody(json)` — hittar 200-svar som egentligen är fel:
+    `promptFeedback.blockReason`, `finishReason` ≠ `STOP`, tom text
+  - `purgeOldErrors(db, now)` — raderar rader äldre än 30 dagar
+- [ ] `/summarize`: logga spärrar (402, kvottak, rate_limited), uppströmsfel
+      (status + Geminis meddelande + modell) och blockerade/tomma 200-svar.
+      Nytt valfritt fält `format` i kroppen (t.ex. `tal`).
+- [ ] Ny `POST /log-error`: kräver inloggning, samma rate limit, längdtak
+      på alla fält.
+- [ ] `/account/delete`: radera även användarens rader i `errors`.
+- [ ] `wrangler.jsonc`: `"observability": { "enabled": true }` och en daglig
+      cron (`0 3 * * *`) + `scheduled()`-hanterare som gallrar.
+- [ ] Tester i `test/pure.test.ts` för klassificering, trunkering och
+      validering av `/log-error`-kroppen.
+
+### Klient (`index.html`)
+- [ ] Skicka `format: s.style` med i `/summarize`.
+- [ ] I felgrenen i `summarize()`: `reportError()` — fire-and-forget, bara
+      i proxyläge, inte vid Avbryt. Skickar kind, meddelandet användaren såg,
+      format, plattform (android/web) och appversion.
+      Serverfel loggas då två gånger — en `server`-rad med orsaken och en
+      `client`-rad med vad användaren såg. Det är avsiktligt.
+- [ ] `npm run android:sync` (se lessons.md).
+
+### Integritet och docs
+- [ ] `privacy.html`: felloggar (e-post, format, felmeddelande — aldrig ljud
+      eller text) sparas i 30 dagar för felsökning.
+- [ ] `docs/felsokning.md`: SQL-frågor, t.ex. senaste felen för en e-post,
+      fel per format senaste dygnet, migrering och `wrangler tail`.
+
+### Verifiering
+- [ ] `npm test` + `tsc` i backend, `npm test` i roten
+- [ ] `wrangler dev --local`: provocera fel (ogiltig modell, blockerat svar,
+      kvottak) och kontrollera raderna i lokal D1
+- [ ] Kontrollera att en lyckad sammanfattning inte påverkas om D1-skrivningen
+      misslyckas
+
+### Driftsättning (du kör, kräver Cloudflare-åtkomst)
+1. `wrangler d1 execute diane-prod --remote --file=migrations/003-errors.sql`
+   — **före** Worker-deploy (annars loggas inget förrän migreringen körts;
+   inget går sönder eftersom `logError` sväljer felet)
+2. Push till `main`, `mobile-app`, `web-app` → Actions deployar Workern
+3. Ny Android-release för att appen ska rapportera klientfel
+
+## Ingår inte
+- BYOK-webbanvändare (ingen användaridentitet)
+- Admin-vy i appen
+- Lagring av prompt, ljud eller genererad text
+
+---
+
 # Diane — Android & iOS release plan
 
 Drafted 2026-05-13. Status: **pending verification — do not start implementing until confirmed.**
