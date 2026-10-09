@@ -1,3 +1,80 @@
+# Kostnadsskydd: räkna verkliga tokens på servern
+
+Skapad 2026-10-09. Status: **väntar på godkännande — implementera inte förrän bekräftat.**
+
+Bakgrund: kvottaket skyddar ägarens Gemini-budget (se lessons.md 2026-10-09).
+Idag kommer `audio_seconds` från klienten och litas på, och den verkliga
+kostnaden (`usageMetadata`) slängs.
+
+## Låsta beslut
+
+- [x] Bara **nya inspelningar** räknas mot de 30 sammanfattningarna
+- [x] Tokenlogg per anrop sparas i **13 månader**, raderas med kontot
+- [x] Ljud mäts av servern ur `usageMetadata`, inte av klienten
+
+## Öppet beslut
+
+- [ ] **Tokentak per period** — behövs eftersom frågor och omformatering
+      blir fria från räkningen. Förslag: `USAGE_CAP_TOKENS = 1 500 000`
+      (≈ 3 h ljud à 32 tok/s = 345 600 + god marginal för text, svar och
+      tänkande). Osynligt för normal användning, stoppar missbruk.
+
+## Fakta (Googles docs 2026-10-09)
+
+- `usageMetadata`: `promptTokenCount`, `candidatesTokenCount`,
+  `thoughtsTokenCount`, `promptTokensDetails[{modality, tokenCount}]`
+- Ljud: 32 tokens/s enligt audio- och tokendocs; prissidan säger 25.
+  Därför sparas tokens, och sekunder = ljudtokens / 32 bara för taket.
+
+## Plan
+
+### Backend
+- [ ] `migrations/004-usage.sql` + `schema.sql`:
+  - tabell `usage` (created_at, user_id, kind, format, model, audio_tokens,
+    input_tokens, output_tokens, thought_tokens, outcome)
+  - kolumn `users.tokens_used` (nollställs med perioden som övriga räknare)
+- [ ] `src/usage.ts` (ren): `readUsage(json)` → tokens per typ;
+      `usageDelta(kind, tokens, clientSeconds)` → vad som ska räknas upp
+- [ ] `/summarize`: nytt valfritt fält `kind` (`summary|qa|reformat|transcribe`).
+      Saknas det (äldre appversioner) = `summary`, som idag.
+  - `summaries_used` +1 bara för `summary` med lyckat svar
+  - `audio_seconds_used` += ljudtokens / 32 — klientens värde används bara
+    om Gemini inte skickar `usageMetadata`
+  - `tokens_used` += alla tokens, även för blockerade/tomma svar (de kostar)
+  - en rad i `usage` per anrop
+- [ ] `checkEntitlement`: nytt tak `token_cap_reached` (429)
+- [ ] Nollställning av `tokens_used` överallt där perioden nollställs
+      (webhook RENEWAL/köp, inbjudningar)
+- [ ] `/account/delete` + daglig cron: radera `usage` (konto / äldre än 13 mån)
+- [ ] Tester för `readUsage`, `usageDelta`, nytt tak, bakåtkompatibilitet
+
+### Klient
+- [ ] Skicka `kind` i `callModel` (`summary`) och från `generateFromText`
+      (`reformat`), `transcribeAudio` (`transcribe`), `askGemini` (`qa`)
+- [ ] Felmeddelande för `token_cap_reached` (svenska)
+- [ ] Smoke-tester
+
+### Docs
+- [ ] `docs/runbooks/felsokning.md` → även kostnadsfrågor: tokens per
+      användare och period, per format, per modell. Kronor = tokens × pris
+      från Googles prissida (inte hårdkodat — priser ändras)
+- [ ] `docs/modules/backend.md`: skulderna om kvottaket ersätts
+- [ ] `privacy.html`: tokenloggen (antal, inte innehåll) i 13 månader
+
+### Driftsättning
+1. Johan: lägg in `CLOUDFLARE_API_TOKEN` som repo-secret (deployen faller annars)
+2. Kör migrering 003 och 004 på remote D1
+3. Push till alla tre grenar → kontrollera att "Deploy Worker" blir grön
+4. Ny Android-release för `kind` — äldre appar fungerar, men allt räknas
+   som sammanfattning tills de uppdateras
+
+## Känd risk
+`kind` kommer från klienten: en ändrad klient kan kalla allt `qa` och slippa
+sammanfattningsräknaren. Kostnaden skyddas ändå av ljud- och tokentaket,
+som servern mäter själv.
+
+---
+
 # Felloggning per användare
 
 Skapad 2026-10-09. Status: **implementerad 2026-10-09 — väntar på migrering och deploy.** Godkänd av Johan 2026-10-09.
