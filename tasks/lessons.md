@@ -70,3 +70,27 @@ klassar `drive.appdata` som *Non-sensitive* — ingen sådan varning.
 aktuella dokumentation innan de skrivs i svar eller runbook — aldrig ur minnet.
 Kontrollera också produktionsläget (deployments list, tabeller) innan man
 säger vad som återstår; Johan kan ha gjort steget själv.
+
+## 2026-10-09 — Ett användarfel gick inte att felsöka: inga fel sparas
+
+**Vad hände:** En användare fick ett "tillfälligt fel" vid formatet
+Politiskt brandtal i senaste versionen. Det fanns inget att läsa — D1 har
+bara `users`, `subscription_events` och `grants`, misslyckade anrop räknas
+inte, och Worker-loggar behålls inte. Jag gissade först på orsaker
+(säkerhetsfilter) innan jag konstaterat att datan inte fanns.
+
+**Regel:** Vid en felrapport från en användare: kontrollera FÖRST vilka
+källor som faktiskt finns, och be sedan om exakt felmeddelande, skärmdump,
+plattform och om "Försök igen" fungerade. Presentera hypoteser som
+hypoteser. Kom ihåg att ett Gemini-svar blockerat av säkerhetsfilter kommer
+som HTTP 200 — bara klienten ser felet.
+
+## 2026-10-09 — CLAUDE.md hade ruttnat: radnummer och "ingen backend"
+
+**Vad hände:** CLAUDE.md beskrev fortfarande en ren PWA utan backend, med
+radnummer i en 2 170 raders `index.html` (nu ~4 600) och funktioner som
+tagits bort (teman, wake lock, GitHub Issues).
+
+**Regel:** CLAUDE.md pekar på kod med namn, aldrig radnummer, och hänvisar
+till `docs/` för detaljer. Ändras arkitekturen uppdateras CLAUDE.md i samma
+commit som `docs/` (regeln i docs/README.md).

@@ -43,7 +43,7 @@ pengar- eller rättighetslogiken.
 ## Konfiguration (`backend/wrangler.jsonc`)
 
 Vars: `GOOGLE_OAUTH_CLIENT_ID`, `USAGE_CAP_SUMMARIES`, `USAGE_CAP_AUDIO_SECONDS`,
-`GEMINI_MODEL`.
+`GEMINI_MODELS` (kommaseparerad fallback-kedja), `ADMINS`, `APPLE_BUNDLE_ID`.
 Secrets (via `wrangler secret put`): `GEMINI_API_KEY`, `REVENUECAT_WEBHOOK_SECRET`.
 Bindningar: D1 `DB` → `diane-prod`, `RATE_LIMITER` (30 req/60 s).
 
@@ -71,6 +71,12 @@ identitetslogiken — de rena funktioner som styr pengar och rättigheter.
 Körs med Nodes inbyggda testkörare, inga beroenden.
 
 ## Kända skulder
+
+- **Inga fel sparas.** Misslyckade anrop rör inte D1, och Worker-loggar
+  behålls inte (bara live via `wrangler tail`). Ett fel en användare fått
+  går inte att återskapa i efterhand. Gemini-svar som blockerats av
+  säkerhetsfilter kommer dessutom som HTTP 200 — Workern ser dem som lyckade.
+  Plan för felloggning per användare: [tasks/todo.md](../../tasks/todo.md).
 
 - `incrementUsage` är icke-atomär och anropas med tyst `.catch()` — kvot kan
   tappas vid samtidiga anrop.

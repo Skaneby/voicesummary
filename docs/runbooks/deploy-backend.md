@@ -45,6 +45,9 @@ export före migreringar som rör `users`.
 npx wrangler tail
 ```
 
+Bara live — Workers Logs är inte påslaget, så inget sparas. Det som hände
+före `tail` startades går inte att se.
+
 ## Vanliga lägen
 
 | Symptom | Trolig orsak |
