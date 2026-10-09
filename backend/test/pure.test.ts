@@ -6,13 +6,13 @@ import { eventToUpdate } from "../src/webhook.ts";
 import { checkEntitlement, isAdmin } from "../src/entitlement.ts";
 
 const NOW = Math.floor(Date.now() / 1000);
-const CAPS = { audio: 3600, summaries: 100 };
+const CAPS = { audio: 3600, summaries: 100, tokens: 1_000_000 };
 
 function user(over = {}) {
   return {
     id: "google:1", email: "a@b.c", rc_app_user_id: null,
     sub_active: 1, period_end: NOW + 86400, period_started: NOW - 86400,
-    audio_seconds_used: 0, summaries_used: 0,
+    audio_seconds_used: 0, summaries_used: 0, tokens_used: 0,
     created_at: NOW, updated_at: NOW, deleted_at: null,
     ...over,
   } as any;
@@ -299,4 +299,70 @@ test("ett konstigt format fäller aldrig sammanfattningen", () => {
 test("format skickas aldrig vidare till Gemini", () => {
   const payload = buildGeminiPayload({ prompt: "p", audio_seconds: 1, format: "tal" });
   assert.equal(JSON.stringify(payload).includes('"format"'), false);
+});
+
+// ── Kostnadsskydd: verklig förbrukning ──────────────────────────────────────
+import { callKind, readUsage, usageDelta } from "../src/usage.ts";
+
+const geminiBody = (meta: object | undefined) =>
+  JSON.stringify({ candidates: [{ finishReason: "STOP", content: { parts: [{ text: "x" }] } }], usageMetadata: meta });
+
+test("tokens läses per typ ur usageMetadata", () => {
+  const t = readUsage(geminiBody({
+    promptTokenCount: 3900, candidatesTokenCount: 800, thoughtsTokenCount: 1024,
+    promptTokensDetails: [{ modality: "TEXT", tokenCount: 60 }, { modality: "AUDIO", tokenCount: 3840 }],
+  }));
+  assert.deepEqual(t, { audio: 3840, input: 3900, output: 800, thought: 1024 });
+});
+
+test("saknad eller trasig usageMetadata ger null", () => {
+  assert.equal(readUsage(geminiBody(undefined)), null);
+  assert.equal(readUsage("inte json"), null);
+});
+
+test("konstiga tokenvärden blir 0, inte NaN", () => {
+  const t = readUsage(geminiBody({ promptTokenCount: "många", candidatesTokenCount: -5 }));
+  assert.deepEqual(t, { audio: 0, input: 0, output: 0, thought: 0 });
+});
+
+test("ljudtiden mäts av servern — klientens siffra ignoreras", () => {
+  const tokens = { audio: 32 * 120, input: 4000, output: 500, thought: 1000 };
+  // En ändrad klient som påstår 0 sekunder får ändå 120 s räknade
+  assert.equal(usageDelta("summary", tokens, 0, true).audioSeconds, 120);
+  assert.equal(usageDelta("summary", tokens, 0, true).tokens, 5500);
+});
+
+test("klientens sekunder används bara när Gemini inte rapporterat", () => {
+  assert.equal(usageDelta("summary", null, 90, true).audioSeconds, 90);
+  assert.equal(usageDelta("summary", null, -3, true).audioSeconds, 0);
+});
+
+test("bara nya inspelningar räknas som sammanfattning", () => {
+  const t = { audio: 0, input: 100, output: 100, thought: 0 };
+  assert.equal(usageDelta("summary", t, 0, true).summaries, 1);
+  for (const k of ["qa", "reformat", "transcribe"] as const)
+    assert.equal(usageDelta(k, t, 0, true).summaries, 0, k);
+});
+
+test("blockerat svar: tokens räknas, sammanfattningen inte", () => {
+  const d = usageDelta("summary", { audio: 320, input: 400, output: 0, thought: 50 }, 0, false);
+  assert.equal(d.summaries, 0);
+  assert.equal(d.tokens, 450);
+  assert.equal(d.audioSeconds, 10);
+});
+
+test("okänt eller saknat kind räknas som sammanfattning (äldre appar)", () => {
+  assert.equal(callKind(undefined), "summary");
+  assert.equal(callKind("gratis"), "summary");
+  assert.equal(callKind("qa"), "qa");
+});
+
+test("tokentaket stoppar när det nås", () => {
+  assert.deepEqual(checkEntitlement(user({ tokens_used: 999_999 }), CAPS), { allowed: true });
+  assert.deepEqual(checkEntitlement(user({ tokens_used: 1_000_000 }), CAPS),
+    { allowed: false, reason: "token_cap_reached" });
+});
+
+test("rad utan tokens_used (före migrering) spärras inte", () => {
+  assert.deepEqual(checkEntitlement(user({ tokens_used: undefined }), CAPS), { allowed: true });
 });

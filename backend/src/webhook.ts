@@ -199,7 +199,7 @@ export async function applyWebhookEvent(
     binds.push(Math.floor(update.period_end_ms / 1000));
   }
   if (update.resetUsage) {
-    sets.push("audio_seconds_used = 0", "summaries_used = 0");
+    sets.push("audio_seconds_used = 0", "summaries_used = 0", "tokens_used = 0");
   }
 
   binds.push(event.app_user_id);

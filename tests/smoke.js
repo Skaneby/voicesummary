@@ -225,6 +225,7 @@ function check(name, ok, extra) {
   });
   check('appläge anropar proxyn', !!proxyReq && /\/summarize$/.test(proxyReq.url), proxyReq && proxyReq.url);
   check('Bearer-token skickas med', (proxyReq?.headers?.authorization || '') === 'Bearer test-token');
+  check('sammanfattningen skickar kind=summary', proxyReq?.body?.kind === 'summary', proxyReq?.body?.kind);
   check('kroppen har prompt + ljud + längd', !!proxyReq?.body?.prompt && !!proxyReq?.body?.audio_base64 && proxyReq?.body?.audio_seconds === 90);
   check('ingen Gemini-nyckel läcker i appläge', !JSON.stringify(proxyReq?.body || {}).includes('key='));
   check('formatet skickas med för felloggen', proxyReq?.body?.format === await appPage.evaluate(() => s.style), proxyReq?.body?.format);
@@ -391,6 +392,29 @@ function check(name, ok, extra) {
   });
   check('inget anrop går direkt till Google i appläge', direktTillGoogle === 0, 'direkta anrop: ' + direktTillGoogle);
   check('transkribering, Q&A och omformatering går via proxyn', proxyKroppar.length >= 3, 'anrop: ' + proxyKroppar.length);
+  // Bara nya inspelningar räknas mot sammanfattningstaket — backend avgör
+  // det utifrån kind, så varje väg måste skicka rätt värde
+  check('transkribering, Q&A och omformatering skickar rätt kind',
+    ['transcribe', 'qa', 'reformat'].every(k => proxyKroppar.some(b => b.kind === k)),
+    proxyKroppar.map(b => b.kind).join(','));
+  check('ingen av dem räknas som sammanfattning', !proxyKroppar.some(b => b.kind === 'summary'));
+
+  // Tokentaket slår typiskt till på frågor och omformatering — där fick
+  // användaren förut ett missvisande "modellen har nått kvotgränsen"
+  await ctx.unroute('**/diane-api*/**');
+  await ctx.route('**/diane-api*/**', route =>
+    route.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ error: 'token_cap_reached' }) }));
+  const takFel = await appPage.evaluate(async () => {
+    const msgs = [];
+    const modelBefore = s.model;
+    for (const fn of [() => generateFromText('text'), () => askGemini([{ role: 'user', parts: [{ text: 'x' }] }]), () => generate('ZmFrZQ==', 'audio/webm')]) {
+      try { await fn(); msgs.push('inget fel'); } catch (e) { msgs.push(e.message); }
+    }
+    return { msgs, modelChanged: s.model !== modelBefore };
+  });
+  check('tokentaket ger rätt besked i omformatering, Q&A och sammanfattning',
+    takFel.msgs.every(m => m.includes('gräns för AI-användning')), takFel.msgs.join(' | '));
+  check('tokentaket byter inte modell i appläge', !takFel.modelChanged);
   check('proxykroppen bär konversationen', proxyKroppar.every(b => Array.isArray(b.contents)));
   // Regressionsskyddet gäller att taket finns — inte vilket värde det har.
   // Transkribering får medvetet ett lägre tak än sammanfattning.

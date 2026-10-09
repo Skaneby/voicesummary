@@ -3,6 +3,7 @@ import {
   checkEntitlement,
   isAdmin,
   incrementUsage,
+  recordUsage,
   upsertUser,
   type UsageCaps,
 } from "./entitlement";
@@ -32,6 +33,7 @@ import {
   upstreamMessage,
   type ErrorEntry,
 } from "./errors";
+import { callKind, readUsage, usageDelta, USAGE_RETENTION_DAYS } from "./usage";
 
 interface RateLimit {
   limit(opts: { key: string }): Promise<{ success: boolean }>;
@@ -44,6 +46,7 @@ interface Env {
   APPLE_BUNDLE_ID?: string;
   USAGE_CAP_SUMMARIES: string;
   USAGE_CAP_AUDIO_SECONDS: string;
+  USAGE_CAP_TOKENS?: string;
   GEMINI_MODEL?: string;
   GEMINI_MODELS?: string;
   REVENUECAT_WEBHOOK_SECRET?: string;
@@ -94,12 +97,21 @@ async function withGrant(user: User, grant: Grant | null, env: Env, now: number)
   if (ownSub || !grantActive(grant, now)) return user;
   if (usageWindowExpired(user, now)) {
     await resetUsageWindow(env.DB, user.id, now);
-    user = { ...user, period_started: now, audio_seconds_used: 0, summaries_used: 0 };
+    user = { ...user, period_started: now, audio_seconds_used: 0, summaries_used: 0, tokens_used: 0 };
   }
   return { ...user, sub_active: 1, period_end: grant!.expires_at };
 }
 
-const VERSION = "0.6.0";
+/** Taken per period. Standardvärdena gäller om variabeln saknas i wrangler.jsonc. */
+function capsFor(env: Env): UsageCaps {
+  return {
+    audio: Number(env.USAGE_CAP_AUDIO_SECONDS) || 10800,
+    summaries: Number(env.USAGE_CAP_SUMMARIES) || 30,
+    tokens: Number(env.USAGE_CAP_TOKENS) || 1_500_000,
+  };
+}
+
+const VERSION = "0.7.0";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -162,10 +174,13 @@ export default {
     }
   },
 
-  // Daglig cron (wrangler.jsonc → triggers.crons): gallra felloggen.
+  // Daglig cron (wrangler.jsonc → triggers.crons): gallra fel- och tokenloggen.
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
-    const deleted = await purgeOldErrors(env.DB, Math.floor(Date.now() / 1000));
-    console.log(JSON.stringify({ event: "errors_purged", deleted }));
+    const now = Math.floor(Date.now() / 1000);
+    const errors = await purgeOldErrors(env.DB, now);
+    const usage = await env.DB.prepare("DELETE FROM usage WHERE created_at < ?")
+      .bind(now - USAGE_RETENTION_DAYS * 86400).run();
+    console.log(JSON.stringify({ event: "logs_purged", errors, usage: usage.meta?.changes ?? 0 }));
   },
 } satisfies ExportedHandler<Env>;
 
@@ -196,10 +211,8 @@ async function handleMe(request: Request, env: Env): Promise<Response> {
   );
   const isAdminUser = adminCheck(claims, env);
 
-  const caps = {
-    summaries: Number(env.USAGE_CAP_SUMMARIES) || 30,
-    audio_seconds: Number(env.USAGE_CAP_AUDIO_SECONDS) || 10800,
-  };
+  const c = capsFor(env);
+  const caps = { summaries: c.summaries, audio_seconds: c.audio, tokens: c.tokens };
 
   // Re-evaluate sub_active server-side instead of trusting the stored flag —
   // catches the case where period_end has passed but the EXPIRATION webhook
@@ -219,6 +232,7 @@ async function handleMe(request: Request, env: Env): Promise<Response> {
       period_end: user.period_end,
       summaries_used: user.summaries_used,
       audio_seconds_used: user.audio_seconds_used,
+      tokens_used: user.tokens_used ?? 0,
       caps,
       is_admin: isAdminUser,
       grant: grantActive(grant, now) ? { expires_at: grant!.expires_at } : null,
@@ -269,10 +283,7 @@ async function handleSummarize(
     await grantFor(claims, env), env, now,
   );
 
-  const caps: UsageCaps = {
-    audio: Number(env.USAGE_CAP_AUDIO_SECONDS) || 10800,
-    summaries: Number(env.USAGE_CAP_SUMMARIES) || 30,
-  };
+  const caps = capsFor(env);
   const check = adminCheck(claims, env)
     ? { allowed: true }
     : checkEntitlement(user, caps);
@@ -317,16 +328,30 @@ async function handleSummarize(
     );
   }
 
-  // Tappad räknare betyder tappad intäktskontroll — svälj inte felet tyst
-  await incrementUsage(env.DB, user.id, body.audio_seconds).catch((e) =>
-    console.error("incrementUsage failed", user.id, String(e)),
-  );
-
   const respText = await upstream.text();
   // 200 betyder inte att det gick bra — säkerhetsfilter och tomma svar
   // kommer också som 200. Svaret skickas ändå vidare oförändrat.
   const problem = classifyGeminiBody(respText);
   if (problem) fail({ ...problem, status: 200, format, model });
+
+  // Förbrukningen mäts ur Geminis eget svar, inte ur klientens uppgifter.
+  // Blockerade och tomma svar har också kostat tokens och räknas därför —
+  // men inte som en sammanfattning, användaren fick ju ingen.
+  const kind = callKind(body.kind);
+  const tokens = readUsage(respText);
+  if (!tokens) console.warn(JSON.stringify({ event: "usage_metadata_missing", user_id: user.id, model }));
+  const delta = usageDelta(kind, tokens, body.audio_seconds, !problem);
+
+  // Tappad räknare betyder tappat kostnadsskydd — svälj inte felet tyst
+  await incrementUsage(env.DB, user.id, delta).catch((e) =>
+    console.error("incrementUsage failed", user.id, String(e)),
+  );
+  if (tokens) {
+    ctx.waitUntil(recordUsage(env.DB, {
+      user_id: user.id, kind, format, model, tokens, outcome: problem?.kind ?? "ok",
+    }, now));
+  }
+
   return cors(
     request,
     new Response(respText, {
@@ -399,10 +424,12 @@ async function handleAccountDelete(
     ),
     env.DB.prepare("DELETE FROM users WHERE id = ?").bind(claims.userId),
   ]);
-  // Separat och tolerant: saknas tabellen (migrering 003 inte körd) får det
-  // inte stoppa en kontoradering. Gallringen tar resten inom 30 dagar.
-  await env.DB.prepare("DELETE FROM errors WHERE user_id = ?").bind(claims.userId).run()
-    .catch((e) => console.error("delete errors failed", claims.userId, String(e)));
+  // Separat och tolerant: saknas en tabell (migrering 003/004 inte körd) får
+  // det inte stoppa en kontoradering. Gallringen tar resten.
+  for (const table of ["errors", "usage"]) {
+    await env.DB.prepare(`DELETE FROM ${table} WHERE user_id = ?`).bind(claims.userId).run()
+      .catch((e) => console.error("delete " + table + " failed", claims.userId, String(e)));
+  }
 
   return cors(request, json({ ok: true, deleted: true }));
 }

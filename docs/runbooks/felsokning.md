@@ -73,3 +73,40 @@ npx wrangler d1 execute diane-prod --remote --command "
 
 Fråga då efter exakt felmeddelande, skärmdump, plattform och om
 "Försök igen" fungerade (se tasks/lessons.md 2026-10-09).
+
+## Vad kostar en användare?
+
+Tabellen `usage` har en rad per Gemini-anrop med tokens per typ (13 månader).
+Räkna om till kronor med priserna på
+[Googles prissida](https://ai.google.dev/gemini-api/docs/pricing) — de är inte
+hårdkodade, eftersom de ändras och skiljer sig per modell och för ljud.
+
+Förbrukning per användare senaste 30 dagarna:
+
+```bash
+npx wrangler d1 execute diane-prod --remote --command "
+  SELECT u.email, COUNT(*) AS anrop,
+         SUM(g.audio_tokens) AS ljud, SUM(g.input_tokens) AS in_tot,
+         SUM(g.output_tokens) AS ut, SUM(g.thought_tokens) AS tankande
+  FROM usage g JOIN users u ON u.id = g.user_id
+  WHERE g.created_at > unixepoch() - 30*86400
+  GROUP BY u.email ORDER BY in_tot + ut + tankande DESC LIMIT 20"
+```
+
+Per anropstyp och format — vad driver kostnaden?
+
+```bash
+npx wrangler d1 execute diane-prod --remote --command "
+  SELECT kind, format, model, COUNT(*) AS anrop,
+         AVG(input_tokens) AS snitt_in, AVG(output_tokens + thought_tokens) AS snitt_ut
+  FROM usage WHERE created_at > unixepoch() - 30*86400
+  GROUP BY kind, format, model ORDER BY anrop DESC"
+```
+
+Vem närmar sig tokentaket (1,5 M per period)?
+
+```bash
+npx wrangler d1 execute diane-prod --remote --command "
+  SELECT email, tokens_used, summaries_used, audio_seconds_used
+  FROM users ORDER BY tokens_used DESC LIMIT 10"
+```

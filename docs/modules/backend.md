@@ -12,10 +12,10 @@ Kod: `backend/src/`. Deploy: `wrangler deploy`. Se
 | POST | `/summarize` | Bearer | rate limit → rättighet → proxa till Gemini → räkna kvot; fel loggas i `errors` |
 | POST | `/log-error` | Bearer | appen rapporterar fel den visat (`{ kind, message, format?, platform? }`) |
 | POST | `/webhook/revenuecat` | delad hemlighet | speglar prenumerationsstatus till D1 |
-| POST | `/account/delete` | Bearer | hård radering av användare, händelser och felloggar (GDPR) |
-| cron | `0 3 * * *` | — | `scheduled()`: gallrar `errors` äldre än 30 dagar |
+| POST | `/account/delete` | Bearer | hård radering av användare, händelser, fel- och tokenloggar (GDPR) |
+| cron | `0 3 * * *` | — | `scheduled()`: gallrar `errors` (30 d) och `usage` (13 mån) |
 
-`/summarize` tar `{ prompt, audio_base64, audio_mime, audio_seconds, format? }` och
+`/summarize` tar `{ prompt, audio_base64, audio_mime, audio_seconds, format?, kind? }` och
 returnerar **Geminis svar oförändrat**. Se [../architecture.md](../architecture.md).
 
 ## Filer
@@ -26,6 +26,7 @@ returnerar **Geminis svar oförändrat**. Se [../architecture.md](../architectur
 | `entitlement.ts` | `upsertUser`, `checkEntitlement`, `incrementUsage` |
 | `webhook.ts` | `eventToUpdate` — RevenueCat-händelse → databasändring |
 | `gemini.ts` | anropet uppströms mot Gemini |
+| `usage.ts` | förbrukning ur `usageMetadata`, vad som räknas mot taken |
 | `errors.ts` | felloggen: `logError`, `classifyGeminiBody` (200-svar som är fel), gallring |
 | `index.ts` | router, CORS, rate limit |
 
@@ -40,12 +41,12 @@ pengar- eller rättighetslogiken.
 | 401 | ogiltig/saknad token | logga ut, visa inloggning |
 | 402 | ingen aktiv prenumeration | visa betalvägg |
 | 429 `rate_limited` | >30 req/min | be användaren vänta |
-| 429 `summary_cap_reached` / `audio_cap_reached` | månadskvot slut | visa kvotmeddelande |
+| 429 `summary_cap_reached` / `audio_cap_reached` / `token_cap_reached` | månadskvot slut | visa kvotmeddelande (`proxyLimitMessage()`) |
 | 503 | servern felkonfigurerad | generiskt fel |
 
 ## Konfiguration (`backend/wrangler.jsonc`)
 
-Vars: `GOOGLE_OAUTH_CLIENT_ID`, `USAGE_CAP_SUMMARIES`, `USAGE_CAP_AUDIO_SECONDS`,
+Vars: `GOOGLE_OAUTH_CLIENT_ID`, `USAGE_CAP_SUMMARIES`, `USAGE_CAP_AUDIO_SECONDS`, `USAGE_CAP_TOKENS`,
 `GEMINI_MODELS` (kommaseparerad fallback-kedja), `ADMINS`, `APPLE_BUNDLE_ID`.
 Secrets (via `wrangler secret put`): `GEMINI_API_KEY`, `REVENUECAT_WEBHOOK_SECRET`.
 Bindningar: D1 `DB` → `diane-prod`, `RATE_LIMITER` (30 req/60 s).
@@ -73,6 +74,22 @@ cd backend && npm test
 identitetslogiken — de rena funktioner som styr pengar och rättigheter.
 Körs med Nodes inbyggda testkörare, inga beroenden.
 
+## Kostnadsskydd
+
+Taken skyddar **ägarens** Gemini-budget — användaren betalar en fast
+prenumeration. Tre tak per period, alla i `users` och `checkEntitlement()`:
+
+| Tak | Variabel | Räknas upp av |
+|---|---|---|
+| Sammanfattningar (30) | `USAGE_CAP_SUMMARIES` | bara `kind: summary` med levererat svar |
+| Ljud (3 h) | `USAGE_CAP_AUDIO_SECONDS` | ljudtokens ur `usageMetadata` ÷ 32 — **inte** klientens siffra |
+| Tokens (1,5 M) | `USAGE_CAP_TOKENS` | alla tokens: in, ut, tänkande — även blockerade svar |
+
+Klienten skickar `kind` (`summary`, `qa`, `reformat`, `transcribe`); saknas
+det (äldre appar) räknas anropet som sammanfattning. Logiken är ren och
+testad i `usage.ts`. Varje anrop sparas dessutom i tabellen `usage`
+(13 månader) — se [../runbooks/felsokning.md](../runbooks/felsokning.md).
+
 ## Felloggning
 
 Tabellen `errors` (`migrations/003-errors.sql`) + Workers Logs
@@ -82,15 +99,11 @@ inte fälla en begäran. Hur man läser felen:
 
 ## Kända skulder
 
-- **Kvottaket skyddar ägarens AI-kostnad** — användaren betalar en fast
-  prenumeration, Gemini-kostnaden bärs av Diane. Taket är inte en tjänst
-  användaren köper, utan ett kostnadsskydd. Svagheter i det skyddet:
-  - `audio_seconds` kommer från klienten och litas på — en ändrad klient kan
-    skicka 0 och få obegränsat med ljud. Ljud är den största kostnaden.
-  - Varje lyckat anrop räknas som en "sammanfattning": även en fråga i
-    Fråga om mötet, en omformatering och en transkribering.
-  - Blockerade och tomma 200-svar räknas mot taket och belastar kostnaden.
-  - Den verkliga kostnaden (`usageMetadata` i Geminis svar) sparas inte.
+- `kind` kommer från klienten: en ändrad klient kan kalla allt `qa` och slippa
+  sammanfattningsräknaren. Kostnaden skyddas ändå av ljud- och tokentaket,
+  som servern mäter själv.
+- Saknar Geminis svar `usageMetadata` faller ljudet tillbaka på klientens
+  sekunder och tokens räknas inte (loggas som `usage_metadata_missing`).
 - `incrementUsage` är icke-atomär och anropas med tyst `.catch()` — kvot kan
   tappas vid samtidiga anrop.
 - `TRANSFER` och `SUBSCRIBER_ALIAS` från RevenueCat ignoreras; de behövs när en

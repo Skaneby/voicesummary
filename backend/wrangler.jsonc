@@ -11,13 +11,14 @@
   // Fel per användare finns dessutom i D1-tabellen `errors`.
   "observability": { "enabled": true },
 
-  // Daglig gallring av felloggen (scheduled() i src/index.ts), kl 03 UTC
+  // Daglig gallring av fel- och tokenloggen (scheduled() i src/index.ts), kl 03 UTC
   "triggers": { "crons": ["0 3 * * *"] },
 
   "vars": {
     "GOOGLE_OAUTH_CLIENT_ID": "732034397281-rtpshfsohq70p0cjnif78sm6u07sbnre.apps.googleusercontent.com",
     "USAGE_CAP_SUMMARIES": "30",
     "USAGE_CAP_AUDIO_SECONDS": "10800",
+    "USAGE_CAP_TOKENS": "1500000",
     "APPLE_BUNDLE_ID": "REPLACE_WITH_IOS_BUNDLE_ID",
     // Ägare släpps alltid förbi betalvägg och kvoter. Id ("google:…") eller
     // Google-intygad e-post, kommaseparerat.

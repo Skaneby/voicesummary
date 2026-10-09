@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
   -- Usage tracking (resets when period_started rolls forward)
   audio_seconds_used  INTEGER NOT NULL DEFAULT 0,
   summaries_used      INTEGER NOT NULL DEFAULT 0,
+  tokens_used         INTEGER NOT NULL DEFAULT 0,  -- alla Gemini-tokens (migrations/004)
 
   -- Audit / soft delete
   created_at      INTEGER NOT NULL,
@@ -71,3 +72,21 @@ CREATE TABLE IF NOT EXISTS errors (
 
 CREATE INDEX IF NOT EXISTS idx_errors_email   ON errors(email, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_errors_created ON errors(created_at);
+
+-- Verklig AI-förbrukning per anrop (migrations/004-usage.sql). Gallras efter 13 mån.
+CREATE TABLE IF NOT EXISTS usage (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at      INTEGER NOT NULL,
+  user_id         TEXT NOT NULL,
+  kind            TEXT NOT NULL,      -- summary | qa | reformat | transcribe
+  format          TEXT,
+  model           TEXT,
+  audio_tokens    INTEGER NOT NULL DEFAULT 0,
+  input_tokens    INTEGER NOT NULL DEFAULT 0,
+  output_tokens   INTEGER NOT NULL DEFAULT 0,
+  thought_tokens  INTEGER NOT NULL DEFAULT 0,
+  outcome         TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_usage_user    ON usage(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_usage_created ON usage(created_at);

@@ -121,6 +121,10 @@ Find code by name, not line number — line numbers rot: `PROMPTS`, `sanitizeHtm
 
 Every commit goes to **all three** branches (fast-forward or merge, never force) — see lessons.md 2026-09-23. D1 migrations in `backend/migrations/` are **not** automated: run them with `wrangler d1 execute diane-prod --remote --file=...` before deploying code that needs them.
 
+## Cost protection
+
+The caps protect **Johan's** Gemini budget — users pay a flat subscription. The server measures usage from Gemini's `usageMetadata` (`backend/src/usage.ts`), never from what the client claims: audio seconds = audio tokens ÷ 32, plus a total-token cap. Only `kind: summary` counts toward the 30 summaries. Per-call token log: D1 table `usage` (13 months). Judge every change to `/summarize`, prompts or models by its token cost.
+
 ## Error logging
 
 Per-user errors live in the D1 table `errors` (30 days) and in Workers Logs. **When a user reports a problem, look there first:** [docs/runbooks/felsokning.md](docs/runbooks/felsokning.md) has the SQL.

@@ -2421,7 +2421,9 @@ function callModel(base64, mime) {
         // trots att ingen användare någonsin ser dem.
         thinking_budget: 1024,
         // Bara för backendens fellogg — skickas inte till Gemini
-        format: s.style
+        format: s.style,
+        // Bara nya inspelningar räknas mot månadens sammanfattningar
+        kind: 'summary'
       })
     });
   }
@@ -2443,6 +2445,19 @@ function callModel(base64, mime) {
       })
     }
   );
+}
+
+// Backendens egna spärrar (kvottak, rate limit) som text för användaren.
+// Våra fel är strängar; Geminis fel skickas vidare oförändrade och är objekt
+// — därför typkontrollen. Null = inte vårt fel, låt anroparen hantera det.
+const PROXY_LIMITS = {
+  summary_cap_reached: 'Du har nått månadens gräns för sammanfattningar. Gränsen nollställs när ny period börjar.',
+  audio_cap_reached:   'Du har nått månadens gräns för inspelad tid. Gränsen nollställs när ny period börjar.',
+  token_cap_reached:   'Du har nått månadens gräns för AI-användning. Gränsen nollställs när ny period börjar.',
+  rate_limited:        'För många förfrågningar just nu — vänta en stund och försök igen.',
+};
+function proxyLimitMessage(e) {
+  return proxyMode() && typeof e?.error === 'string' ? PROXY_LIMITS[e.error] || null : null;
 }
 
 async function generate(base64, mime, attempt = 0, triedRefresh = false) {
@@ -2468,10 +2483,8 @@ async function generate(base64, mime, attempt = 0, triedRefresh = false) {
       if (r.status === 429) {
         // Våra egna fel är strängar; Geminis fel skickas vidare oförändrat och
         // är objekt. Utan den skillnaden göms uppströmsfelet bakom vårt eget.
-        const err = typeof e.error === 'string' ? e.error : '';
-        if (err === 'summary_cap_reached') throw new Error('Du har nått månadens gräns för sammanfattningar. Gränsen nollställs när ny period börjar.');
-        if (err === 'audio_cap_reached') throw new Error('Du har nått månadens gräns för inspelad tid. Gränsen nollställs när ny period börjar.');
-        if (err === 'rate_limited') throw new Error('För många förfrågningar just nu — vänta en stund och försök igen.');
+        const own = proxyLimitMessage(e);
+        if (own) throw new Error(own);
         if (apiMsg) throw new Error('Gemini nekade förfrågan: ' + apiMsg);
         throw new Error('För många förfrågningar just nu — vänta en stund och försök igen.');
       }
@@ -2536,7 +2549,9 @@ async function generate(base64, mime, attempt = 0, triedRefresh = false) {
 // Gemini-native payload; i appläget översätts den till proxyns format,
 // eftersom klienten där inte har någon nyckel. Utan detta faller
 // omformatering, transkribering och Fråga om mötet tyst sönder i appen.
-function callGeminiRaw(payload, audioSeconds = 0) {
+// `kind` (reformat | transcribe | qa) avgör vad backend räknar mot taken —
+// bara 'summary' räknas som en sammanfattning.
+function callGeminiRaw(payload, audioSeconds = 0, kind = 'summary') {
   if (proxyMode()) {
     return fetch(API_PROXY + '/summarize', {
       method: 'POST',
@@ -2550,7 +2565,9 @@ function callGeminiRaw(payload, audioSeconds = 0) {
         audio_seconds: Math.round(audioSeconds),
         temperature: payload.generationConfig?.temperature,
         max_output_tokens: payload.generationConfig?.maxOutputTokens,
-        thinking_budget: payload.generationConfig?.thinkingConfig?.thinkingBudget
+        thinking_budget: payload.generationConfig?.thinkingConfig?.thinkingBudget,
+        kind,
+        format: s.style
       })
     });
   }
@@ -2575,9 +2592,11 @@ async function generateFromText(inputText, attempt = 0) {
       maxOutputTokens: s.model.includes('2.0') ? 8192 : 16384,
       thinkingConfig: { thinkingBudget: 2048 }
     }
-  });
+  }, 0, 'reformat');
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
+    const own = proxyLimitMessage(e);
+    if (own) throw new Error(own);
     const apiMsg = e.error?.message || '';
     if (r.status === 404) switchToFallback('är inte längre tillgänglig');
     if (r.status === 403) switchToFallback('kräver fakturering');
@@ -2828,7 +2847,7 @@ async function transcribeAudio() {
       // Lägre tanketak än sammanfattningen: ordagrann transkribering är en
       // mekanisk uppgift vid temperature 0 och blir inte bättre av resonemang.
       generationConfig: { temperature: 0, maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 512 } }
-    }, (s.elapsed || 0) / 1000);
+    }, (s.elapsed || 0) / 1000, 'transcribe');
     if (!r.ok) throw new Error('transkribering misslyckades');
     const d = await r.json();
     const txt = (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
@@ -2863,9 +2882,11 @@ async function askGemini(contents, attempt = 0) {
   const r = await callGeminiRaw({
     contents,
     generationConfig: { temperature: 0.2, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 2048 } }
-  });
+  }, 0, 'qa');
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
+    const own = proxyLimitMessage(e);
+    if (own) throw new Error(own);
     const apiMsg = e.error?.message || '';
     if (r.status === 404) switchToFallback('är inte längre tillgänglig');
     if (r.status === 403) switchToFallback('kräver fakturering');

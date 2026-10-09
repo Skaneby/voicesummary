@@ -16,6 +16,9 @@ export interface SummarizeBody {
   /** PROMPTS-nyckeln (t.ex. 'tal'). Skickas inte till Gemini — bara för
       felloggen, och valideras där (isShortKey) i stället för här. */
   format?: unknown;
+  /** summary | qa | reformat | transcribe — avgör vad som räknas mot taken.
+      Valideras av callKind() i usage.ts; okänt = summary. */
+  kind?: unknown;
 }
 
 export function isSummarizeBody(x: unknown): x is SummarizeBody {

@@ -90,7 +90,7 @@ export async function deleteGrant(db: D1Database, email: string): Promise<void> 
 /** Starta ett nytt 30-dagarsfönster: nollställ förbrukningen. */
 export async function resetUsageWindow(db: D1Database, userId: string, now: number): Promise<void> {
   await db
-    .prepare("UPDATE users SET period_started = ?, audio_seconds_used = 0, summaries_used = 0, updated_at = ? WHERE id = ?")
+    .prepare("UPDATE users SET period_started = ?, audio_seconds_used = 0, summaries_used = 0, tokens_used = 0, updated_at = ? WHERE id = ?")
     .bind(now, now, userId)
     .run();
 }

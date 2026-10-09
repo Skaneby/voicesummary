@@ -1,6 +1,6 @@
 # Kostnadsskydd: räkna verkliga tokens på servern
 
-Skapad 2026-10-09. Status: **väntar på godkännande — implementera inte förrän bekräftat.**
+Skapad 2026-10-09. Status: **implementerad 2026-10-09 — väntar på migrering 003 + 004 och deploy.** Godkänd av Johan 2026-10-09.
 
 Bakgrund: kvottaket skyddar ägarens Gemini-budget (se lessons.md 2026-10-09).
 Idag kommer `audio_seconds` från klienten och litas på, och den verkliga
@@ -12,9 +12,9 @@ kostnaden (`usageMetadata`) slängs.
 - [x] Tokenlogg per anrop sparas i **13 månader**, raderas med kontot
 - [x] Ljud mäts av servern ur `usageMetadata`, inte av klienten
 
-## Öppet beslut
+## Beslut om tokentak
 
-- [ ] **Tokentak per period** — behövs eftersom frågor och omformatering
+- [x] **Tokentak per period** (godkänt: 1 500 000) — behövs eftersom frågor och omformatering
       blir fria från räkningen. Förslag: `USAGE_CAP_TOKENS = 1 500 000`
       (≈ 3 h ljud à 32 tok/s = 345 600 + god marginal för text, svar och
       tänkande). Osynligt för normal användning, stoppar missbruk.
@@ -29,37 +29,37 @@ kostnaden (`usageMetadata`) slängs.
 ## Plan
 
 ### Backend
-- [ ] `migrations/004-usage.sql` + `schema.sql`:
+- [x] `migrations/004-usage.sql` + `schema.sql`:
   - tabell `usage` (created_at, user_id, kind, format, model, audio_tokens,
     input_tokens, output_tokens, thought_tokens, outcome)
   - kolumn `users.tokens_used` (nollställs med perioden som övriga räknare)
-- [ ] `src/usage.ts` (ren): `readUsage(json)` → tokens per typ;
+- [x] `src/usage.ts` (ren): `readUsage(json)` → tokens per typ;
       `usageDelta(kind, tokens, clientSeconds)` → vad som ska räknas upp
-- [ ] `/summarize`: nytt valfritt fält `kind` (`summary|qa|reformat|transcribe`).
+- [x] `/summarize`: nytt valfritt fält `kind` (`summary|qa|reformat|transcribe`).
       Saknas det (äldre appversioner) = `summary`, som idag.
   - `summaries_used` +1 bara för `summary` med lyckat svar
   - `audio_seconds_used` += ljudtokens / 32 — klientens värde används bara
     om Gemini inte skickar `usageMetadata`
   - `tokens_used` += alla tokens, även för blockerade/tomma svar (de kostar)
   - en rad i `usage` per anrop
-- [ ] `checkEntitlement`: nytt tak `token_cap_reached` (429)
-- [ ] Nollställning av `tokens_used` överallt där perioden nollställs
+- [x] `checkEntitlement`: nytt tak `token_cap_reached` (429)
+- [x] Nollställning av `tokens_used` överallt där perioden nollställs
       (webhook RENEWAL/köp, inbjudningar)
-- [ ] `/account/delete` + daglig cron: radera `usage` (konto / äldre än 13 mån)
-- [ ] Tester för `readUsage`, `usageDelta`, nytt tak, bakåtkompatibilitet
+- [x] `/account/delete` + daglig cron: radera `usage` (konto / äldre än 13 mån)
+- [x] Tester för `readUsage`, `usageDelta`, nytt tak, bakåtkompatibilitet
 
 ### Klient
-- [ ] Skicka `kind` i `callModel` (`summary`) och från `generateFromText`
+- [x] Skicka `kind` i `callModel` (`summary`) och från `generateFromText`
       (`reformat`), `transcribeAudio` (`transcribe`), `askGemini` (`qa`)
-- [ ] Felmeddelande för `token_cap_reached` (svenska)
-- [ ] Smoke-tester
+- [x] Felmeddelande för `token_cap_reached` (svenska)
+- [x] Smoke-tester
 
 ### Docs
-- [ ] `docs/runbooks/felsokning.md` → även kostnadsfrågor: tokens per
+- [x] `docs/runbooks/felsokning.md` → även kostnadsfrågor: tokens per
       användare och period, per format, per modell. Kronor = tokens × pris
       från Googles prissida (inte hårdkodat — priser ändras)
-- [ ] `docs/modules/backend.md`: skulderna om kvottaket ersätts
-- [ ] `privacy.html`: tokenloggen (antal, inte innehåll) i 13 månader
+- [x] `docs/modules/backend.md`: skulderna om kvottaket ersätts
+- [x] `privacy.html`: tokenloggen (antal, inte innehåll) i 13 månader
 
 ### Driftsättning
 1. Johan: lägg in `CLOUDFLARE_API_TOKEN` som repo-secret (deployen faller annars)
@@ -72,6 +72,34 @@ kostnaden (`usageMetadata`) slängs.
 `kind` kommer från klienten: en ändrad klient kan kalla allt `qa` och slippa
 sammanfattningsräknaren. Kostnaden skyddas ändå av ljud- och tokentaket,
 som servern mäter själv.
+
+
+## Granskning
+
+**Avvikelser från planen**
+- INSERT i `usage` ligger i `recordUsage()` (entitlement.ts) i stället för
+  inline i index.ts — så att den går att testa mot D1.
+- Upptäckt bugg åtgärdad: i appläget visade omformatering och Fråga om
+  mötet varje 429 som "modellen har nått kvotgränsen — bytt till X". Nu
+  mappar `proxyLimitMessage()` backendens egna spärrar på alla vägar.
+  Viktigt eftersom tokentaket typiskt slår till just där.
+- `/me` returnerar även `tokens_used` och `caps.tokens`.
+
+**Verifierat**
+- Backend 54/54 (10 nya), klient 196/196 (5 nya), HIG 90/90, `tsc`,
+  `wrangler deploy --dry-run`.
+- Migrering 004 med wrangler på gamla schemat: kolumnen läggs till,
+  befintliga räknare orörda. Andra körningen: "duplicate column name" —
+  ofarligt, dokumenterat i filen.
+- Lokal D1: klient som påstår 0 s får ändå 120 s räknade; fråga räknas inte
+  som sammanfattning; tokentak, nollställning, 13-månadersgallring.
+- Alla SQL-frågor i felsokning.md körda mot lokal D1.
+- Mutationstest: utan `proxyLimitMessage` i Q&A går två tester rött.
+
+**Risk att känna till:** deployas Workern FÖRE migrering 004 misslyckas
+hela räkningen (`no such column: tokens_used`) — inga tak tillämpas förrän
+migreringen körts. Felet loggas men stoppar inget. Ordningen är därför
+kritisk.
 
 ---
 
