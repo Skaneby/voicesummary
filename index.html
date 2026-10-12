@@ -2531,18 +2531,45 @@ async function generate(base64, mime, attempt = 0, triedRefresh = false) {
     }
     throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
   }
-  const d = await r.json();
+  return parseModelOutput(await r.json());
+}
+
+// Gör Geminis svar till { html, suggestedTitle } — gemensamt för inspelning
+// och omformatering. Svaret kan komma i flera delar (Gemini 3 delar ibland
+// upp texten, och tankedelar ska inte med), så alla textdelar fogas ihop;
+// förr lästes bara första delen och då blev bara TITLE-raden kvar. Ren text
+// utan HTML görs om till stycken i stället för att kastas. Blir det ändå
+// ingen text kastas ett fel, så att användaren får Försök igen i stället för
+// ett tomt resultat med bara en rubrik.
+const stripFence = x => x.replace(/^```[a-z]*\s*/i, '').replace(/\s*```\s*$/, '').trim();
+function parseModelOutput(d) {
   const candidate = d.candidates?.[0];
   const finishReason = candidate?.finishReason;
   if (finishReason === 'MAX_TOKENS') throw new Error('Svaret blev för långt. Prova en kortare inspelning, eller byt till gemini-2.5-pro i Inställningar.');
   if (finishReason === 'SAFETY') throw new Error('Svaret blockerades av säkerhetsfilter. Prova igen.');
-  let txt = candidate?.content?.parts?.[0]?.text || '';
+  const txt = stripFence((candidate?.content?.parts || [])
+    .filter(p => typeof p.text === 'string' && !p.thought).map(p => p.text).join(''));
   if (!txt) throw new Error('Tomt svar från Gemini. Kontrollera att inspelningen innehåller ljud och försök igen.');
-  txt = txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
-  const titleMatch = txt.match(/^TITLE:\s*(.+?)[\r\n]/i);
+  const titleMatch = txt.match(/^TITLE:\s*(.+?)\s*(?:\r?\n|$)/i);
   const suggestedTitle = titleMatch ? titleMatch[1].trim() : '';
-  const html = txt.replace(/^TITLE:.*[\r\n]*/i, '').trim().replace(/^[^<]+/, '');
-  return { html, suggestedTitle };
+  let body = stripFence(txt.replace(/^TITLE:[^\r\n]*/i, ''));
+  const lt = body.indexOf('<');
+  body = lt === -1 ? textToHtml(body) : body.slice(lt);
+  const probe = document.createElement('template');
+  probe.innerHTML = sanitizeHtml(body);
+  if (!probe.content.textContent.trim()) {
+    logError('app', 'Svar utan sammanfattning (delar: ' + (candidate?.content?.parts || []).length + ')', txt.slice(0, 500));
+    throw new Error('Gemini svarade utan någon sammanfattning. Tryck Försök igen — inspelningen är sparad.');
+  }
+  return { html: body, suggestedTitle };
+}
+
+// Ren text/markdown → enkel HTML (rubrik-rader blir h2, övrigt stycken).
+function textToHtml(text) {
+  const esc = x => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).map(b =>
+    /^#{1,6}\s/.test(b) ? '<h2>' + esc(b.replace(/^#{1,6}\s+/, '')) + '</h2>'
+                         : '<p>' + esc(b).replace(/\n/g, '<br>') + '</p>').join('');
 }
 
 // Alla Gemini-anrop utom huvudsammanfattningen går genom den här. Tar en
@@ -2618,18 +2645,7 @@ async function generateFromText(inputText, attempt = 0) {
     }
     throw new Error(apiMsg || 'Gemini API-fel (' + r.status + ')');
   }
-  const d = await r.json();
-  const candidate = d.candidates?.[0];
-  const finishReason = candidate?.finishReason;
-  if (finishReason === 'MAX_TOKENS') throw new Error('Svaret blev för långt…');
-  if (finishReason === 'SAFETY') throw new Error('Svaret blockerades av säkerhetsfilter.');
-  let txt = candidate?.content?.parts?.[0]?.text || '';
-  if (!txt) throw new Error('Tomt svar från Gemini.');
-  txt = txt.replace(/^```html?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
-  const titleMatch = txt.match(/^TITLE:\s*(.+?)[\r\n]/i);
-  const suggestedTitle = titleMatch ? titleMatch[1].trim() : '';
-  const html = txt.replace(/^TITLE:.*[\r\n]*/i, '').trim().replace(/^[^<]+/, '');
-  return { html, suggestedTitle };
+  return parseModelOutput(await r.json());
 }
 
 let _reqId = 0; // monotonic counter — stale responses are silently dropped

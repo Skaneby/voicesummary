@@ -1165,6 +1165,26 @@ function check(name, ok, extra) {
     return s.title === '';
   }));
 
+  console.log('\n── 5n. Tolkning av Geminis svar (tom sammanfattning med bara rubrik) ──');
+  const parsed = await page.evaluate(() => {
+    const cand = parts => ({ candidates: [{ finishReason: 'STOP', content: { parts } }] });
+    const tryParse = d => { try { return parseModelOutput(d); } catch (e) { return { error: e.message }; } };
+    return {
+      split: tryParse(cand([{ text: 'TITLE: Nytt möte' }, { text: '\n<article><p>Innehåll</p></article>' }])),
+      thought: tryParse(cand([{ text: 'tänker…', thought: true }, { text: 'TITLE: X\n<article><p>Svar</p></article>' }])),
+      plain: tryParse(cand([{ text: 'TITLE: Text\n\n## Rubrik\n\nFörsta stycket.\nRad två.' }])),
+      fenced: tryParse(cand([{ text: 'TITLE: F\n```html\n<article><p>Ok</p></article>\n```' }])),
+      titleOnly: tryParse(cand([{ text: 'TITLE: Bara rubrik' }])),
+      normal: tryParse(cand([{ text: 'TITLE: Vanligt\n<article><h2>A</h2><p>B</p></article>' }])),
+    };
+  });
+  check('svar i flera delar fogas ihop — sammanfattningen kommer med', parsed.split.html?.includes('Innehåll') && parsed.split.suggestedTitle === 'Nytt möte', JSON.stringify(parsed.split));
+  check('tankedelar tas inte med', parsed.thought.html === '<article><p>Svar</p></article>' && parsed.thought.suggestedTitle === 'X', JSON.stringify(parsed.thought));
+  check('ren text/markdown blir stycken i stället för att försvinna', parsed.plain.html === '<h2>Rubrik</h2><p>Första stycket.<br>Rad två.</p>', JSON.stringify(parsed.plain));
+  check('kodstaket efter TITLE-raden tas bort', parsed.fenced.html === '<article><p>Ok</p></article>', JSON.stringify(parsed.fenced));
+  check('svar med bara rubrik ger fel (Försök igen), inte tomt resultat', /utan någon sammanfattning/.test(parsed.titleOnly.error || ''), JSON.stringify(parsed.titleOnly));
+  check('vanligt svar oförändrat', parsed.normal.html === '<article><h2>A</h2><p>B</p></article>' && parsed.normal.suggestedTitle === 'Vanligt');
+
   console.log('\n── 6. Service worker ──');
   const swSrc = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
