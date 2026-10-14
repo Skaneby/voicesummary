@@ -643,9 +643,22 @@ firman (Skatteverket) → D&B/DUNS → Google-betalprofilen → dokumenten i Pla
 | DUNS (D&B) | ✅ känd | Registrerat på Johan Skaneby — stämmer med firman |
 | Google-betalprofil | ✅ känd | Organisationsprofilen "för Play" är den som verifieras — namnet = tilltalsnamnet, hämtat från D&B. OBS: kontot har även en privatprofil och en annan organisationsprofil; utbetalningsprofilen (Settings → Payments profile) är ännu INTE vald och ska inte väljas förrän identiteten är godkänd — valet är permanent |
 | Play Console-kontot | ✅ känd | Organisationskonto "Johan Skaneby" (konto-id 8872357637404889857) — namnet stämmer med DUNS |
-| Identitetsverifiering | ❌ "Åtgärd krävs" | **ORSAK HITTAD 2026-09-24:** ID-handlingen visar det fullständiga namnet (alla förnamn), D&B och betalprofilen bara tilltalsnamnet. Alla svenska ID-handlingar visar alla förnamn — byte av dokument hjälper inte. Namnkedjan måste bli enhetlig med det fullständiga juridiska namnet |
+| Identitetsverifiering | ⏳ inskickad igen 2026-10-14 | Se uppdateringen nedan — hypotesen från 09-24 stämde inte |
 
-**Åtgärdsordning:**
+**Uppdatering 2026-10-14 (genomgång i webbläsaren):** Betalprofilen har två
+namnfält. *Organisationens namn* och *adress* (= D&B) är **verifierade sedan
+6 aug** — där fanns inget fel. Felet låg i fältet **NAMN** (personen): en
+väntande namnändring till enbart förnamnen, **utan efternamn**, stod som
+"Åtgärd krävs — kunde inte verifiera ditt nya namn med id-handlingen". Den kan
+aldrig matcha en id-handling. Ändringen avbröts → NAMN = fullständigt namn
+exakt som i passet. Identiteten skickades sedan in igen med pass.
+Fälla i formuläret: födelseår måste skrivas med fyra siffror (fältet ser ut
+att ta två); fel år stoppar "Nästa" utan synligt felmeddelande.
+Organisationskonto för enskild firma är inte fel enligt Googles hjälpsidor
+(answer/13634885: kräver D-U-N-S; enskild firma nämns inte). Webbplatsen har
+grön bock i Play Console.
+
+**Åtgärdsordning (punkt 1–3 ersatta av uppdateringen ovan):**
 1. [ ] Kontakta Google (idv_form) och fråga om betalprofilen räcker att ändra eller om D-U-N-S-posten också måste uppdateras
 2. [ ] Kontrollera vilket namn firman har hos Skatteverket (troligen det fullständiga folkbokförda namnet)
 3. [ ] Begär att D&B uppdaterar D-U-N-S-posten till det fullständiga namnet → uppdatera betalprofilen → ladda upp ID igen
